@@ -59,7 +59,7 @@ class NotificationsActivity: AppCompatActivity(), OpenEuiccContextMarker {
         refresh()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.activity_notifications, menu)
         return true
