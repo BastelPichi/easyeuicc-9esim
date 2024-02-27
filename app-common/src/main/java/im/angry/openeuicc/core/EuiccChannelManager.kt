@@ -29,7 +29,7 @@ open class EuiccChannelManager(protected val context: Context) {
     }
 
     protected open val uiccCards: Collection<UiccCardInfoCompat>
-        get() = (0..<tm.activeModemCountCompat).map { FakeUiccCardInfoCompat(it) }
+        get() = (0 until tm.activeModemCountCompat).map { FakeUiccCardInfoCompat(it) }
 
     private suspend fun ensureSEService() {
          if (seService == null) {
