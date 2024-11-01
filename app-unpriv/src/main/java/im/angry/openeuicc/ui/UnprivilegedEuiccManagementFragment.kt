@@ -4,11 +4,11 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import im.angry.easyeuicc.R
-import im.angry.openeuicc.core.EuiccChannelManager
-import im.angry.openeuicc.util.channel
 import im.angry.openeuicc.util.intentSTK
 import im.angry.openeuicc.util.isInstalledSTK
+import im.angry.openeuicc.util.isUsb
 import im.angry.openeuicc.util.newInstanceEuicc
+import im.angry.openeuicc.util.slotId
 
 class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
     companion object {
@@ -21,17 +21,14 @@ class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_sim_toolkit, menu)
-        menu.findItem(R.id.open_sim_toolkit).isVisible = when (channel.logicalSlotId) {
-            -1 -> false
-            EuiccChannelManager.USB_CHANNEL_ID -> false
-            else -> isInstalledSTK(requireContext())
-        }
+        menu.findItem(R.id.open_sim_toolkit).isVisible =
+            slotId != -1 && !isUsb && isInstalledSTK(requireContext())
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.open_sim_toolkit -> {
-                startActivity(intentSTK(channel.logicalSlotId))
+                startActivity(intentSTK(slotId))
                 true
             }
 
