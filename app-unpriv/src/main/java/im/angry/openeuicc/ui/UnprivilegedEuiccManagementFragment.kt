@@ -28,7 +28,11 @@ class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.open_sim_toolkit -> {
-                startActivity(intentSTK(slotId))
+                try {
+                    startActivity(intentSTK(slotId))
+                } catch (_: Exception) {
+                    startActivity(intentSTK(null))
+                }
                 true
             }
 

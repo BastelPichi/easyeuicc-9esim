@@ -13,9 +13,17 @@ fun isInstalledSTK(context: Context): Boolean =
         false
     }
 
-fun intentSTK(slotId: Int) = Intent().apply {
+fun intentSTK(slotId: Int?) = Intent().apply {
+    val pkgName = "com.android.stk"
     action = Intent.ACTION_MAIN
     flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    component = ComponentName("com.android.stk", "com.android.stk.StkMain${slotId + 1}")
+    component = ComponentName(
+        pkgName,
+        when (slotId) {
+            0 -> "${pkgName}.StkMain1"
+            1 -> "${pkgName}.StkMain2"
+            else -> "${pkgName}.StkMain"
+        },
+    )
     addCategory(Intent.CATEGORY_LAUNCHER)
 }
