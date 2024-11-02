@@ -5,25 +5,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.NameNotFoundException
 
-fun isInstalledSTK(context: Context): Boolean =
-    try {
-        context.packageManager.getPackageInfo("com.android.stk", 0)
-        true
-    } catch (_: NameNotFoundException) {
-        false
+object SIMToolkit {
+    private const val PKG_NAME = "com.android.stk"
+
+    fun isInstalled(context: Context): Boolean = context.let {
+        try {
+            it.packageManager.getPackageInfo(PKG_NAME, 0)
+            true
+        } catch (_: NameNotFoundException) {
+            false
+        }
     }
 
-fun intentSTK(slotId: Int?) = Intent().apply {
-    val pkgName = "com.android.stk"
-    action = Intent.ACTION_MAIN
-    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    component = ComponentName(
-        pkgName,
-        when (slotId) {
-            0 -> "${pkgName}.StkMain1"
-            1 -> "${pkgName}.StkMain2"
-            else -> "${pkgName}.StkMain"
-        },
-    )
-    addCategory(Intent.CATEGORY_LAUNCHER)
+    fun intent(context: Context, slotId: Int): Intent? {
+        val intent = context.packageManager.getLaunchIntentForPackage(PKG_NAME) ?: return null
+        if (intent.component?.shortClassName == ".StkMain1" && slotId == 1) {
+            intent.component = ComponentName(PKG_NAME, "$PKG_NAME.StkMain2")
+        }
+        return intent
+    }
 }

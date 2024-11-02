@@ -1,14 +1,15 @@
 package im.angry.openeuicc.ui
 
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import im.angry.easyeuicc.R
-import im.angry.openeuicc.util.intentSTK
-import im.angry.openeuicc.util.isInstalledSTK
+import im.angry.openeuicc.util.SIMToolkit
 import im.angry.openeuicc.util.isUsb
 import im.angry.openeuicc.util.newInstanceEuicc
 import im.angry.openeuicc.util.slotId
+
 
 class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
     companion object {
@@ -22,17 +23,14 @@ class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.fragment_sim_toolkit, menu)
         menu.findItem(R.id.open_sim_toolkit).isVisible =
-            slotId != -1 && !isUsb && isInstalledSTK(requireContext())
+            slotId != -1 && !isUsb && SIMToolkit.isInstalled(requireContext())
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.open_sim_toolkit -> {
-                try {
-                    startActivity(intentSTK(slotId))
-                } catch (_: Exception) {
-                    startActivity(intentSTK(null))
-                }
+                Log.d(TAG, "Opening SIM Toolkit for SlotId: $slotId")
+                startActivity(SIMToolkit.intent(requireContext(), slotId))
                 true
             }
 
