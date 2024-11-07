@@ -22,35 +22,34 @@ class SIMToolkit(private val context: Context) {
     }
 
     private val activities by lazy {
-        val pm = context.packageManager
-        packageNames.flatMap { packageName ->
-            try {
-                val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-                packageInfo.activities!!.filter { it.exported }
-                    .map { ComponentName(it.packageName, it.name) }
-            } catch (_: PackageManager.NameNotFoundException) {
-                emptyList()
-            }
-        }
+        packageNames.flatMap(::getActivities).toSet()
     }
 
     private val launchIntent by lazy {
+        packageNames.firstNotNullOfOrNull(::getLaunchIntent)
+    }
+
+    private fun getLaunchIntent(packageName: String) = try {
         val pm = context.packageManager
-        for (packageName in packageNames) {
-            try {
-                return@lazy pm.getLaunchIntentForPackage(packageName)
-            } catch (_: PackageManager.NameNotFoundException) {
-                continue
-            }
-        }
+        pm.getLaunchIntentForPackage(packageName)
+    } catch (_: PackageManager.NameNotFoundException) {
         null
     }
 
-    private fun getComponentNames(@ArrayRes id: Int) = context.resources.getStringArray(id)
-        .mapNotNull(ComponentName::unflattenFromString)
+    private fun getActivities(packageName: String) = try {
+        val pm = context.packageManager
+        val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+        packageInfo.activities!!.filter { it.exported }
+            .map { ComponentName(it.packageName, it.name) }
+    } catch (_: PackageManager.NameNotFoundException) {
+        emptyList()
+    }
+
+    private fun getComponentNames(@ArrayRes id: Int) =
+        context.resources.getStringArray(id).mapNotNull(ComponentName::unflattenFromString)
 
     private fun findComponentName(slotId: Int): ComponentName? {
-        val components = (slots[slotId] ?: emptySet()) + slotSelection
+        val components = slots.getOrDefault(slotId, emptySet()) + slotSelection
         return components.find(activities::contains)
     }
 
