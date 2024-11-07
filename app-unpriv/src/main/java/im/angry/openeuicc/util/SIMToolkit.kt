@@ -21,9 +21,7 @@ class SIMToolkit(private val context: Context) {
         addAll(slots.values.flatten().map { it.packageName })
     }
 
-    private val activities by lazy {
-        packageNames.flatMap(::getActivities).toSet()
-    }
+    private val activities = packageNames.flatMap(::getActivities).toSet()
 
     private val launchIntent by lazy {
         packageNames.firstNotNullOfOrNull(::getLaunchIntent)
@@ -48,23 +46,19 @@ class SIMToolkit(private val context: Context) {
     private fun getComponentNames(@ArrayRes id: Int) =
         context.resources.getStringArray(id).mapNotNull(ComponentName::unflattenFromString)
 
-    private fun findComponentName(slotId: Int): ComponentName? {
-        val components = slots.getOrDefault(slotId, emptySet()) + slotSelection
-        return components.find(activities::contains)
-    }
-
     fun isAvailable(slotId: Int) = when (slotId) {
         -1 -> false
         EuiccChannelManager.USB_CHANNEL_ID -> false
         else -> intent(slotId) != null
     }
 
-    fun intent(slotId: Int) = findComponentName(slotId).let {
-        if (it == null) return@let launchIntent
-        Intent(Intent.ACTION_MAIN, null).apply {
+    fun intent(slotId: Int): Intent? {
+        val components = slots.getOrDefault(slotId, emptySet()) + slotSelection
+        val intent = Intent(Intent.ACTION_MAIN, null).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            component = it
+            component = components.find(activities::contains)
             addCategory(Intent.CATEGORY_LAUNCHER)
         }
+        return if (intent.component != null) intent else launchIntent
     }
 }
