@@ -55,7 +55,7 @@
     <string name="profile_download_ok">Download</string>
     <string name="profile_download_failed">Failed to download eSIM. Check your activation / QR code.</string>
 
-    <string name="profile_download_failed_warning_title">This download may be failed</string>
+    <string name="profile_download_failed_warning_title">This download may fail</string>
     <string name="profile_download_failed_warning_message">This download may fail due to low remaining capacity.</string>
     <integer name="profile_download_nvram_threshold">10240</integer>
 
