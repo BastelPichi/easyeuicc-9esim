@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
 import android.graphics.BitmapFactory
@@ -25,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.Exception
 
 class ProfileDownloadFragment : BaseMaterialDialogFragment(),
     Toolbar.OnMenuItemClickListener, EuiccChannelFragmentMarker {
@@ -135,7 +135,21 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                 true
             }
             R.id.ok -> {
-                startDownloadProfile()
+                val threshold = resources.getInteger(R.integer.profile_download_nvram_threshold)
+                if (freeNvram < threshold) {
+                    AlertDialog.Builder(requireContext()).apply {
+                        setTitle(R.string.profile_download_failed_warning_title)
+                        setMessage(R.string.profile_download_failed_warning_message)
+                        setIcon(android.R.drawable.ic_dialog_alert)
+                        setPositiveButton(android.R.string.ok) { _, _ ->
+                            startDownloadProfile()
+                        }
+                        setNegativeButton(android.R.string.cancel, null)
+                        show()
+                    }
+                } else {
+                    startDownloadProfile()
+                }
                 true
             }
             else -> false
