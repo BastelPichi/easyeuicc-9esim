@@ -136,7 +136,9 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
             }
             R.id.ok -> {
                 val threshold = resources.getInteger(R.integer.profile_download_nvram_threshold)
-                if (freeNvram < threshold) {
+                if (freeNvram > threshold) {
+                    startDownloadProfile()
+                } else {
                     AlertDialog.Builder(requireContext()).apply {
                         setTitle(R.string.profile_download_may_fail_title)
                         setMessage(R.string.profile_download_may_fail_message)
@@ -147,8 +149,6 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                         setNegativeButton(android.R.string.cancel, null)
                         show()
                     }
-                } else {
-                    startDownloadProfile()
                 }
                 true
             }
