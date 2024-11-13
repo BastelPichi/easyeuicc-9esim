@@ -138,8 +138,8 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                 val threshold = resources.getInteger(R.integer.profile_download_nvram_threshold)
                 if (freeNvram < threshold) {
                     AlertDialog.Builder(requireContext()).apply {
-                        setTitle(R.string.profile_download_failed_warning_title)
-                        setMessage(R.string.profile_download_failed_warning_message)
+                        setTitle(R.string.profile_download_may_fail_title)
+                        setMessage(R.string.profile_download_may_fail_message)
                         setIcon(android.R.drawable.ic_dialog_alert)
                         setPositiveButton(android.R.string.ok) { _, _ ->
                             startDownloadProfile()
