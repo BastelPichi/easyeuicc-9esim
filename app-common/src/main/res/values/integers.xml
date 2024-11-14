@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <integer name="profile_download_nvram_threshold">30720</integer>
-</resources>
