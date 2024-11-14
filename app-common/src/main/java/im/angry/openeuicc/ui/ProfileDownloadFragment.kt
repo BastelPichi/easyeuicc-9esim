@@ -32,7 +32,7 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
     companion object {
         const val TAG = "ProfileDownloadFragment"
 
-        const val NVRAM_THRESHOLD = 30 * 1024 // < 30 KiB, the alert may fail
+        const val LOW_NVRAM_THRESHOLD = 30 * 1024 // < 30 KiB, the alert may fail
 
         fun newInstance(slotId: Int, portId: Int, finishWhenDone: Boolean = false): ProfileDownloadFragment =
             newInstanceEuicc(ProfileDownloadFragment::class.java, slotId, portId) {
@@ -137,7 +137,7 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                 true
             }
             R.id.ok -> {
-                if (freeNvram > NVRAM_THRESHOLD) {
+                if (freeNvram > LOW_NVRAM_THRESHOLD) {
                     startDownloadProfile()
                 } else {
                     AlertDialog.Builder(requireContext()).apply {
