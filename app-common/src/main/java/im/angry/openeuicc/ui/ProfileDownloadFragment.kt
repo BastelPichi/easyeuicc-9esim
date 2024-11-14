@@ -141,8 +141,8 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                     startDownloadProfile()
                 } else {
                     AlertDialog.Builder(requireContext()).apply {
-                        setTitle(R.string.profile_download_may_fail_title)
-                        setMessage(R.string.profile_download_may_fail_message)
+                        setTitle(R.string.profile_download_low_nvram_title)
+                        setMessage(R.string.profile_download_low_nvram_message)
                         setIcon(android.R.drawable.ic_dialog_alert)
                         setCancelable(true)
                         setPositiveButton(android.R.string.ok) { _, _ ->
