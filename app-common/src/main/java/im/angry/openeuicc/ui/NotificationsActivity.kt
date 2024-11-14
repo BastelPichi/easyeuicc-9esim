@@ -115,15 +115,18 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     private fun refresh() {
        launchTask {
-           notificationAdapter.notifications =
-               euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
-                   val profiles = channel.lpa.profiles
-
-                   channel.lpa.notifications.map {
-                       val profile = profiles.find { p -> p.iccid == it.iccid }
-                       LocalProfileNotificationWrapper(it, profile?.displayName ?: "???")
+           euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
+               val profiles = buildMap {
+                   for (profile in channel.lpa.profiles) {
+                       put(profile.iccid, profile)
                    }
                }
+
+               notificationAdapter.notifications = channel.lpa.notifications.map {
+                   val name = profiles[it.iccid]?.displayName ?: "???"
+                   LocalProfileNotificationWrapper(it, name)
+               }
+           }
        }
     }
 
