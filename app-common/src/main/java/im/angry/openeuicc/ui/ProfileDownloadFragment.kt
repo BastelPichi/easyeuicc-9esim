@@ -143,6 +143,7 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
                         setTitle(R.string.profile_download_may_fail_title)
                         setMessage(R.string.profile_download_may_fail_message)
                         setIcon(android.R.drawable.ic_dialog_alert)
+                        setCancelable(true)
                         setPositiveButton(android.R.string.ok) { _, _ ->
                             startDownloadProfile()
                         }
