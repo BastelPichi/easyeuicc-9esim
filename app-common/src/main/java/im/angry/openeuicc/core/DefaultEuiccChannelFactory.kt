@@ -43,7 +43,7 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                     context.preferenceRepository.verboseLoggingFlow
                 ),
                 context.preferenceRepository.verboseLoggingFlow,
-                context.preferenceRepository.ignoreTLSCertificate,
+                context.preferenceRepository.ignoreTLSCertificateFlow,
             ).also {
                 Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to 60")
                 it.lpa.setEs10xMss(60)
@@ -74,7 +74,7 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                 context.preferenceRepository.verboseLoggingFlow
             ),
             context.preferenceRepository.verboseLoggingFlow,
-            context.preferenceRepository.ignoreTLSCertificate,
+            context.preferenceRepository.ignoreTLSCertificateFlow,
         )
     }
 

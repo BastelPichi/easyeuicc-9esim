@@ -77,7 +77,7 @@ class SettingsFragment: PreferenceFragmentCompat() {
             ?.bindBooleanFlow(preferenceRepository.experimentalDownloadWizardFlow, PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD)
 
         findPreference<CheckBoxPreference>("pref_ignore_tls_certificate")
-            ?.bindBooleanFlow(preferenceRepository.ignoreTLSCertificate, PreferenceKeys.IGNORE_TLS_CERTIFICATE)
+            ?.bindBooleanFlow(preferenceRepository.ignoreTLSCertificateFlow, PreferenceKeys.IGNORE_TLS_CERTIFICATE)
     }
 
     override fun onStart() {

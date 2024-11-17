@@ -36,7 +36,7 @@ class PrivilegedEuiccChannelFactory(context: Context) : DefaultEuiccChannelFacto
                         context.preferenceRepository.verboseLoggingFlow
                     ),
                     context.preferenceRepository.verboseLoggingFlow,
-                    context.preferenceRepository.ignoreTLSCertificate,
+                    context.preferenceRepository.ignoreTLSCertificateFlow,
                 )
             } catch (e: IllegalArgumentException) {
                 // Failed

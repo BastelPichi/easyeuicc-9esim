@@ -63,7 +63,7 @@ class PreferenceRepository(context: Context) {
     val experimentalDownloadWizardFlow: Flow<Boolean> =
         dataStore.data.map { it[PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD] ?: false }
 
-    val ignoreTLSCertificate: Flow<Boolean> =
+    val ignoreTLSCertificateFlow: Flow<Boolean> =
         dataStore.data.map { it[PreferenceKeys.IGNORE_TLS_CERTIFICATE] ?: false }
 
     suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) {
