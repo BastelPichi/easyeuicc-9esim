@@ -39,24 +39,7 @@ class SettingsFragment: PreferenceFragmentCompat() {
         }
 
         findPreference<Preference>("pref_info_app_version")
-            ?.apply {
-                summary = requireContext().selfAppVersion
-
-                // Enable developer options when this is clicked for 7 times
-                setOnPreferenceClickListener(this@SettingsFragment::onAppVersionClicked)
-            }
-
-        findPreference<Preference>("pref_info_source_code")
-            ?.setOnPreferenceClickListener {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.summary.toString())))
-                true
-            }
-
-        findPreference<Preference>("pref_advanced_logs")
-            ?.setOnPreferenceClickListener {
-                startActivity(Intent(requireContext(), LogsActivity::class.java))
-                true
-            }
+            ?.summary = requireContext().selfAppVersion
 
         findPreference<CheckBoxPreference>("pref_notifications_download")
             ?.bindBooleanFlow(preferenceRepository.notificationDownloadFlow, PreferenceKeys.NOTIFICATION_DOWNLOAD)
@@ -85,8 +68,26 @@ class SettingsFragment: PreferenceFragmentCompat() {
         setupRootViewInsets(requireView().requireViewById(androidx.preference.R.id.recycler_view))
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    private fun onAppVersionClicked(pref: Preference): Boolean {
+    override fun onPreferenceTreeClick(preference: Preference) = when (preference.key) {
+        "pref_advanced_logs" -> {
+            startActivity(Intent(requireContext(), LogsActivity::class.java))
+            true
+        }
+
+        "pref_info_app_version" -> {
+            // Enable developer options when this is clicked for 7 times
+            this.onAppVersionClicked()
+        }
+
+        "pref_info_source_code" -> {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(preference.summary.toString())))
+            true
+        }
+
+        else -> super.onPreferenceTreeClick(preference)
+    }
+
+    private fun onAppVersionClicked(): Boolean {
         if (developerPref.isVisible) return false
         val now = System.currentTimeMillis()
         if (now - lastClickTimestamp >= 1000) {
