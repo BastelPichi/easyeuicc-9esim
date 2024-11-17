@@ -15,7 +15,7 @@ import javax.net.ssl.TrustManagerFactory
 
 class HttpInterfaceImpl(
     private val verboseLoggingFlow: Flow<Boolean>,
-    private val ignoreTLSCertificate: Flow<Boolean>
+    private val ignoreTLSCertificateFlow: Flow<Boolean>
 ) : HttpInterface {
     companion object {
         private const val TAG = "HttpInterfaceImpl"
@@ -82,7 +82,7 @@ class HttpInterfaceImpl(
 
     private fun getSocketFactory(): SSLSocketFactory {
         val trustManagers =
-            if (runBlocking { ignoreTLSCertificate.first() }) {
+            if (runBlocking { ignoreTLSCertificateFlow.first() }) {
                 arrayOf(IgnoreTLSCertificate())
             } else {
                 this.trustManagers
