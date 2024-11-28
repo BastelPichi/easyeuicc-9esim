@@ -3,7 +3,9 @@ package im.angry.openeuicc.ui
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.util.Log
@@ -26,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 class ProfileDownloadFragment : BaseMaterialDialogFragment(),
     Toolbar.OnMenuItemClickListener, EuiccChannelFragmentMarker {
@@ -84,10 +87,19 @@ class ProfileDownloadFragment : BaseMaterialDialogFragment(),
     }
 
     private fun onScanResult(result: String) {
-        val components = result.split("$")
-        if (components.size < 3 || components[0] != "LPA:1") return
-        profileDownloadServer.editText?.setText(components[1])
-        profileDownloadCode.editText?.setText(components[2])
+        when {
+            result.startsWith("LPA:") -> {
+                val components = result.split("$")
+                if (components.size < 3 || components[0] != "LPA:1") return
+                profileDownloadServer.editText?.setText(components[1])
+                profileDownloadCode.editText?.setText(components[2])
+            }
+
+            result.startsWith("http:", ignoreCase = true) or
+                    result.startsWith("https:", ignoreCase = true) -> {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(result)))
+            }
+        }
     }
 
     override fun onCreateView(
