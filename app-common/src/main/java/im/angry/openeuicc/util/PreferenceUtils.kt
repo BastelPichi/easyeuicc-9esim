@@ -39,21 +39,21 @@ object PreferenceKeys {
 class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
-    val notificationDownloadFlow = get(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
-    val notificationDeleteFlow = get(PreferenceKeys.NOTIFICATION_DELETE, true)
-    val notificationSwitchFlow = get(PreferenceKeys.NOTIFICATION_SWITCH, false)
+    val notificationDownloadFlow = bind(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
+    val notificationDeleteFlow = bind(PreferenceKeys.NOTIFICATION_DELETE, true)
+    val notificationSwitchFlow = bind(PreferenceKeys.NOTIFICATION_SWITCH, false)
 
     // ---- Advanced ----
-    val disableSafeguardFlow = get(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
-    val verboseLoggingFlow = get(PreferenceKeys.VERBOSE_LOGGING, false)
+    val disableSafeguardFlow = bind(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
+    val verboseLoggingFlow = bind(PreferenceKeys.VERBOSE_LOGGING, false)
 
     // ---- Developer Options ----
-    val developerOptionsEnabledFlow = get(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
-    val experimentalDownloadWizardFlow = get(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
-    val unfilteredProfileListFlow = get(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
-    val ignoreTLSCertificateFlow = get(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
+    val developerOptionsEnabledFlow = bind(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
+    val experimentalDownloadWizardFlow = bind(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
+    val unfilteredProfileListFlow = bind(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
+    val ignoreTLSCertificateFlow = bind(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 
-    private fun <T> get(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
+    private fun <T> bind(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
         context.dataStore.data.map { it[key] ?: defaultValue }
 
     suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) =
