@@ -36,43 +36,32 @@ object PreferenceKeys {
     val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
 }
 
-class PreferenceRepository(context: Context) {
-    private val dataStore = context.dataStore
-
+class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
-    val notificationDownloadFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.NOTIFICATION_DOWNLOAD] ?: true }
+    val notificationDownloadFlow = get(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
 
-    val notificationDeleteFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.NOTIFICATION_DELETE] ?: true }
+    val notificationDeleteFlow = get(PreferenceKeys.NOTIFICATION_DELETE, true)
 
-    val notificationSwitchFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.NOTIFICATION_SWITCH] ?: false }
+    val notificationSwitchFlow = get(PreferenceKeys.NOTIFICATION_SWITCH, false)
 
     // ---- Advanced ----
-    val disableSafeguardFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM] ?: false }
+    val disableSafeguardFlow = get(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
 
-    val verboseLoggingFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.VERBOSE_LOGGING] ?: false }
+    val verboseLoggingFlow = get(PreferenceKeys.VERBOSE_LOGGING, false)
 
     // ---- Developer Options ----
-    val developerOptionsEnabledFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.DEVELOPER_OPTIONS_ENABLED] ?: false }
+    val developerOptionsEnabledFlow = get(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
 
-    val experimentalDownloadWizardFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD] ?: false }
+    val experimentalDownloadWizardFlow = get(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
 
-    val unfilteredProfileListFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.UNFILTERED_PROFILE_LIST] ?: false }
+    val unfilteredProfileListFlow = get(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
 
-    val ignoreTLSCertificateFlow: Flow<Boolean> =
-        dataStore.data.map { it[PreferenceKeys.IGNORE_TLS_CERTIFICATE] ?: false }
+    val ignoreTLSCertificateFlow = get(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 
-    suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) {
-        dataStore.edit {
-            it[key] = value
-        }
-    }
+    private fun <T> get(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
+        context.dataStore.data.map { it[key] ?: defaultValue }
+
+    suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) =
+        context.dataStore.edit { it[key] = value }
 }
