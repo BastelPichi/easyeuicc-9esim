@@ -40,23 +40,17 @@ class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
     val notificationDownloadFlow = get(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
-
     val notificationDeleteFlow = get(PreferenceKeys.NOTIFICATION_DELETE, true)
-
     val notificationSwitchFlow = get(PreferenceKeys.NOTIFICATION_SWITCH, false)
 
     // ---- Advanced ----
     val disableSafeguardFlow = get(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
-
     val verboseLoggingFlow = get(PreferenceKeys.VERBOSE_LOGGING, false)
 
     // ---- Developer Options ----
     val developerOptionsEnabledFlow = get(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
-
     val experimentalDownloadWizardFlow = get(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
-
     val unfilteredProfileListFlow = get(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
-
     val ignoreTLSCertificateFlow = get(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 
     private fun <T> get(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
