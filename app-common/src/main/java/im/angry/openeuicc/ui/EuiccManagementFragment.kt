@@ -187,11 +187,11 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         ensureEuiccChannelManager()
         euiccChannelManagerService.waitForForegroundTask()
 
-        if (!this@EuiccManagementFragment::disableSafeguardFlow.isInitialized) {
+        if (!::disableSafeguardFlow.isInitialized) {
             disableSafeguardFlow =
                 preferenceRepository.disableSafeguardFlow.stateIn(lifecycleScope)
         }
-        if (!this@EuiccManagementFragment::unfilteredProfileListFlow.isInitialized) {
+        if (!::unfilteredProfileListFlow.isInitialized) {
             unfilteredProfileListFlow =
                 preferenceRepository.unfilteredProfileListFlow.stateIn(lifecycleScope)
         }
