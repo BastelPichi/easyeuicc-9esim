@@ -39,21 +39,21 @@ object PreferenceKeys {
 class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
-    val notificationDownloadFlow = bind(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
-    val notificationDeleteFlow = bind(PreferenceKeys.NOTIFICATION_DELETE, true)
-    val notificationSwitchFlow = bind(PreferenceKeys.NOTIFICATION_SWITCH, false)
+    val notificationDownloadFlow = bindFlow(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
+    val notificationDeleteFlow = bindFlow(PreferenceKeys.NOTIFICATION_DELETE, true)
+    val notificationSwitchFlow = bindFlow(PreferenceKeys.NOTIFICATION_SWITCH, false)
 
     // ---- Advanced ----
-    val disableSafeguardFlow = bind(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
-    val verboseLoggingFlow = bind(PreferenceKeys.VERBOSE_LOGGING, false)
+    val disableSafeguardFlow = bindFlow(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
+    val verboseLoggingFlow = bindFlow(PreferenceKeys.VERBOSE_LOGGING, false)
 
     // ---- Developer Options ----
-    val developerOptionsEnabledFlow = bind(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
-    val experimentalDownloadWizardFlow = bind(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
-    val unfilteredProfileListFlow = bind(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
-    val ignoreTLSCertificateFlow = bind(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
+    val developerOptionsEnabledFlow = bindFlow(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
+    val experimentalDownloadWizardFlow = bindFlow(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
+    val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
+    val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 
-    private fun <T> bind(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
+    private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
         context.dataStore.data.map { it[key] ?: defaultValue }
 
     suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) =
