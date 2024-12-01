@@ -57,11 +57,8 @@ class SettingsFragment: PreferenceFragmentCompat() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             findPreference<Preference>("pref_language")?.apply {
                 isVisible = true
-                setOnPreferenceClickListener {
-                    startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
-                        data = Uri.fromParts("package", requireContext().packageName, null)
-                    })
-                    true
+                intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
+                    data = Uri.fromParts("package", requireContext().packageName, null)
                 }
             }
         }
