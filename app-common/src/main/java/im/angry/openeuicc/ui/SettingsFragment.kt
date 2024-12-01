@@ -54,12 +54,11 @@ class SettingsFragment: PreferenceFragmentCompat() {
                 true
             }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            findPreference<Preference>("pref_language")?.apply {
-                isVisible = true
-                intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
-                    data = Uri.fromParts("package", requireContext().packageName, null)
-                }
+        findPreference<Preference>("pref_language")?.apply {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return@apply
+            isVisible = true
+            intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
+                data = Uri.fromParts("package", requireContext().packageName, null)
             }
         }
 
