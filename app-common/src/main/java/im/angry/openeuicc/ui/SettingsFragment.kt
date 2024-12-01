@@ -38,13 +38,12 @@ class SettingsFragment: PreferenceFragmentCompat() {
             }.collect()
         }
 
-        findPreference<Preference>("pref_info_app_version")
-            ?.apply {
-                summary = requireContext().selfAppVersion
+        findPreference<Preference>("pref_info_app_version")?.apply {
+            summary = requireContext().selfAppVersion
 
-                // Enable developer options when this is clicked for 7 times
-                setOnPreferenceClickListener(this@SettingsFragment::onAppVersionClicked)
-            }
+            // Enable developer options when this is clicked for 7 times
+            setOnPreferenceClickListener(::onAppVersionClicked)
+        }
 
         findPreference<Preference>("pref_info_source_code")?.apply {
             intent = Intent(Intent.ACTION_VIEW, Uri.parse(summary.toString()))
