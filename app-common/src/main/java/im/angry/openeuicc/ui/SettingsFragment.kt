@@ -2,7 +2,9 @@ package im.angry.openeuicc.ui
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.lifecycleScope
@@ -51,6 +53,18 @@ class SettingsFragment: PreferenceFragmentCompat() {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it.summary.toString())))
                 true
             }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            findPreference<Preference>("pref_language")?.apply {
+                isVisible = true
+                setOnPreferenceClickListener {
+                    startActivity(Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
+                        data = Uri.fromParts("package", requireContext().packageName, null)
+                    })
+                    true
+                }
+            }
+        }
 
         findPreference<Preference>("pref_advanced_logs")
             ?.setOnPreferenceClickListener {
