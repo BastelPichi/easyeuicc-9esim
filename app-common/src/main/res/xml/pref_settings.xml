@@ -48,6 +48,7 @@
             app:iconSpaceReserved="false"
             app:title="@string/pref_advanced_logs"
             app:summary="@string/pref_advanced_logs_desc" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
