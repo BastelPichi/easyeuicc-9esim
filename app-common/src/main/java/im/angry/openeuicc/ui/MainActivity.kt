@@ -102,16 +102,15 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.activity_main, menu)
+        menu.findItem(R.id.settings).intent =
+            Intent(this, SettingsActivity::class.java)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
-            R.id.settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java));
-                true
-            }
             R.id.reload -> {
                 refresh()
                 true

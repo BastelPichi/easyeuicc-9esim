@@ -9,15 +9,8 @@ class UnprivilegedMainActivity: MainActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.activity_main_unprivileged, menu)
+        menu.findItem(R.id.compatibility_check).intent =
+            Intent(this, CompatibilityCheckActivity::class.java)
         return true
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.compatibility_check -> {
-                startActivity(Intent(this, CompatibilityCheckActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
 }
