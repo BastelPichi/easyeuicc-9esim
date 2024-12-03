@@ -4,5 +4,7 @@
 
     <application
         android:hasCode="false"
+        android:label="@string/app_name"
         tools:ignore="MissingApplicationIcon" />
+
 </manifest>
