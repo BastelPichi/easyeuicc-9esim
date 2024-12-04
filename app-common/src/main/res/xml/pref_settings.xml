@@ -64,6 +64,12 @@
 
         <CheckBoxPreference
             app:iconSpaceReserved="false"
+            app:key="pref_developer_notification_sequence_number"
+            app:summary="@string/pref_developer_notification_sequence_number_desc"
+            app:title="@string/pref_developer_notification_sequence_number" />
+
+        <CheckBoxPreference
+            app:iconSpaceReserved="false"
             app:key="pref_developer_unfiltered_profile_list"
             app:summary="@string/pref_developer_unfiltered_profile_list_desc"
             app:title="@string/pref_developer_unfiltered_profile_list" />

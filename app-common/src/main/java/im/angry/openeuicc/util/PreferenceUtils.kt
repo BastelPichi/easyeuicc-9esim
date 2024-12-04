@@ -32,6 +32,7 @@ object PreferenceKeys {
     // ---- Developer Options ----
     val DEVELOPER_OPTIONS_ENABLED = booleanPreferencesKey("developer_options_enabled")
     val EXPERIMENTAL_DOWNLOAD_WIZARD = booleanPreferencesKey("experimental_download_wizard")
+    val NOTIFICATION_SEQUENCE_NUMBER = booleanPreferencesKey("notification_sequence_number")
     val UNFILTERED_PROFILE_LIST = booleanPreferencesKey("unfiltered_profile_list")
     val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
 }
@@ -50,6 +51,7 @@ class PreferenceRepository(private val context: Context) {
     // ---- Developer Options ----
     val developerOptionsEnabledFlow = bindFlow(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
     val experimentalDownloadWizardFlow = bindFlow(PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD, false)
+    val notificationSequenceNumberFlow = bindFlow(PreferenceKeys.NOTIFICATION_SEQUENCE_NUMBER, false)
     val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
     val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 

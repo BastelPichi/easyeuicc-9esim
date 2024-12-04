@@ -81,6 +81,9 @@ class SettingsFragment: PreferenceFragmentCompat() {
         findPreference<CheckBoxPreference>("pref_developer_experimental_download_wizard")
             ?.bindBooleanFlow(preferenceRepository.experimentalDownloadWizardFlow, PreferenceKeys.EXPERIMENTAL_DOWNLOAD_WIZARD)
 
+        findPreference<CheckBoxPreference>("pref_developer_notification_sequence_number")
+            ?.bindBooleanFlow(preferenceRepository.notificationSequenceNumberFlow, PreferenceKeys.NOTIFICATION_SEQUENCE_NUMBER)
+
         findPreference<CheckBoxPreference>("pref_developer_unfiltered_profile_list")
             ?.bindBooleanFlow(preferenceRepository.unfilteredProfileListFlow, PreferenceKeys.UNFILTERED_PROFILE_LIST)
 

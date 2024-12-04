@@ -14,6 +14,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.forEach
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,11 +24,14 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileNotification
 
 class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
+    private lateinit var notificationSequenceNumberFlow: StateFlow<Boolean>
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var notificationList: RecyclerView
     private val notificationAdapter = NotificationAdapter()
@@ -115,13 +119,19 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     private fun refresh() {
        launchTask {
+           notificationSequenceNumberFlow =
+               preferenceRepository.notificationSequenceNumberFlow.stateIn(lifecycleScope)
+
            notificationAdapter.notifications =
                euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
-                   val profiles = channel.lpa.profiles
+                   val profiles = buildMap {
+                       for (profile in channel.lpa.profiles) {
+                           put(profile.iccid, profile)
+                       }
+                   }
 
                    channel.lpa.notifications.map {
-                       val profile = profiles.find { p -> p.iccid == it.iccid }
-                       LocalProfileNotificationWrapper(it, profile?.displayName ?: "???")
+                       LocalProfileNotificationWrapper(it, profiles[it.iccid]?.displayName ?: "???")
                    }
                }
        }
@@ -136,6 +146,7 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     inner class NotificationViewHolder(private val root: View):
         RecyclerView.ViewHolder(root), View.OnCreateContextMenuListener, OnMenuItemClickListener {
         private val address: TextView = root.requireViewById(R.id.notification_address)
+        private val seqNumber: TextView = root.requireViewById(R.id.notification_sequence_number)
         private val profileName: TextView = root.requireViewById(R.id.notification_profile_name)
 
         private lateinit var notification: LocalProfileNotificationWrapper
@@ -157,6 +168,7 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             }
         }
 
+
         private fun operationToLocalizedText(operation: LocalProfileNotification.Operation) =
             root.context.getText(
                 when (operation) {
@@ -168,6 +180,14 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
         fun updateNotification(value: LocalProfileNotificationWrapper) {
             notification = value
+
+            if (notificationSequenceNumberFlow.value) {
+                seqNumber.isVisible = true
+                seqNumber.text = root.context.getString(
+                    R.string.profile_notification_sequence_number_format,
+                    value.inner.seqNumber
+                )
+            }
 
             address.text = value.inner.notificationAddress
             profileName.text = Html.fromHtml(
