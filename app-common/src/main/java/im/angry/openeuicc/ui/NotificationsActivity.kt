@@ -181,15 +181,12 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         fun updateNotification(value: LocalProfileNotificationWrapper) {
             notification = value
 
-            if (notificationSequenceNumberFlow.value) {
-                seqNumber.isVisible = true
-                seqNumber.text = root.context.getString(
-                    R.string.profile_notification_sequence_number_format,
-                    value.inner.seqNumber
-                )
-            }
-
             address.text = value.inner.notificationAddress
+            seqNumber.isVisible = notificationSequenceNumberFlow.value
+            seqNumber.text = root.context.getString(
+                R.string.profile_notification_sequence_number_format,
+                value.inner.seqNumber
+            )
             profileName.text = Html.fromHtml(
                 root.context.getString(R.string.profile_notification_name_format,
                     operationToLocalizedText(value.inner.profileManagementOperation),
