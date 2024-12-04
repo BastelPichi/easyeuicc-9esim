@@ -124,14 +124,14 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
            notificationAdapter.notifications =
                euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
-                   val profiles = buildMap {
+                   val nameMap = buildMap {
                        for (profile in channel.lpa.profiles) {
-                           put(profile.iccid, profile)
+                           put(profile.iccid, profile.displayName)
                        }
                    }
 
                    channel.lpa.notifications.map {
-                       LocalProfileNotificationWrapper(it, profiles[it.iccid]?.displayName ?: "???")
+                       LocalProfileNotificationWrapper(it, nameMap[it.iccid] ?: "???")
                    }
                }
        }
