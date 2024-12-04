@@ -155,7 +155,7 @@
     <string name="pref_developer_experimental_download_wizard">Experimental Download Wizard</string>
     <string name="pref_developer_experimental_download_wizard_desc">Enable the experimental new download wizard. Note that it is not fully working yet.</string>
     <string name="pref_developer_notification_sequence_number">Show notification sequence number</string>
-    <string name="pref_developer_notification_sequence_number_desc">Display notification sequence number in top right</string>
+    <string name="pref_developer_notification_sequence_number_desc">Display notification sequence number in upper right</string>
     <string name="pref_developer_unfiltered_profile_list">Show unfiltered profile list</string>
     <string name="pref_developer_unfiltered_profile_list_desc">Include non-production profiles in the list</string>
     <string name="pref_developer_ignore_tls_certificate">Ignore SM-DP+ TLS certificate</string>
