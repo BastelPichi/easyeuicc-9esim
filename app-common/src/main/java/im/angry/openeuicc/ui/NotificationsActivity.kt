@@ -146,7 +146,8 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     inner class NotificationViewHolder(private val root: View):
         RecyclerView.ViewHolder(root), View.OnCreateContextMenuListener, OnMenuItemClickListener {
         private val address: TextView = root.requireViewById(R.id.notification_address)
-        private val seqNumber: TextView = root.requireViewById(R.id.notification_sequence_number)
+        private val sequenceNumber: TextView =
+            root.requireViewById(R.id.notification_sequence_number)
         private val profileName: TextView = root.requireViewById(R.id.notification_profile_name)
 
         private lateinit var notification: LocalProfileNotificationWrapper
@@ -182,8 +183,8 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             notification = value
 
             address.text = value.inner.notificationAddress
-            seqNumber.isVisible = notificationSequenceNumberFlow.value
-            seqNumber.text = root.context.getString(
+            sequenceNumber.isVisible = notificationSequenceNumberFlow.value
+            sequenceNumber.text = root.context.getString(
                 R.string.profile_notification_sequence_number_format,
                 value.inner.seqNumber
             )
