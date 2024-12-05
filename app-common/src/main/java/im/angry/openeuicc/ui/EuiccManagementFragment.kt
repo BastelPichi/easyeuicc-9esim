@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.os.Bundle
+import android.text.Html
 import android.text.method.PasswordTransformationMethod
 import android.view.LayoutInflater
 import android.view.Menu
@@ -20,6 +21,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -339,6 +341,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         private val name: TextView = root.requireViewById(R.id.name)
         private val state: TextView = root.requireViewById(R.id.state)
         private val provider: TextView = root.requireViewById(R.id.provider)
+        private val profileClass: TextView = root.requireViewById(R.id.profile_class)
         private val profileMenu: ImageButton = root.requireViewById(R.id.profile_menu)
 
         init {
@@ -374,7 +377,22 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                     R.string.disabled
                 }
             )
-            provider.text = profile.providerName
+            provider.text = Html.fromHtml(
+                getString(R.string.provider, profile.providerName),
+                Html.FROM_HTML_MODE_COMPACT
+            )
+            val profileClassName = getString(
+                when (profile.profileClass) {
+                    LocalProfileInfo.Clazz.Testing -> R.string.profile_class_testing
+                    LocalProfileInfo.Clazz.Provisioning -> R.string.profile_class_provisioning
+                    LocalProfileInfo.Clazz.Operational -> R.string.profile_class_operational
+                }
+            )
+            profileClass.isVisible = unfilteredProfileListFlow.value
+            profileClass.text = Html.fromHtml(
+                getString(R.string.profile_class, profileClassName),
+                Html.FROM_HTML_MODE_COMPACT
+            )
             iccid.text = profile.iccid
             iccid.transformationMethod = PasswordTransformationMethod.getInstance()
         }
