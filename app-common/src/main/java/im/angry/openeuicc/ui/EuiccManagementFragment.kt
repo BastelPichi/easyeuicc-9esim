@@ -341,6 +341,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         private val name: TextView = root.requireViewById(R.id.name)
         private val state: TextView = root.requireViewById(R.id.state)
         private val provider: TextView = root.requireViewById(R.id.provider)
+        private val profileClassLabel: TextView = root.requireViewById(R.id.profile_class_label)
         private val profileClass: TextView = root.requireViewById(R.id.profile_class)
         private val profileMenu: ImageButton = root.requireViewById(R.id.profile_menu)
 
@@ -377,21 +378,15 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                     R.string.disabled
                 }
             )
-            provider.text = Html.fromHtml(
-                getString(R.string.provider, profile.providerName),
-                Html.FROM_HTML_MODE_COMPACT
-            )
-            val profileClassName = getString(
+            provider.text = profile.providerName
+            profileClassLabel.isVisible = unfilteredProfileListFlow.value
+            profileClass.isVisible = unfilteredProfileListFlow.value
+            profileClass.setText(
                 when (profile.profileClass) {
                     LocalProfileInfo.Clazz.Testing -> R.string.profile_class_testing
                     LocalProfileInfo.Clazz.Provisioning -> R.string.profile_class_provisioning
                     LocalProfileInfo.Clazz.Operational -> R.string.profile_class_operational
                 }
-            )
-            profileClass.isVisible = unfilteredProfileListFlow.value
-            profileClass.text = Html.fromHtml(
-                getString(R.string.profile_class, profileClassName),
-                Html.FROM_HTML_MODE_COMPACT
             )
             iccid.text = profile.iccid
             iccid.transformationMethod = PasswordTransformationMethod.getInstance()

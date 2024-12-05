@@ -49,30 +49,57 @@
                 android:singleLine="true"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/name"
-                app:layout_constraintBottom_toTopOf="@+id/provider"/>
+                app:layout_constraintBottom_toTopOf="@+id/provider_label"/>
+
+            <TextView
+                android:id="@+id/provider_label"
+                android:text="@string/provider"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/state"
+                app:layout_constraintBottom_toTopOf="@+id/profile_class_label"/>
 
             <TextView
                 android:id="@+id/provider"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:layout_marginStart="7dp"
                 android:textSize="14sp"
                 android:singleLine="true"
-                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintLeft_toRightOf="@id/provider_label"
                 app:layout_constraintTop_toBottomOf="@id/state"
                 app:layout_constraintBottom_toTopOf="@+id/profile_class"/>
+
+            <TextView
+                android:id="@+id/profile_class_label"
+                android:text="@string/profile_class"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:singleLine="true"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/provider_label"
+                app:layout_constraintBottom_toTopOf="@+id/iccid_label"/>
 
             <TextView
                 android:id="@+id/profile_class"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:singleLine="true"
+                android:layout_marginStart="7dp"
                 android:textSize="14sp"
-                android:visibility="invisible"
-                app:layout_constraintBottom_toTopOf="@+id/iccid_label"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/provider" />
+                android:singleLine="true"
+                app:layout_constraintLeft_toRightOf="@id/profile_class_label"
+                app:layout_constraintTop_toBottomOf="@id/provider"
+                app:layout_constraintBottom_toTopOf="@+id/iccid"/>
 
             <TextView
                 android:id="@+id/iccid_label"
@@ -84,7 +111,7 @@
                 android:textStyle="bold"
                 android:singleLine="true"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/profile_class"
+                app:layout_constraintTop_toBottomOf="@id/profile_class_label"
                 app:layout_constraintBottom_toBottomOf="parent"/>
 
             <TextView

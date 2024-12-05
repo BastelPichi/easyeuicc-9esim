@@ -12,8 +12,8 @@
 
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
-    <string name="provider">&lt;b&gt;Provider:&lt;/b&gt; %s</string>
-    <string name="profile_class">&lt;b&gt;Class:&lt;/b&gt; %s</string>
+    <string name="provider">Provider:</string>
+    <string name="profile_class">Class:</string>
     <string name="profile_class_testing">Testing</string>
     <string name="profile_class_provisioning">Provisioning</string>
     <string name="profile_class_operational">Operational</string>
