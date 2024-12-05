@@ -31,7 +31,6 @@ import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileNotification
 
 class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
-    private lateinit var sequenceNumberFlow: StateFlow<Boolean>
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var notificationList: RecyclerView
     private val notificationAdapter = NotificationAdapter()
@@ -119,9 +118,6 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     private fun refresh() {
        launchTask {
-           sequenceNumberFlow =
-               preferenceRepository.notificationSequenceNumberFlow.stateIn(lifecycleScope)
-
            notificationAdapter.notifications =
                euiccChannelManager.withEuiccChannel(logicalSlotId) { channel ->
                    val nameMap = buildMap {
@@ -183,7 +179,6 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
             notification = value
 
             address.text = value.inner.notificationAddress
-            sequenceNumber.isVisible = sequenceNumberFlow.value
             sequenceNumber.text = root.context.getString(
                 R.string.profile_notification_sequence_number_format,
                 value.inner.seqNumber
