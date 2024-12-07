@@ -94,10 +94,11 @@ val TelephonyManager.uiccCardsInfoCompat: List<RealUiccCardInfoCompat>
 fun TelephonyManager.iccOpenLogicalChannelByPortCompat(
     slotIndex: Int, portIndex: Int, aid: String?, p2: Int
 ): IccOpenLogicalChannelResponse =
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        iccOpenLogicalChannelByPort(slotIndex, portIndex, aid, p2)
+        iccOpenLogicalChannelByPort(slotIndex, portIndex, aid, p2)!!
     } else {
-        iccOpenLogicalChannelBySlot(slotIndex, aid, p2)
+        iccOpenLogicalChannelBySlot(slotIndex, aid, p2)!!
     }
 
 fun TelephonyManager.iccCloseLogicalChannelByPortCompat(
