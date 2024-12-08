@@ -28,20 +28,23 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
 
     // TODO: Should this be configurable?
     private fun shouldIgnoreSlot(physicalSlotId: Int) =
-        if (hasInternalEuicc) {
-            // For devices with an internal eUICC slot, ignore any removable UICC
-            telephonyManager.uiccCardsInfoCompat.find { it.physicalSlotIndex == physicalSlotId }!!.isRemovable
-        } else {
-            // Otherwise, we can report at least one removable eUICC to the system without confusing
-            // it too much.
-            telephonyManager.uiccCardsInfoCompat.firstOrNull { it.isEuicc }?.physicalSlotIndex == physicalSlotId
+        telephonyManager.uiccCardsInfoCompat.let { cards ->
+            if (hasInternalEuicc) {
+                // For devices with an internal eUICC slot, ignore any removable UICC
+                cards.find { it.physicalSlotIndex == physicalSlotId }!!.isRemovable
+            } else {
+                // Otherwise, we can report at least one removable eUICC to the system without confusing
+                // it too much.
+                cards.firstOrNull { it.isEuicc }?.physicalSlotIndex == physicalSlotId
+            }
         }
 
-    private data class EuiccChannelManagerContext(
-        val euiccChannelManagerService: EuiccChannelManagerService
-    ) {
+    private data class EuiccChannelManagerContext(val service: EuiccChannelManagerService) {
+        val euiccChannelManagerService
+            get() = service
+
         val euiccChannelManager
-            get() = euiccChannelManagerService.euiccChannelManager
+            get() = service.euiccChannelManager
     }
 
     /**
@@ -57,10 +60,8 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
     private fun <T> withEuiccChannelManager(fn: suspend EuiccChannelManagerContext.() -> T): T {
         val (binder, unbind) = runBlocking {
             bindServiceSuspended(
-                Intent(
-                    this@OpenEuiccService,
-                    EuiccChannelManagerService::class.java
-                ), Context.BIND_AUTO_CREATE
+                Intent(this@OpenEuiccService, EuiccChannelManagerService::class.java),
+                Context.BIND_AUTO_CREATE
             )
         }
 
@@ -110,7 +111,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
             telephonyManager.simSlotMapping = mappings
             return
         } catch (_: Exception) {
-
+            // ignore
         }
 
         // Sometimes hardware supports one ordering but not the reverse
@@ -267,12 +268,13 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
         }
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Deprecated in Java")
     override fun onSwitchToSubscription(
         slotId: Int,
         iccid: String?,
         forceDeactivateSim: Boolean
-    ): Int =
+    ) =
         // -1 = any port
         onSwitchToSubscriptionWithPort(slotId, -1, iccid, forceDeactivateSim)
 
@@ -406,11 +408,9 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
             }
         }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Deprecated in Java")
-    override fun onEraseSubscriptions(slotId: Int): Int {
-        // No-op
-        return RESULT_FIRST_USER
-    }
+    override fun onEraseSubscriptions(slotId: Int) = onRetainSubscriptionsForFactoryReset(slotId)
 
     override fun onRetainSubscriptionsForFactoryReset(slotId: Int): Int {
         // No-op -- we do not care
