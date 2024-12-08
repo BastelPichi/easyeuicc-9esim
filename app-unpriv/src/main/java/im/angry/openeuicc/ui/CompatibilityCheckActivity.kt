@@ -32,11 +32,10 @@ class CompatibilityCheckActivity: AppCompatActivity() {
         setupToolbarInsets()
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        requireViewById<RecyclerView>(R.id.recycler_view).let {
+        compatibilityCheckList = requireViewById<RecyclerView>(R.id.recycler_view).also {
             it.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
             it.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
             it.adapter = adapter
-            compatibilityCheckList = it
         }
 
         setupRootViewInsets(compatibilityCheckList)
