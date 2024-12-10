@@ -7,8 +7,25 @@ import java.security.cert.CertificateFactory
 
 const val DEFAULT_PKID_GSMA_RSP2_ROOT_CI1 = "81370f5125d0b1d408d4c3b232e6d25e795bebfb"
 
-val PKID_GSMA_TEST_CI =
-    arrayOf("34eecf13156518d48d30bdf06853404d115f955d", "2209f61cd9ec5c9c854e787341ff83ecf9776a5b")
+// SGP.28 v1.0, eSIM CI Registration Criteria (Page 5 of 9, 2019-10-24)
+// https://www.gsma.com/newsroom/wp-content/uploads/SGP.28-v1.0.pdf
+// FS.27 v2.0, Security Guidelines for UICC Profiles (Page 25 of 27, 2024-01-30)
+// https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2020/12/FS.27-Security-Guidelines-for-UICC-Profiles-v2.0.pdf#page=25
+
+val PKID_GSMA_LIVE_CI = arrayOf(
+    // GSMA RSP2 Root CI1 (SGP.22 v2+v3, CA: DigiCert)
+    // https://euicc-manual.osmocom.org/docs/pki/ci/files/81370f.txt
+    DEFAULT_PKID_GSMA_RSP2_ROOT_CI1,
+)
+
+val PKID_GSMA_TEST_CI = arrayOf(
+    // Test CI (SGP.26, NIST P256)
+    // https://euicc-manual.osmocom.org/docs/pki/ci/files/34eecf.txt
+    "34eecf13156518d48d30bdf06853404d115f955d",
+    // Test CI (SGP.26, BRP P256r1)
+    // https://euicc-manual.osmocom.org/docs/pki/ci/files/2209f6.txt
+    "2209f61cd9ec5c9c854e787341ff83ecf9776a5b",
+)
 
 private fun getCertificate(keyId: String): Certificate? =
     KNOWN_CI_CERTS[keyId]?.toByteArray()?.let { cert ->
