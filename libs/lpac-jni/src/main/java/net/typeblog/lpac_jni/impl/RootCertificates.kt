@@ -13,6 +13,7 @@ const val DEFAULT_PKID_GSMA_RSP2_ROOT_CI1 = "81370f5125d0b1d408d4c3b232e6d25e795
 // https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2024/01/FS.27-Security-Guidelines-for-UICC-Credentials-v2.0-FINAL-23-July.pdf#page=25
 
 val PKID_GSMA_LIVE_CI = arrayOf(
+    // List of GSMA Live CIs
     // see https://www.gsma.com/solutions-and-impact/technologies/esim/gsma-root-ci/
     //
     // GSMA RSP2 Root CI1 (SGP.22 v2+v3, CA: DigiCert)
@@ -24,6 +25,9 @@ val PKID_GSMA_LIVE_CI = arrayOf(
 )
 
 val PKID_GSMA_TEST_CI = arrayOf(
+    // SGP.26 v3.0, 2023-12-01
+    // see https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2023/12/SGP.26-v3.0.pdf
+    //
     // Test CI (SGP.26, NIST P256)
     // https://euicc-manual.osmocom.org/docs/pki/ci/files/34eecf.txt
     "34eecf13156518d48d30bdf06853404d115f955d",
