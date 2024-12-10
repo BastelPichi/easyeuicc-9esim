@@ -10,7 +10,7 @@ const val DEFAULT_PKID_GSMA_RSP2_ROOT_CI1 = "81370f5125d0b1d408d4c3b232e6d25e795
 // SGP.28 v1.0, eSIM CI Registration Criteria (Page 5 of 9, 2019-10-24)
 // https://www.gsma.com/newsroom/wp-content/uploads/SGP.28-v1.0.pdf#page=5
 // FS.27 v2.0, Security Guidelines for UICC Profiles (Page 25 of 27, 2024-01-30)
-// https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2020/12/FS.27-Security-Guidelines-for-UICC-Profiles-v2.0.pdf#page=25
+// https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2024/01/FS.27-Security-Guidelines-for-UICC-Credentials-v2.0-FINAL-23-July.pdf#page=25
 
 val PKID_GSMA_LIVE_CI = arrayOf(
     // GSMA RSP2 Root CI1 (SGP.22 v2+v3, CA: DigiCert)
