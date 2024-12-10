@@ -13,9 +13,14 @@ const val DEFAULT_PKID_GSMA_RSP2_ROOT_CI1 = "81370f5125d0b1d408d4c3b232e6d25e795
 // https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2024/01/FS.27-Security-Guidelines-for-UICC-Credentials-v2.0-FINAL-23-July.pdf#page=25
 
 val PKID_GSMA_LIVE_CI = arrayOf(
+    // see https://www.gsma.com/solutions-and-impact/technologies/esim/gsma-root-ci/
+    //
     // GSMA RSP2 Root CI1 (SGP.22 v2+v3, CA: DigiCert)
     // https://euicc-manual.osmocom.org/docs/pki/ci/files/81370f.txt
     DEFAULT_PKID_GSMA_RSP2_ROOT_CI1,
+    // OISITE GSMA CI G1 (SGP.22 v2+v3, CA: WISeKey)
+    // https://euicc-manual.osmocom.org/docs/pki/ci/files/4c2796.txt
+    "4c27967ad20c14b391e9601e41e604ad57c0222f",
 )
 
 val PKID_GSMA_TEST_CI = arrayOf(
@@ -77,7 +82,7 @@ internal val KNOWN_CI_CERTS = hashMapOf(
         -----END CERTIFICATE-----
     """.trimIndent(),
     // OISITE GSMA CI G1 (CA: WISeKey)
-    // Specs: SGP.21 and SGP.22 version 3
+    // Specs: SGP.21 and SGP.22 version 2 and version 3
     "4c27967ad20c14b391e9601e41e604ad57c0222f" to """
         -----BEGIN CERTIFICATE-----
         MIIB9zCCAZ2gAwIBAgIUSpBSCCDYPOEG/IFHUCKpZ2pIAQMwCgYIKoZIzj0EAwIw

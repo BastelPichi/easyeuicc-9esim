@@ -83,8 +83,8 @@ class LocalProfileAssistantImpl(
             throw IllegalArgumentException("Failed to initialize LPA")
         }
 
-        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: arrayOf()
-        httpInterface.usePublicKeyIds(pkids)
+        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: setOf()
+        httpInterface.usePublicKeyIds(pkids.toTypedArray())
     }
 
     override fun setEs10xMss(mss: Byte) {
