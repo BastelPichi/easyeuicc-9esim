@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,6 +34,13 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
 
     private var logicalSlotId: Int = -1
 
+    data class Item(
+        @StringRes
+        val titleResId: Int,
+        val content: String?,
+        val copyable: Boolean = false,
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -41,12 +50,11 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         swipeRefresh = requireViewById(R.id.swipe_refresh)
-        infoList = requireViewById(R.id.recycler_view)
-
-        infoList.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        infoList.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
-        infoList.adapter = EuiccInfoAdapter()
+        infoList = requireViewById<RecyclerView>(R.id.recycler_view).also {
+            it.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+            it.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
+            it.adapter = EuiccInfoAdapter()
+        }
 
         logicalSlotId = intent.getIntExtra("logicalSlotId", 0)
 
@@ -78,33 +86,31 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
 
         lifecycleScope.launch {
             (infoList.adapter!! as EuiccInfoAdapter).euiccInfoItems =
-                euiccChannelManager.withEuiccChannel(logicalSlotId, ::buildPairs).map {
-                    Pair(getString(it.first), it.second ?: getString(R.string.unknown))
-                }
+                euiccChannelManager.withEuiccChannel(logicalSlotId, ::buildEuiccInfoItems)
 
             swipeRefresh.isRefreshing = false
         }
     }
 
-    private fun buildPairs(channel: EuiccChannel) = buildList {
-        add(Pair(R.string.euicc_info_access_mode, channel.type))
+    private fun buildEuiccInfoItems(channel: EuiccChannel) = buildList {
+        add(Item(R.string.euicc_info_access_mode, channel.type))
         add(
-            Pair(
+            Item(
                 R.string.euicc_info_removable,
                 formatByBoolean(channel.port.card.isRemovable, YES_NO)
             )
         )
-        add(Pair(R.string.euicc_info_eid, channel.lpa.eID))
+        add(Item(R.string.euicc_info_eid, channel.lpa.eID, copyable = true))
         channel.lpa.euiccInfo2.let { info ->
-            add(Pair(R.string.euicc_info_firmware_version, info?.euiccFirmwareVersion))
-            add(Pair(R.string.euicc_info_globalplatform_version, info?.globalPlatformVersion))
-            add(Pair(R.string.euicc_info_pp_version, info?.ppVersion))
-            add(Pair(R.string.euicc_info_sas_accreditation_number, info?.sasAccreditationNumber))
-            add(Pair(R.string.euicc_info_free_nvram, info?.freeNvram?.let(::formatFreeSpace)))
+            add(Item(R.string.euicc_info_firmware_version, info?.euiccFirmwareVersion))
+            add(Item(R.string.euicc_info_globalplatform_version, info?.globalPlatformVersion))
+            add(Item(R.string.euicc_info_pp_version, info?.ppVersion))
+            add(Item(R.string.euicc_info_sas_accreditation_number, info?.sasAccreditationNumber))
+            add(Item(R.string.euicc_info_free_nvram, info?.freeNvram?.let(::formatFreeSpace)))
         }
         channel.lpa.euiccInfo2?.euiccCiPKIdListForSigning.orEmpty().let { signers ->
             add(
-                Pair(
+                Item(
                     R.string.euicc_info_gsma_prod,
                     formatByBoolean(
                         signers.contains(DEFAULT_PKID_GSMA_RSP2_ROOT_CI1),
@@ -113,7 +119,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
                 )
             )
             add(
-                Pair(
+                Item(
                     R.string.euicc_info_gsma_test,
                     formatByBoolean(PKID_GSMA_TEST_CI.any(signers::contains), SUPPORTED_UNSUPPORTED)
                 )
@@ -131,17 +137,28 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
         )
 
     inner class EuiccInfoViewHolder(root: View) : ViewHolder(root) {
+        private val context = root.context
         private val title: TextView = root.requireViewById(R.id.euicc_info_title)
         private val content: TextView = root.requireViewById(R.id.euicc_info_content)
+        private var copyable = false
 
-        fun bind(item: Pair<String, String>) {
-            title.text = item.first
-            content.text = item.second
+        init {
+            root.setOnClickListener {
+                if (copyable) context.setClipboard(title.text.toString()) {
+                    ClipData.newPlainText(title.text, content.text.toString())
+                }
+            }
+        }
+
+        fun bind(item: Item) {
+            title.setText(item.titleResId)
+            if (!item.content.isNullOrEmpty()) content.text = item.content
+            copyable = item.copyable
         }
     }
 
     inner class EuiccInfoAdapter : RecyclerView.Adapter<EuiccInfoViewHolder>() {
-        var euiccInfoItems: List<Pair<String, String>> = listOf()
+        var euiccInfoItems: List<Item> = listOf()
             @SuppressLint("NotifyDataSetChanged")
             set(newVal) {
                 field = newVal
