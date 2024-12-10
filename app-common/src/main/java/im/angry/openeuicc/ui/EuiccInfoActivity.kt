@@ -103,14 +103,14 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
         }
         channel.lpa.euiccInfo2?.euiccCiPKIdListForSigning.orEmpty().let { signers ->
             // SGP.28 v1.0, eSIM CI Registration Criteria (Page 5 of 9, 2019-10-24)
-            // https://www.gsma.com/newsroom/wp-content/uploads/SGP.28-v1.0.pdf
+            // https://www.gsma.com/newsroom/wp-content/uploads/SGP.28-v1.0.pdf#page=5
             // FS.27 v2.0, Security Guidelines for UICC Profiles (Page 25 of 27, 2024-01-30)
             // https://www.gsma.com/solutions-and-impact/technologies/security/wp-content/uploads/2020/12/FS.27-Security-Guidelines-for-UICC-Profiles-v2.0.pdf#page=25
             val resId = when {
                 signers.isEmpty() -> R.string.euicc_info_ci_not_mp
                 PKID_GSMA_LIVE_CI.any(signers::contains) -> R.string.euicc_info_ci_gsma_live
                 PKID_GSMA_TEST_CI.any(signers::contains) -> R.string.euicc_info_ci_gsma_test
-                else -> R.string.unknown
+                else -> R.string.euicc_info_ci_independent
             }
             add(Pair(R.string.euicc_info_ci_type, getString(resId)))
         }

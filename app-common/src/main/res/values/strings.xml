@@ -122,8 +122,9 @@
     <string name="euicc_info_free_nvram">Free NVRAM (eSIM profile storage)</string>
     <string name="euicc_info_ci_type">Certificate Issuer</string>
     <string name="euicc_info_ci_not_mp">This eUICC card is not in mass production</string>
-    <string name="euicc_info_ci_gsma_live">GSMA Live CI</string>
-    <string name="euicc_info_ci_gsma_test">GSMA Test CI</string>
+    <string name="euicc_info_ci_gsma_live" translatable="false">GSMA Live CI</string>
+    <string name="euicc_info_ci_gsma_test" translatable="false">GSMA Test CI</string>
+    <string name="euicc_info_ci_independent">Independent eSIM CA</string>
 
     <string name="supported">Supported</string>
     <string name="unsupported">Unsupported</string>
