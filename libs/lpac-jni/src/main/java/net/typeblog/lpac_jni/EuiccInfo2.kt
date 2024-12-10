@@ -9,6 +9,6 @@ data class EuiccInfo2(
     val ppVersion: String,
     val freeNvram: Int,
     val freeRam: Int,
-    val euiccCiPKIdListForSigning: Array<String>,
-    val euiccCiPKIdListForVerification: Array<String>,
+    val euiccCiPKIdListForSigning: Set<String>,
+    val euiccCiPKIdListForVerification: Set<String>,
 )

@@ -178,8 +178,8 @@ class LocalProfileAssistantImpl(
                 LpacJni.euiccInfo2GetPpVersion(cInfo),
                 LpacJni.euiccInfo2GetFreeNonVolatileMemory(cInfo).toInt(),
                 LpacJni.euiccInfo2GetFreeVolatileMemory(cInfo).toInt(),
-                euiccCiPKIdListForSigning.toTypedArray(),
-                euiccCiPKIdListForVerification.toTypedArray()
+                euiccCiPKIdListForSigning.toSet(),
+                euiccCiPKIdListForVerification.toSet()
             )
 
             LpacJni.euiccInfo2Free(cInfo)
