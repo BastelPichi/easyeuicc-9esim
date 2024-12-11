@@ -1,13 +1,12 @@
 package im.angry.openeuicc.ui
 
 import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.preference.Preference
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.util.encodeHex
+import im.angry.openeuicc.util.setClipboard
 import java.security.MessageDigest
 
 class UnprivilegedSettingsFragment : SettingsFragment() {
@@ -33,10 +32,9 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         findPreference<Preference>("pref_info_ara_m")?.apply {
             summary = firstSigner.encodeHex()
             setOnPreferenceClickListener {
-                requireContext().getSystemService(ClipboardManager::class.java)!!
-                    .setPrimaryClip(ClipData.newPlainText("ara-m", summary))
-                Toast.makeText(requireContext(), R.string.toast_ara_m_copied, Toast.LENGTH_SHORT)
-                    .show()
+                requireContext().setClipboard("ARA-M SHA-1") {
+                    ClipData.newPlainText("ara-m", summary)
+                }
                 true
             }
         }
