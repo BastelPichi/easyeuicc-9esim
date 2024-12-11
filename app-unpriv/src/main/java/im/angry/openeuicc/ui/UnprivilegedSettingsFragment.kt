@@ -32,7 +32,7 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         findPreference<Preference>("pref_info_ara_m")?.apply {
             summary = firstSigner.encodeHex()
             setOnPreferenceClickListener {
-                requireContext().setClipboard("ARA-M SHA-1") {
+                requireContext().setClipboard(title.toString()) {
                     ClipData.newPlainText("ara-m", summary)
                 }
                 true
