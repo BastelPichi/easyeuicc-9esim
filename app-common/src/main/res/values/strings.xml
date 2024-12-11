@@ -130,6 +130,7 @@
     <string name="no">No</string>
 
     <string name="logs_save">Save</string>
+    <string name="logs_share">Share</string>
     <string name="logs_filename_template">Logs at %s</string>
 
     <string name="developer_options_steps">You are %d steps away from being a developer.</string>

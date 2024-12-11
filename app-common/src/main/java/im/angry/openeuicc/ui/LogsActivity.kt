@@ -1,5 +1,6 @@
 package im.angry.openeuicc.ui
 
+import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.view.Menu
@@ -10,6 +11,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import im.angry.openeuicc.common.R
@@ -17,8 +19,10 @@ import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.FileOutputStream
 import java.util.Date
+
 
 class LogsActivity : AppCompatActivity() {
     private lateinit var swipeRefresh: SwipeRefreshLayout
@@ -76,9 +80,20 @@ class LogsActivity : AppCompatActivity() {
             true
         }
         R.id.save -> {
-            saveLogs.launch(getString(R.string.logs_filename_template,
-                SimpleDateFormat.getDateTimeInstance().format(Date())
-            ))
+            saveLogs.launch(fileName)
+            true
+        }
+        R.id.share -> {
+            val fileUri = File(cacheDir, "$fileName.txt")
+                .apply { writeText(logStr) }
+                .let { FileProvider.getUriForFile(this, "$packageName.provider", it) }
+            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TITLE, fileName)
+                putExtra(Intent.EXTRA_STREAM, fileUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(sendIntent, fileName))
             true
         }
         else -> super.onOptionsItemSelected(item)
@@ -100,4 +115,10 @@ class LogsActivity : AppCompatActivity() {
             scrollView.fullScroll(View.FOCUS_DOWN)
         }
     }
+
+    private val fileName: String
+        get() {
+            val now = SimpleDateFormat.getDateTimeInstance().format(Date())
+            return getString(R.string.logs_filename_template, now)
+        }
 }
