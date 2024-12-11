@@ -83,8 +83,8 @@ class LocalProfileAssistantImpl(
             throw IllegalArgumentException("Failed to initialize LPA")
         }
 
-        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: setOf()
-        httpInterface.usePublicKeyIds(pkids.toTypedArray())
+        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: arrayOf()
+        httpInterface.usePublicKeyIds(pkids)
     }
 
     override fun setEs10xMss(mss: Byte) {
@@ -178,8 +178,8 @@ class LocalProfileAssistantImpl(
                 LpacJni.euiccInfo2GetPpVersion(cInfo),
                 LpacJni.euiccInfo2GetFreeNonVolatileMemory(cInfo).toInt(),
                 LpacJni.euiccInfo2GetFreeVolatileMemory(cInfo).toInt(),
-                euiccCiPKIdListForSigning.toSet(),
-                euiccCiPKIdListForVerification.toSet()
+                euiccCiPKIdListForSigning.toTypedArray(),
+                euiccCiPKIdListForVerification.toTypedArray()
             )
 
             LpacJni.euiccInfo2Free(cInfo)
