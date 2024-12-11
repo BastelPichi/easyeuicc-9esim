@@ -30,6 +30,11 @@ class LogsActivity : AppCompatActivity() {
     private lateinit var logText: TextView
     private lateinit var logStr: String
 
+    private val fileName by lazy {
+        val now = SimpleDateFormat.getDateTimeInstance().format(Date())
+        getString(R.string.logs_filename_template, now)
+    }
+
     private val saveLogs =
         registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
             if (uri == null) return@registerForActivityResult
@@ -115,10 +120,4 @@ class LogsActivity : AppCompatActivity() {
             scrollView.fullScroll(View.FOCUS_DOWN)
         }
     }
-
-    private val fileName: String
-        get() {
-            val now = SimpleDateFormat.getDateTimeInstance().format(Date())
-            return getString(R.string.logs_filename_template, now)
-        }
 }
