@@ -125,9 +125,6 @@
     <string name="euicc_info_ci_gsma_test" translatable="false">GSMA Test CI</string>
     <string name="euicc_info_ci_independent">Independent eSIM CA</string>
 
-    <string name="supported">Supported</string>
-    <string name="unsupported">Unsupported</string>
-
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
