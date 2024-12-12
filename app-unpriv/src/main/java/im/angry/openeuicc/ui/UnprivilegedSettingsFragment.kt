@@ -33,9 +33,10 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
         findPreference<Preference>("pref_info_ara_m")?.apply {
             summary = firstSigner.encodeHex()
             setOnPreferenceClickListener {
+                val message = getString(im.angry.openeuicc.common.R.string.toast_copied, title)
                 requireContext().getSystemService(ClipboardManager::class.java)!!
                     .setPrimaryClip(ClipData.newPlainText("ara-m", summary))
-                Toast.makeText(requireContext(), R.string.toast_ara_m_copied, Toast.LENGTH_SHORT)
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT)
                     .show()
                 true
             }
