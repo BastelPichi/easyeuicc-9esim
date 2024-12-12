@@ -98,32 +98,28 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         }
     }
 
-    private fun assertInputNameAsToastResId(): Pair<Int?, Boolean> {
+    private fun assertInputNameAsToastResId(name: String): Int? {
         // SGP.22 v2.2.2 (Page 205 of 268)
         // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
         // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
         // code points <= 64 or encoded bytes <= 64?
-        val name = editText.text.toString().trim()
         if (name.length > 64) {
-            return Pair(R.string.toast_profile_name_too_long, false)
+            return R.string.toast_profile_name_too_long
         } else if (name == currentName) {
-            return Pair(R.string.toast_profile_name_not_changed, true)
+            return R.string.toast_profile_name_not_changed
         } else if (runCatching { utf8Charset.encode(name) }.isFailure) {
-            return Pair(R.string.toast_profile_name_encode_failed, false)
+            return R.string.toast_profile_name_encode_failed
         }
-        return Pair(null, false)
+        return null
     }
 
     private fun rename() {
         toast?.cancel()
         val name = editText.text.toString().trim()
-        val (toastResId, needDismiss) = assertInputNameAsToastResId()
-        if (needDismiss) {
-            dismiss()
-        }
-        if (toastResId != null) {
-            toast = Toast.makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
+        assertInputNameAsToastResId(name)?.let { resId ->
+            toast = Toast.makeText(requireContext(), resId, Toast.LENGTH_LONG)
             toast!!.show()
+            if (resId == R.string.toast_profile_name_not_changed) dismiss()
             return
         }
 
