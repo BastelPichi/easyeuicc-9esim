@@ -5,33 +5,48 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.service.EuiccChannelManagerService.Companion.waitDone
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.launch
+import java.nio.charset.Charset
 
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "ProfileRenameFragment"
+        const val FIELD_ICCID = "iccid"
+        const val FIELD_CURRENT_NAME = "currentName"
 
         fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String): ProfileRenameFragment {
             val instance = newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId)
             instance.requireArguments().apply {
-                putString("iccid", iccid)
-                putString("currentName", currentName)
+                putString(FIELD_ICCID, iccid)
+                putString(FIELD_CURRENT_NAME, currentName)
             }
             return instance
         }
     }
 
     private lateinit var toolbar: Toolbar
-    private lateinit var profileRenameNewName: TextInputLayout
+    private lateinit var editText: EditText
     private lateinit var progress: ProgressBar
+
+    private val utf8Charset = Charset.forName("UTF-8")
+
+    private var toast: Toast? = null
+
+    private val iccid: String
+        get() = requireArguments().getString(FIELD_ICCID)!!
+
+    private val currentName: String
+        get() = requireArguments().getString(FIELD_CURRENT_NAME)!!
 
     private var renaming = false
 
@@ -43,7 +58,9 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         val view = inflater.inflate(R.layout.fragment_profile_rename, container, false)
 
         toolbar = view.requireViewById(R.id.toolbar)
-        profileRenameNewName = view.requireViewById(R.id.profile_rename_new_name)
+        editText = view.requireViewById<TextInputLayout>(R.id.profile_rename_new_name).let {
+            it.editText!!
+        }
         progress = view.requireViewById(R.id.progress)
 
         toolbar.inflateMenu(R.menu.fragment_profile_rename)
@@ -67,7 +84,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
     override fun onStart() {
         super.onStart()
-        profileRenameNewName.editText!!.setText(requireArguments().getString("currentName"))
+        editText.setText(currentName)
     }
 
     override fun onResume() {
@@ -82,25 +99,37 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private fun rename() {
-        val name = profileRenameNewName.editText!!.text.toString().trim()
-        if (name.length >= 64) {
-            Toast.makeText(context, R.string.toast_profile_name_too_long, Toast.LENGTH_LONG).show()
+        val name = editText.text.toString().trim()
+        // SGP.22 v2.2.2 (Page 205 of 268)
+        // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
+        // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
+        // code points <= 64 or encoded bytes <= 64?
+        toast?.cancel()
+        val toastResId = try {
+            utf8Charset.encode(name) // detect is utf8 valid
+            when {
+                name == currentName -> R.string.toast_profile_name_not_changed
+                name.length >= 64 -> R.string.toast_profile_name_too_long
+                else -> null
+            }
+        } catch (e: CharacterCodingException) {
+            R.string.toast_profile_name_encode_failed
+        }
+        if (toastResId != null) {
+            toast = Toast.makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
+            toast!!.show()
             return
         }
 
         renaming = true
         progress.isIndeterminate = true
-        progress.visibility = View.VISIBLE
+        progress.isVisible = true
 
         lifecycleScope.launch {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
-            euiccChannelManagerService.launchProfileRenameTask(
-                slotId,
-                portId,
-                requireArguments().getString("iccid")!!,
-                name
-            ).waitDone()
+            euiccChannelManagerService.launchProfileRenameTask(slotId, portId, iccid, name)
+                .waitDone()
 
             if (parentFragment is EuiccProfilesChangedListener) {
                 (parentFragment as EuiccProfilesChangedListener).onEuiccProfilesChanged()
