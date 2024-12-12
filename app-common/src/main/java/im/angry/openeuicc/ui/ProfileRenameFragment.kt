@@ -98,22 +98,28 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         }
     }
 
-    private fun rename() {
-        val name = editText.text.toString().trim()
+    private fun assertInputNameAsToastResId(): Pair<Int?, Boolean> {
         // SGP.22 v2.2.2 (Page 205 of 268)
         // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
         // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
         // code points <= 64 or encoded bytes <= 64?
+        val name = editText.text.toString().trim()
+        if (name.length > 64) {
+            return Pair(R.string.toast_profile_name_too_long, false)
+        } else if (name == currentName) {
+            return Pair(R.string.toast_profile_name_not_changed, true)
+        } else if (runCatching { utf8Charset.encode(name) }.isFailure) {
+            return Pair(R.string.toast_profile_name_encode_failed, false)
+        }
+        return Pair(null, false)
+    }
+
+    private fun rename() {
         toast?.cancel()
-        val toastResId = try {
-            utf8Charset.encode(name) // detect is utf8 valid
-            when {
-                name == currentName -> R.string.toast_profile_name_not_changed
-                name.length >= 64 -> R.string.toast_profile_name_too_long
-                else -> null
-            }
-        } catch (e: CharacterCodingException) {
-            R.string.toast_profile_name_encode_failed
+        val name = editText.text.toString().trim()
+        val (toastResId, needDismiss) = assertInputNameAsToastResId()
+        if (needDismiss) {
+            dismiss()
         }
         if (toastResId != null) {
             toast = Toast.makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
