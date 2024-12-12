@@ -142,27 +142,22 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
             }
         )
 
-    inner class EuiccInfoViewHolder(val root: View) : ViewHolder(root) {
+    inner class EuiccInfoViewHolder(val root: View) : ViewHolder(root), View.OnClickListener {
         private val title: TextView = root.requireViewById(R.id.euicc_info_title)
         private val content: TextView = root.requireViewById(R.id.euicc_info_content)
-        private var copyable: Boolean = false
-
-        init {
-            root.setOnClickListener {
-                if (!copyable) return@setOnClickListener
-                val label = title.text.toString()
-                val message = getString(R.string.toast_copied, label)
-                root.context.getSystemService(ClipboardManager::class.java)!!
-                    .setPrimaryClip(ClipData.newPlainText(label, content.text))
-                Toast.makeText(root.context, message, Toast.LENGTH_SHORT).show()
-            }
-        }
-
 
         fun bind(item: Item) {
+            root.setOnClickListener(if (item.copyable) this else null)
             title.setText(item.titleResId)
             content.text = item.content ?: getString(R.string.unknown)
-            copyable = item.copyable
+        }
+
+        override fun onClick(view: View) {
+            val label = title.text.toString()
+            val message = getString(R.string.toast_copied, label)
+            root.context.getSystemService(ClipboardManager::class.java)!!
+                .setPrimaryClip(ClipData.newPlainText(label, content.text))
+            Toast.makeText(root.context, message, Toast.LENGTH_SHORT).show()
         }
     }
 
