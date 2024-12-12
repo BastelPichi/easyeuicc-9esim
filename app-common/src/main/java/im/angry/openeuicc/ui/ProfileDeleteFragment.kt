@@ -70,8 +70,8 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
     }
 
     private fun delete() {
+        toast?.cancel()
         if (!inputMatchesName) {
-            toast?.cancel()
             toast = Toast.makeText(
                 requireContext(),
                 getString(R.string.toast_profile_delete_unmatched, name),
