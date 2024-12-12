@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ShareCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import im.angry.openeuicc.common.R
@@ -26,6 +27,11 @@ class LogsActivity : AppCompatActivity() {
     private lateinit var logText: TextView
     private lateinit var logStr: String
 
+    private val fileName by lazy {
+        val now = SimpleDateFormat.getDateTimeInstance().format(Date())
+        getString(R.string.logs_filename_template, now)
+    }
+
     private val saveLogs =
         registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
             if (uri == null) return@registerForActivityResult
@@ -35,6 +41,11 @@ class LogsActivity : AppCompatActivity() {
                     os.write(logStr.encodeToByteArray())
                 }
             }
+            ShareCompat.IntentBuilder(this)
+                .setType("image/plain")
+                .setChooserTitle(fileName)
+                .addStream(uri)
+                .startChooser()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,9 +87,7 @@ class LogsActivity : AppCompatActivity() {
             true
         }
         R.id.save -> {
-            saveLogs.launch(getString(R.string.logs_filename_template,
-                SimpleDateFormat.getDateTimeInstance().format(Date())
-            ))
+            saveLogs.launch(fileName)
             true
         }
         else -> super.onOptionsItemSelected(item)
