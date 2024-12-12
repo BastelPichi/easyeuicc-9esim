@@ -16,7 +16,6 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.service.EuiccChannelManagerService.Companion.waitDone
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.launch
-import java.nio.charset.Charset
 
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
@@ -101,14 +100,14 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
         // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
         // code points <= 64 or encoded bytes <= 64?
-        if (name.length > 64) {
-            return R.string.toast_profile_name_too_long
-        } else if (name == currentName) {
-            return R.string.toast_profile_name_not_changed
-        } else if (runCatching { name.toByteArray(Charsets.UTF_8) }.isFailure) {
-            return R.string.toast_profile_name_encode_failed
+        if (name == currentName) return R.string.toast_profile_name_not_changed
+        return try {
+            val length = name.toByteArray(Charsets.UTF_8).size
+            if (length <= 64) return null
+            R.string.toast_profile_name_too_long
+        } catch (e: CharacterCodingException) {
+            R.string.toast_profile_name_encode_failed
         }
-        return null
     }
 
     private fun rename() {
