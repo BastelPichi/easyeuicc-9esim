@@ -38,8 +38,6 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private lateinit var editText: EditText
     private lateinit var progress: ProgressBar
 
-    private val utf8Charset = Charset.forName("UTF-8")
-
     private var toast: Toast? = null
 
     private val iccid: String
@@ -107,7 +105,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             return R.string.toast_profile_name_too_long
         } else if (name == currentName) {
             return R.string.toast_profile_name_not_changed
-        } else if (runCatching { utf8Charset.encode(name) }.isFailure) {
+        } else if (runCatching { name.toByteArray(Charsets.UTF_8) }.isFailure) {
             return R.string.toast_profile_name_encode_failed
         }
         return null
