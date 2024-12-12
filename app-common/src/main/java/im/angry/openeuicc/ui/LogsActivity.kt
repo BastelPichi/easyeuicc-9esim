@@ -1,6 +1,5 @@
 package im.angry.openeuicc.ui
 
-import android.content.Intent
 import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.view.Menu
@@ -11,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ShareCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -92,13 +92,11 @@ class LogsActivity : AppCompatActivity() {
             val fileUri = File(cacheDir, "$fileName.txt")
                 .apply { writeText(logStr) }
                 .let { FileProvider.getUriForFile(this, "$packageName.provider", it) }
-            val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TITLE, fileName)
-                putExtra(Intent.EXTRA_STREAM, fileUri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-            startActivity(Intent.createChooser(sendIntent, fileName))
+            ShareCompat.IntentBuilder(this)
+                .setType("image/plain")
+                .setChooserTitle(fileName)
+                .addStream(fileUri)
+                .startChooser()
             true
         }
         else -> super.onOptionsItemSelected(item)
