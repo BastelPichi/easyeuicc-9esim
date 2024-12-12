@@ -89,13 +89,14 @@ class LogsActivity : AppCompatActivity() {
             true
         }
         R.id.share -> {
-            val fileUri = File(cacheDir, "$fileName.txt")
+            val authority = "$packageName.provider"
+            val displayName = "$fileName.txt"
+            val file = File.createTempFile("logs", ".txt", cacheDir)
                 .apply { writeText(logStr) }
-                .let { FileProvider.getUriForFile(this, "$packageName.provider", it) }
             ShareCompat.IntentBuilder(this)
                 .setType("image/plain")
                 .setChooserTitle(fileName)
-                .addStream(fileUri)
+                .addStream(FileProvider.getUriForFile(this, authority, file, displayName))
                 .startChooser()
             true
         }
