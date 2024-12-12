@@ -50,6 +50,9 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
 
     private var deleting = false
 
+    private val alertDialog: AlertDialog
+        get() = requireDialog() as AlertDialog
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme).apply {
             setMessage(getString(R.string.profile_delete_confirm, name))
@@ -60,7 +63,6 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
 
     override fun onResume() {
         super.onResume()
-        val alertDialog = dialog!! as AlertDialog
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             if (!deleting) delete()
         }
@@ -81,7 +83,6 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
             return
         }
         deleting = true
-        val alertDialog = dialog!! as AlertDialog
         alertDialog.setCanceledOnTouchOutside(false)
         alertDialog.setCancelable(false)
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
