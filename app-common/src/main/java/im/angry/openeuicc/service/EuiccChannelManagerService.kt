@@ -460,10 +460,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
             R.drawable.ic_task_switch
         ) {
             euiccChannelManager.beginTrackedOperation(slotId, portId) {
-                val (res, refreshed) = euiccChannelManager.withEuiccChannel(
-                    slotId,
-                    portId
-                ) { channel ->
+                val (res, refreshed) = euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
                     if (!channel.lpa.switchProfile(iccid, enable, refresh = true)) {
                         // Sometimes, we *can* enable or disable the profile, but we cannot
                         // send the refresh command to the modem because the profile somehow
