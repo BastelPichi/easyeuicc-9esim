@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.icu.text.SimpleDateFormat
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -8,6 +9,7 @@ import android.view.View
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ShareCompat
@@ -21,33 +23,23 @@ import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
 import java.util.Date
 
-class LogsActivity : AppCompatActivity() {
+class LogsActivity : AppCompatActivity(), ActivityResultCallback<Uri?> {
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var scrollView: ScrollView
     private lateinit var logText: TextView
     private lateinit var logStr: String
     private var sharable = false
 
-    private val fileName by lazy {
-        val now = SimpleDateFormat.getDateTimeInstance().format(Date())
-        getString(R.string.logs_filename_template, now)
-    }
-
-    private val saveLogs =
-        registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
-            if (uri == null) return@registerForActivityResult
-            if (!this::logStr.isInitialized) return@registerForActivityResult
-            contentResolver.openFileDescriptor(uri, "w")?.use {
-                FileOutputStream(it.fileDescriptor).use { os ->
-                    os.write(logStr.encodeToByteArray())
-                }
-            }
-            if (sharable) ShareCompat.IntentBuilder(this)
-                .setType("image/plain")
-                .setChooserTitle(fileName)
-                .addStream(uri)
-                .startChooser()
+    private val fileName: String
+        get() {
+            val time = SimpleDateFormat.getDateTimeInstance().format(Date())
+            return getString(R.string.logs_filename_template, time)
         }
+
+    private val saveLogs = registerForActivityResult(
+        ActivityResultContracts.CreateDocument("text/plain"),
+        this,
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -115,5 +107,21 @@ class LogsActivity : AppCompatActivity() {
         scrollView.post {
             scrollView.fullScroll(View.FOCUS_DOWN)
         }
+    }
+
+    @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
+    override fun onActivityResult(uri: Uri?) {
+        if (uri == null) return
+        if (!this::logStr.isInitialized) return
+        contentResolver.openFileDescriptor(uri, "w")?.use {
+            val fd = FileOutputStream(it.fileDescriptor)
+            fd.write(logStr.encodeToByteArray())
+            fd.close()
+        }
+        if (sharable) ShareCompat.IntentBuilder(this)
+            .setType("image/plain")
+            .setChooserTitle(fileName)
+            .addStream(uri)
+            .startChooser()
     }
 }
