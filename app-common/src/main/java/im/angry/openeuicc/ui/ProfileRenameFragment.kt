@@ -100,7 +100,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private fun rename() {
         toast?.cancel()
         val editedName = editText.text.toString().trim()
-            // replace \s as space (inc. new lien and spaces)
+            // replace \s as space (inc. new line and spaces)
             .replace(SPACE_PATTERN, "\u0020")
         // SGP.22 v2.2.2 (Page 205 of 268)
         // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
