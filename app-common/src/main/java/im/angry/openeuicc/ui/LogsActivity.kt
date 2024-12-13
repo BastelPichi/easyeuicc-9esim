@@ -26,6 +26,7 @@ class LogsActivity : AppCompatActivity() {
     private lateinit var scrollView: ScrollView
     private lateinit var logText: TextView
     private lateinit var logStr: String
+    private var sharable = false
 
     private val fileName by lazy {
         val now = SimpleDateFormat.getDateTimeInstance().format(Date())
@@ -41,7 +42,7 @@ class LogsActivity : AppCompatActivity() {
                     os.write(logStr.encodeToByteArray())
                 }
             }
-            ShareCompat.IntentBuilder(this)
+            if (sharable) ShareCompat.IntentBuilder(this)
                 .setType("image/plain")
                 .setChooserTitle(fileName)
                 .addStream(uri)
@@ -87,6 +88,12 @@ class LogsActivity : AppCompatActivity() {
             true
         }
         R.id.save -> {
+            sharable = false
+            saveLogs.launch(fileName)
+            true
+        }
+        R.id.share -> {
+            sharable = true
             saveLogs.launch(fileName)
             true
         }

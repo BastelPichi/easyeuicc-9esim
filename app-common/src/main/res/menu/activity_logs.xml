@@ -6,4 +6,7 @@
         android:icon="@drawable/ic_save_as_black"
         android:title="@string/logs_save"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/share"
+        android:title="@string/logs_share" />
 </menu>
