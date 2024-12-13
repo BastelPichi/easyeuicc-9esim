@@ -30,11 +30,13 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
         }
     }
 
-    private val iccid: String
-        get() = requireArguments().getString(FIELD_ICCID)!!
+    private val iccid by lazy {
+        requireArguments().getString(FIELD_ICCID)!!
+    }
 
-    private val name: String
-        get() = requireArguments().getString(FIELD_NAME)!!
+    private val name by lazy {
+        requireArguments().getString(FIELD_NAME)!!
+    }
 
     private val editText by lazy {
         EditText(requireContext()).apply {
@@ -74,12 +76,10 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
     private fun delete() {
         toast?.cancel()
         if (!inputMatchesName) {
-            toast = Toast.makeText(
-                requireContext(),
-                getString(R.string.toast_profile_delete_unmatched, name),
-                Toast.LENGTH_LONG
-            )
-            toast!!.show()
+            val resId = R.string.toast_profile_delete_confirm_text_mismatched
+            toast = Toast.makeText(requireContext(), resId, Toast.LENGTH_LONG).also {
+                it.show()
+            }
             return
         }
         deleting = true
