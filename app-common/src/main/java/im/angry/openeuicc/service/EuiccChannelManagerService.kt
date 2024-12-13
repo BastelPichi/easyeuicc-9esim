@@ -415,7 +415,10 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
             R.drawable.ic_task_rename
         ) {
             val res = euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
-                channel.lpa.setNickname(iccid, name)
+                channel.lpa.setNickname(
+                    iccid,
+                    name
+                )
             }
 
             if (!res) {
