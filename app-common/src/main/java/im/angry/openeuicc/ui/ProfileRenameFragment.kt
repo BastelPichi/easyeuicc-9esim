@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -21,8 +23,6 @@ import net.typeblog.lpac_jni.LocalProfileAssistant.ProfileNicknameException.Kind
 
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
-        val SPACE_PATTERN = Regex("\\s", RegexOption.MULTILINE)
-
         const val TAG = "ProfileRenameFragment"
         const val FIELD_ICCID = "iccid"
         const val FIELD_CURRENT_NAME = "currentName"
@@ -42,6 +42,14 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private lateinit var progress: ProgressBar
 
     private var toast: Toast? = null
+        set(toast) {
+            field?.cancel()
+            field = toast
+            field?.show()
+        }
+
+    private val editedName: String
+        get() = editText.text.toString().trim()
 
     private val iccid by lazy {
         requireArguments().getString(FIELD_ICCID)!!
@@ -58,16 +66,12 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_profile_rename, container, false)
-
-        toolbar = view.requireViewById(R.id.toolbar)
-        editText = view.requireViewById<TextInputLayout>(R.id.profile_rename_new_name).let {
-            it.editText!!
+        val view = inflater.inflate(R.layout.fragment_profile_rename, container, false).apply {
+            toolbar = requireViewById(R.id.toolbar)
+            editText = requireViewById<TextInputLayout>(R.id.profile_rename_new_name).editText!!
+            progress = requireViewById(R.id.progress)
         }
-        progress = view.requireViewById(R.id.progress)
-
         toolbar.inflateMenu(R.menu.fragment_profile_rename)
-
         return view
     }
 
@@ -83,6 +87,11 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                 true
             }
         }
+        editText.addTextChangedListener {
+            val isUnchanged = it.toString().trim() == currentName
+            dialog!!.setCancelable(isUnchanged)
+            dialog!!.setCanceledOnTouchOutside(isUnchanged)
+        }
     }
 
     override fun onStart() {
@@ -95,6 +104,15 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         setWidthPercent(95)
     }
 
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        toast = Toast.makeText(
+            requireContext(),
+            R.string.toast_profile_name_is_unchanged,
+            Toast.LENGTH_LONG
+        )
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return super.onCreateDialog(savedInstanceState).also {
             it.setCanceledOnTouchOutside(false)
@@ -102,17 +120,24 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private fun rename() {
-        toast?.cancel()
-        val editedName = editText.text.toString().trim()
-            // replace \s as space (inc. new line and spaces)
-            .replace(SPACE_PATTERN, "\u0020")
-        val toastMessage = when {
-            editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
-            editedName == currentName -> getString(R.string.toast_profile_name_is_unchanged)
-            else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
-        }
-        toast = Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).also {
-            it.show()
+        toast = when {
+            editedName.isEmpty() -> Toast.makeText(
+                requireContext(),
+                R.string.toast_profile_name_restore_defaults,
+                Toast.LENGTH_LONG
+            )
+
+            editedName == currentName -> Toast.makeText(
+                requireContext(),
+                R.string.toast_profile_name_is_unchanged,
+                Toast.LENGTH_LONG
+            )
+
+            else -> Toast.makeText(
+                requireContext(),
+                getString(R.string.toast_profile_name_changed, currentName, editedName),
+                Toast.LENGTH_LONG
+            )
         }
 
         renaming = true
@@ -127,13 +152,18 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                     .launchProfileRenameTask(slotId, portId, iccid, editedName)
                     .waitDone()
             } catch (e: NicknameException) {
-                val resId = when (e.kind) {
-                    SetFailedKind.NicknameTooLong -> R.string.toast_profile_name_too_long
-                    SetFailedKind.InvalidUTF8Sequence -> R.string.toast_profile_name_encode_failed
-                }
-                toast?.cancel()
-                toast = Toast.makeText(requireContext(), resId, Toast.LENGTH_LONG).also {
-                    it.show()
+                toast = when (e.kind) {
+                    SetFailedKind.NicknameTooLong -> Toast.makeText(
+                        requireContext(),
+                        R.string.toast_profile_name_too_long,
+                        Toast.LENGTH_LONG
+                    )
+
+                    SetFailedKind.InvalidUTF8Sequence -> Toast.makeText(
+                        requireContext(),
+                        R.string.toast_profile_name_encode_failed,
+                        Toast.LENGTH_LONG
+                    )
                 }
                 return@launch
             }
