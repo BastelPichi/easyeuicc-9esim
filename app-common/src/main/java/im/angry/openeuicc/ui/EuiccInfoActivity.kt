@@ -40,7 +40,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
         @StringRes
         val titleResId: Int,
         val content: String?,
-        val copyable: Boolean = false,
+        val copiedToastResId: Int? = null
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,7 +105,13 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
                 formatByBoolean(channel.port.card.isRemovable, YES_NO)
             )
         )
-        add(Item(R.string.euicc_info_eid, channel.lpa.eID, copyable = true))
+        add(
+            Item(
+                R.string.euicc_info_eid,
+                channel.lpa.eID,
+                copiedToastResId = R.string.toast_eid_copied
+            )
+        )
         channel.lpa.euiccInfo2.let { info ->
             add(Item(R.string.euicc_info_firmware_version, info?.euiccFirmwareVersion))
             add(Item(R.string.euicc_info_globalplatform_version, info?.globalPlatformVersion))
@@ -140,19 +146,20 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
     inner class EuiccInfoViewHolder(private val root: View) : ViewHolder(root), View.OnClickListener {
         private val title: TextView = root.requireViewById(R.id.euicc_info_title)
         private val content: TextView = root.requireViewById(R.id.euicc_info_content)
+        private var copiedToastResId: Int? = null
 
         fun bind(item: Item) {
-            root.setOnClickListener(if (item.copyable) this else null)
+            copiedToastResId = item.copiedToastResId
+            root.setOnClickListener(if (copiedToastResId != null) this else null)
             title.setText(item.titleResId)
             content.text = item.content ?: getString(R.string.unknown)
         }
 
         override fun onClick(view: View) {
             val label = title.text.toString()
-            val message = getString(R.string.toast_euicc_info_copied, label)
             root.context.getSystemService(ClipboardManager::class.java)!!
                 .setPrimaryClip(ClipData.newPlainText(label, content.text))
-            Toast.makeText(root.context, message, Toast.LENGTH_SHORT).show()
+            Toast.makeText(root.context, copiedToastResId!!, Toast.LENGTH_SHORT).show()
         }
     }
 
