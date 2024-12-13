@@ -19,6 +19,8 @@ import kotlinx.coroutines.launch
 
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
+        val SPACE_PATTERN = Regex("\\s", RegexOption.MULTILINE)
+
         const val TAG = "ProfileRenameFragment"
         const val FIELD_ICCID = "iccid"
         const val FIELD_CURRENT_NAME = "currentName"
@@ -38,20 +40,12 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private lateinit var progress: ProgressBar
 
     private var toast: Toast? = null
-        set(toast) {
-            field?.cancel()
-            field = toast
-            field?.show()
-        }
 
     private val iccid: String
         get() = requireArguments().getString(FIELD_ICCID)!!
 
     private val currentName: String
         get() = requireArguments().getString(FIELD_CURRENT_NAME)!!
-
-    private val editedName: String
-        get() = editText.text.toString().trim()
 
     private var renaming = false
 
@@ -104,11 +98,14 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private fun rename() {
-        // SGP.22 v2.2.2 (Page 205 of 268)
-        // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
-        // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
-        // code points <= 64 or encoded bytes <= 64?
+        toast?.cancel()
+        val editedName = editText.text.toString().trim()
+            .replace(SPACE_PATTERN, " ")
         try {
+            // SGP.22 v2.2.2 (Page 205 of 268)
+            // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
+            // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
+            // code points <= 64 or encoded bytes <= 64?
             val length = editedName.toByteArray(Charsets.UTF_8).size
             if (length > 64) {
                 toast = Toast.makeText(
@@ -116,22 +113,27 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                     R.string.toast_profile_name_too_long,
                     Toast.LENGTH_LONG
                 )
+                toast!!.show()
                 return
             }
-        } catch (e: CharacterCodingException) {
+        } catch (_: CharacterCodingException) {
+            // invalid UTF-8 sequence
             toast = Toast.makeText(
                 requireContext(),
                 R.string.toast_profile_name_encode_failed,
                 Toast.LENGTH_LONG
             )
+            toast!!.show()
             return
+        } finally {
+            val message = when {
+                editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
+                editedName == currentName -> getString(R.string.toast_profile_name_not_changed)
+                else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
+            }
+            toast = Toast.makeText(requireContext(), message, Toast.LENGTH_LONG)
+            toast!!.show()
         }
-        val toastMessage = when {
-            editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
-            editedName == currentName -> getString(R.string.toast_profile_name_not_changed)
-            else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
-        }
-        toast = Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG)
 
         renaming = true
         progress.isIndeterminate = true
