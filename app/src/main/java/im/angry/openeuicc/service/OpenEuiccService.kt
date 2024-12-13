@@ -191,8 +191,11 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
                 val filteredProfiles =
                     if (runBlocking { preferenceRepository.unfilteredProfileListFlow.first() })
                         channel.lpa.profiles
-                    else
-                        channel.lpa.profiles.filterWithEnabled()
+                    else {
+                        val clazz = channel.lpa.profiles.enabled?.profileClass
+                            ?: LocalProfileInfo.Clazz.Operational
+                        channel.lpa.profiles.filter { it.profileClass == clazz }
+                    }
                 val profiles = filteredProfiles.map {
                     EuiccProfileInfo.Builder(it.iccid).apply {
                         setProfileName(it.name)

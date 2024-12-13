@@ -17,11 +17,6 @@ val List<LocalProfileInfo>.enabled: LocalProfileInfo?
 val LocalProfileInfo.isEnabled: Boolean
     get() = state == LocalProfileInfo.State.Enabled
 
-fun List<LocalProfileInfo>.filterWithEnabled(): List<LocalProfileInfo> {
-    val profileClass = enabled?.profileClass ?: LocalProfileInfo.Clazz.Operational
-    return filter { it.profileClass == profileClass }
-}
-
 val List<EuiccChannel>.hasMultipleChips: Boolean
     get() = distinctBy { it.slotId }.size > 1
 

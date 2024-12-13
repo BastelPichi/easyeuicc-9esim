@@ -194,8 +194,11 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             euiccChannelManager.notifyEuiccProfilesChanged(channel.logicalSlotId)
             if (unfilteredProfileListFlow.value)
                 channel.lpa.profiles
-            else
-                channel.lpa.profiles.filterWithEnabled()
+            else {
+                val clazz = channel.lpa.profiles.enabled?.profileClass
+                    ?: LocalProfileInfo.Clazz.Operational
+                channel.lpa.profiles.filter { it.profileClass == clazz }
+            }
         }
 
         withContext(Dispatchers.Main) {
