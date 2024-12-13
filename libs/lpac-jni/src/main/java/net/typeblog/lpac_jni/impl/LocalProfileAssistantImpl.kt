@@ -239,8 +239,24 @@ class LocalProfileAssistantImpl(
         } == 0
 
     @Synchronized
-    override fun setNickname(iccid: String, nickname: String): Boolean =
-        LpacJni.es10cSetNickname(contextHandle, iccid, nickname) == 0
+    override fun setNickname(iccid: String, nickname: String): Boolean {
+        try {
+            // SGP.22 v2.2.2 (Page 205 of 268)
+            // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
+            // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
+            val length = nickname.toByteArray(Charsets.UTF_8).size
+            if (length > 64) {
+                throw LocalProfileAssistant.ProfileNicknameException(
+                    kind = LocalProfileAssistant.ProfileNicknameException.Kind.NicknameTooLong
+                )
+            }
+        } catch (e: CharacterCodingException) {
+            throw LocalProfileAssistant.ProfileNicknameException(
+                kind = LocalProfileAssistant.ProfileNicknameException.Kind.InvalidUTF8Sequence
+            )
+        }
+        return LpacJni.es10cSetNickname(contextHandle, iccid, nickname) == 0
+    }
 
     override fun euiccMemoryReset() {
         LpacJni.es10cEuiccMemoryReset(contextHandle)

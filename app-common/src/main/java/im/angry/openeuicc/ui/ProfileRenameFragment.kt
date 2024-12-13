@@ -16,6 +16,8 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.service.EuiccChannelManagerService.Companion.waitDone
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.launch
+import net.typeblog.lpac_jni.LocalProfileAssistant.ProfileNicknameException as NicknameException
+import net.typeblog.lpac_jni.LocalProfileAssistant.ProfileNicknameException.Kind as SetFailedKind
 
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
@@ -98,32 +100,17 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private fun rename() {
-        toast?.cancel()
         val editedName = editText.text.toString().trim()
             // replace \s as space (inc. new line and spaces)
             .replace(SPACE_PATTERN, "\u0020")
-        // SGP.22 v2.2.2 (Page 205 of 268)
-        // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
-        // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
-        // code points <= 64 or encoded bytes <= 64?
-        runCatching { editedName.toByteArray(Charsets.UTF_8).size }.let { result ->
-            var kept = false
-            val message = when {
-                result.isFailure -> {
-                    kept = true // invalid UTF-8 sequence
-                    getString(R.string.toast_profile_name_encode_failed)
-                }
-                result.getOrNull()!! > 64 -> {
-                    kept = true // exceeds 64 bytes
-                    getString(R.string.toast_profile_name_too_long)
-                }
-                editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
-                editedName == currentName -> getString(R.string.toast_profile_name_not_changed)
-                else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
-            }
-            toast = Toast.makeText(requireContext(), message, Toast.LENGTH_LONG)
-            toast!!.show()
-            if (kept) return
+        val toastMessage = when {
+            editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
+            editedName == currentName -> getString(R.string.toast_profile_name_is_unchanged)
+            else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
+        }
+        toast?.cancel()
+        toast = Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).also {
+            it.show()
         }
 
         renaming = true
@@ -133,8 +120,21 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         lifecycleScope.launch {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
-            euiccChannelManagerService.launchProfileRenameTask(slotId, portId, iccid, editedName)
-                .waitDone()
+            try {
+                euiccChannelManagerService
+                    .launchProfileRenameTask(slotId, portId, iccid, editedName)
+                    .waitDone()
+            } catch (e: NicknameException) {
+                val resId = when (e.kind) {
+                    SetFailedKind.NicknameTooLong -> R.string.toast_profile_name_too_long
+                    SetFailedKind.InvalidUTF8Sequence -> R.string.toast_profile_name_encode_failed
+                }
+                toast?.cancel()
+                toast = Toast.makeText(requireContext(), resId, Toast.LENGTH_LONG).also {
+                    it.show()
+                }
+                return@launch
+            }
 
             if (parentFragment is EuiccProfilesChangedListener) {
                 (parentFragment as EuiccProfilesChangedListener).onEuiccProfilesChanged()

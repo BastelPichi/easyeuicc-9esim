@@ -12,6 +12,14 @@ interface LocalProfileAssistant {
         val lastApduException: Exception?,
     ) : Exception("Failed to download profile")
 
+    data class ProfileNicknameException(val kind: Kind) :
+        Exception("Failed to set nickname profile") {
+        enum class Kind {
+            NicknameTooLong,
+            InvalidUTF8Sequence
+        }
+    }
+
     val valid: Boolean
     val profiles: List<LocalProfileInfo>
     val notifications: List<LocalProfileNotification>
@@ -40,9 +48,7 @@ interface LocalProfileAssistant {
 
     fun euiccMemoryReset()
 
-    fun setNickname(
-        iccid: String, nickname: String
-    ): Boolean
+    fun setNickname(iccid: String, nickname: String): Boolean
 
     fun close()
 }
