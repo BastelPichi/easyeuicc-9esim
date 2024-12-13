@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -200,25 +201,25 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
 
             when (item.state) {
                 ProgressState.NotStarted -> {
-                    progressBar.visibility = View.GONE
-                    icon.visibility = View.GONE
+                    progressBar.isVisible = false
+                    icon.isVisible = false
                 }
 
                 ProgressState.InProgress -> {
-                    progressBar.visibility = View.VISIBLE
-                    icon.visibility = View.GONE
+                    progressBar.isVisible = true
+                    icon.isVisible = false
                 }
 
                 ProgressState.Done -> {
-                    progressBar.visibility = View.GONE
+                    progressBar.isVisible = false
                     icon.setImageResource(R.drawable.ic_checkmark_outline)
-                    icon.visibility = View.VISIBLE
+                    icon.isVisible = true
                 }
 
                 ProgressState.Error -> {
-                    progressBar.visibility = View.GONE
+                    progressBar.isVisible = false
                     icon.setImageResource(R.drawable.ic_error_outline)
-                    icon.visibility = View.VISIBLE
+                    icon.isVisible = true
                 }
             }
         }

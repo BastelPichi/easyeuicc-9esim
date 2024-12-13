@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -134,22 +135,22 @@ class UsbCcidReaderFragment : Fragment(), OpenEuiccContextMarker {
     }
 
     private suspend fun tryLoadUsbChannel() {
-        text.visibility = View.GONE
-        permissionButton.visibility = View.GONE
-        loadingProgress.visibility = View.VISIBLE
+        text.isVisible = false
+        permissionButton.isVisible = false
+        loadingProgress.isVisible = true
 
         val (device, canOpen) = withContext(Dispatchers.IO) {
             euiccChannelManager.tryOpenUsbEuiccChannel()
         }
 
-        loadingProgress.visibility = View.GONE
+        loadingProgress.isVisible = false
 
         usbDevice = device
 
         if (device != null && !canOpen && !usbManager.hasPermission(device)) {
             text.text = getString(R.string.usb_permission_needed)
-            text.visibility = View.VISIBLE
-            permissionButton.visibility = View.VISIBLE
+            text.isVisible = true
+            permissionButton.isVisible = true
         } else if (device != null && canOpen) {
             childFragmentManager.commit {
                 replace(
@@ -162,8 +163,8 @@ class UsbCcidReaderFragment : Fragment(), OpenEuiccContextMarker {
             }
         } else {
             text.text = getString(R.string.usb_failed)
-            text.visibility = View.VISIBLE
-            permissionButton.visibility = View.GONE
+            text.isVisible = true
+            permissionButton.isVisible = false
         }
     }
 }

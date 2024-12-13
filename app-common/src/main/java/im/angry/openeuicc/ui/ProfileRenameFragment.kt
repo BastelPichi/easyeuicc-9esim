@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -90,7 +91,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
         renaming = true
         progress.isIndeterminate = true
-        progress.visibility = View.VISIBLE
+        progress.isVisible = true
 
         lifecycleScope.launch {
             ensureEuiccChannelManager()

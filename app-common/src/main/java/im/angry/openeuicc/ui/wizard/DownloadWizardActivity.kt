@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import im.angry.openeuicc.common.R
@@ -155,7 +156,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
     }
 
     override fun onInit() {
-        progressBar.visibility = View.GONE
+        progressBar.isVisible = false
 
         if (state.currentStepFragmentClassName != null) {
             val clazz = Class.forName(state.currentStepFragmentClassName!!)
@@ -179,16 +180,8 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
 
     private fun refreshButtons() {
         currentFragment?.let {
-            nextButton.visibility = if (it.hasNext) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-            prevButton.visibility = if (it.hasPrev) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+            nextButton.isVisible = it.hasNext
+            prevButton.isVisible = it.hasPrev
         }
     }
 
@@ -211,7 +204,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         protected fun hideProgressBar() {
-            (requireActivity() as DownloadWizardActivity).progressBar.visibility = View.GONE
+            (requireActivity() as DownloadWizardActivity).progressBar.isVisible = false
         }
 
         protected fun showProgressBar(progressValue: Int) {

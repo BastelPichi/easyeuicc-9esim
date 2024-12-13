@@ -16,6 +16,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.adapter.FragmentStateAdapter
@@ -139,9 +140,9 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
 
     private suspend fun init(fromUsbEvent: Boolean = false) {
         refreshing = true // We don't check this here -- the check happens in refresh()
-        loadingProgress.visibility = View.VISIBLE
-        viewPager.visibility = View.GONE
-        tabs.visibility = View.GONE
+        loadingProgress.isVisible = true
+        viewPager.isVisible = false
+        tabs.isVisible = false
         // Prevent concurrent access with any running foreground task
         euiccChannelManagerService.waitForForegroundTask()
 
@@ -178,10 +179,10 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
                 UsbCcidReaderFragment()
             })
         }
-        viewPager.visibility = View.VISIBLE
+        viewPager.isVisible = true
 
         if (newPages.size > 1) {
-            tabs.visibility = View.VISIBLE
+            tabs.isVisible = true
         } else if (newPages.isEmpty()) {
             newPages.add(Page(-1, "") {
                 appContainer.uiComponentFactory.createNoEuiccPlaceholderFragment()
@@ -193,7 +194,7 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         pages.clear()
         pages.addAll(newPages)
 
-        loadingProgress.visibility = View.GONE
+        loadingProgress.isVisible = false
         pagerAdapter.notifyDataSetChanged()
         // Reset the adapter so that the current view actually gets cleared
         // notifyDataSetChanged() doesn't cause the current view to be removed.
@@ -219,9 +220,9 @@ open class MainActivity : BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         if (refreshing) return
         lifecycleScope.launch {
             refreshing = true
-            loadingProgress.visibility = View.VISIBLE
-            viewPager.visibility = View.GONE
-            tabs.visibility = View.GONE
+            loadingProgress.isVisible = true
+            viewPager.isVisible = false
+            tabs.isVisible = false
 
             pages.clear()
             pagerAdapter.notifyDataSetChanged()
