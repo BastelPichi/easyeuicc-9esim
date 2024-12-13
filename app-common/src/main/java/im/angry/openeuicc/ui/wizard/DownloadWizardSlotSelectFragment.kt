@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import im.angry.openeuicc.common.R
+import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -91,7 +92,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
     private suspend fun init() {
         ensureEuiccChannelManager()
         showProgressBar(-1)
-        val slots = euiccChannelManager.flowEuiccPorts().map { (slotId, portId) ->
+        val slots = euiccChannelManager.flowAllOpenEuiccPorts().map { (slotId, portId) ->
             euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
                 SlotInfo(
                     channel.logicalSlotId,
@@ -150,6 +151,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
         @Suppress("UNUSED_PARAMETER")
         fun onSelect(view: View) {
             if (curIdx < 0) return
+            checkBox.isChecked = true
             if (adapter.currentSelectedIdx == curIdx) return
             val lastIdx = adapter.currentSelectedIdx
             adapter.currentSelectedIdx = curIdx
@@ -174,7 +176,11 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
                 )
             }
 
-            title.text = root.context.getString(R.string.download_wizard_slot_title, item.logicalSlotId)
+            title.text = if (item.logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
+                root.context.getString(R.string.usb)
+            } else {
+                root.context.getString(R.string.download_wizard_slot_title, item.logicalSlotId)
+            }
             eID.text = item.eID
             activeProfile.text = item.enabledProfileName ?: root.context.getString(R.string.unknown)
             freeSpace.text = formatFreeSpace(item.freeSpace)
