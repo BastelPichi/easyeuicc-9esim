@@ -123,7 +123,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
             try {
-                euiccChannelManagerService
+                if (editedName != currentName) euiccChannelManagerService
                     .launchProfileRenameTask(slotId, portId, iccid, editedName)
                     .waitDone()
             } catch (e: NicknameException) {
