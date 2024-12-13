@@ -149,7 +149,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
 
         override fun onClick(view: View) {
             val label = title.text.toString()
-            val message = getString(R.string.toast_copied, label)
+            val message = getString(R.string.toast_euicc_info_copied, label)
             root.context.getSystemService(ClipboardManager::class.java)!!
                 .setPrimaryClip(ClipData.newPlainText(label, content.text))
             Toast.makeText(root.context, message, Toast.LENGTH_SHORT).show()
