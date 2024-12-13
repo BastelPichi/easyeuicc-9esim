@@ -137,7 +137,7 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
             }
         )
 
-    inner class EuiccInfoViewHolder(val root: View) : ViewHolder(root), View.OnClickListener {
+    inner class EuiccInfoViewHolder(private val root: View) : ViewHolder(root), View.OnClickListener {
         private val title: TextView = root.requireViewById(R.id.euicc_info_title)
         private val content: TextView = root.requireViewById(R.id.euicc_info_content)
 
