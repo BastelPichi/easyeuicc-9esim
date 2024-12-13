@@ -43,11 +43,13 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
     private var toast: Toast? = null
 
-    private val iccid: String
-        get() = requireArguments().getString(FIELD_ICCID)!!
+    private val iccid by lazy {
+        requireArguments().getString(FIELD_ICCID)!!
+    }
 
-    private val currentName: String
-        get() = requireArguments().getString(FIELD_CURRENT_NAME)!!
+    private val currentName by lazy {
+        requireArguments().getString(FIELD_CURRENT_NAME)!!
+    }
 
     private var renaming = false
 
@@ -100,6 +102,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private fun rename() {
+        toast?.cancel()
         val editedName = editText.text.toString().trim()
             // replace \s as space (inc. new line and spaces)
             .replace(SPACE_PATTERN, "\u0020")
@@ -108,7 +111,6 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             editedName == currentName -> getString(R.string.toast_profile_name_is_unchanged)
             else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
         }
-        toast?.cancel()
         toast = Toast.makeText(requireContext(), toastMessage, Toast.LENGTH_LONG).also {
             it.show()
         }
