@@ -189,7 +189,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
         return@withEuiccChannelManager try {
             euiccChannelManager.withEuiccChannel(slotId, port) { channel ->
                 val filteredProfiles =
-                    if (runBlocking { preferenceRepository.unfilteredProfileListFlow.first() })
+                    if (preferenceRepository.unfilteredProfileListFlow.first())
                         channel.lpa.profiles
                     else {
                         val clazz = channel.lpa.profiles.enabled?.profileClass
