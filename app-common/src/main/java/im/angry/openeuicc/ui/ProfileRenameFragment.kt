@@ -100,39 +100,30 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private fun rename() {
         toast?.cancel()
         val editedName = editText.text.toString().trim()
-            .replace(SPACE_PATTERN, " ")
-        try {
-            // SGP.22 v2.2.2 (Page 205 of 268)
-            // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
-            // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
-            // code points <= 64 or encoded bytes <= 64?
-            val length = editedName.toByteArray(Charsets.UTF_8).size
-            if (length > 64) {
-                toast = Toast.makeText(
-                    requireContext(),
-                    R.string.toast_profile_name_too_long,
-                    Toast.LENGTH_LONG
-                )
-                toast!!.show()
-                return
-            }
-        } catch (_: CharacterCodingException) {
-            // invalid UTF-8 sequence
-            toast = Toast.makeText(
-                requireContext(),
-                R.string.toast_profile_name_encode_failed,
-                Toast.LENGTH_LONG
-            )
-            toast!!.show()
-            return
-        } finally {
+            // replace \s as space (inc. new lien and spaces)
+            .replace(SPACE_PATTERN, "\u0020")
+        // SGP.22 v2.2.2 (Page 205 of 268)
+        // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf
+        // ASN.1 definition is `profileNickname [16] UTF8String (SIZE(0..64))`
+        // code points <= 64 or encoded bytes <= 64?
+        runCatching { editedName.toByteArray(Charsets.UTF_8).size }.let { result ->
+            var kept = false
             val message = when {
+                result.isFailure -> {
+                    kept = true // invalid UTF-8 sequence
+                    getString(R.string.toast_profile_name_encode_failed)
+                }
+                result.getOrNull()!! > 64 -> {
+                    kept = true // exceeds 64 bytes
+                    getString(R.string.toast_profile_name_too_long)
+                }
                 editedName.isEmpty() -> getString(R.string.toast_profile_name_restore_defaults)
                 editedName == currentName -> getString(R.string.toast_profile_name_not_changed)
                 else -> getString(R.string.toast_profile_name_changed, currentName, editedName)
             }
             toast = Toast.makeText(requireContext(), message, Toast.LENGTH_LONG)
             toast!!.show()
+            if (kept) return
         }
 
         renaming = true
