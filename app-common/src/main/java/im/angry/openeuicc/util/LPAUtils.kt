@@ -11,14 +11,16 @@ const val TAG = "LPAUtils"
 val LocalProfileInfo.displayName: String
     get() = nickName.ifEmpty { name }
 
+val List<LocalProfileInfo>.enabled: LocalProfileInfo?
+    get() = firstOrNull { it.isEnabled }
 
 val LocalProfileInfo.isEnabled: Boolean
     get() = state == LocalProfileInfo.State.Enabled
 
-val List<LocalProfileInfo>.operational: List<LocalProfileInfo>
-    get() = filter {
-        it.profileClass == LocalProfileInfo.Clazz.Operational
-    }
+fun List<LocalProfileInfo>.filterWithEnabled(): List<LocalProfileInfo> {
+    val profileClass = enabled?.profileClass ?: LocalProfileInfo.Clazz.Operational
+    return filter { it.profileClass == profileClass }
+}
 
 val List<EuiccChannel>.hasMultipleChips: Boolean
     get() = distinctBy { it.slotId }.size > 1

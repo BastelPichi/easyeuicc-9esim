@@ -195,7 +195,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
             if (unfilteredProfileListFlow.value)
                 channel.lpa.profiles
             else
-                channel.lpa.profiles.operational
+                channel.lpa.profiles.filterWithEnabled()
         }
 
         withContext(Dispatchers.Main) {
@@ -227,11 +227,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                 portId,
                 iccid,
                 enable,
-                reconnectTimeoutMillis = if (isUsb) {
-                    0
-                } else {
-                    30 * 1000
-                }
+                reconnectTimeoutMillis = if (isUsb) 0 else 30_000
             ).waitDone()
 
             when (err) {

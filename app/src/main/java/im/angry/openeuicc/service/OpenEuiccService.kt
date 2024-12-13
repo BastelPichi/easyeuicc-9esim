@@ -186,16 +186,13 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
             )
         }
 
-        try {
-            return@withEuiccChannelManager euiccChannelManager.withEuiccChannel(
-                slotId,
-                port
-            ) { channel ->
+        return@withEuiccChannelManager try {
+            euiccChannelManager.withEuiccChannel(slotId, port) { channel ->
                 val filteredProfiles =
                     if (runBlocking { preferenceRepository.unfilteredProfileListFlow.first() })
                         channel.lpa.profiles
                     else
-                        channel.lpa.profiles.operational
+                        channel.lpa.profiles.filterWithEnabled()
                 val profiles = filteredProfiles.map {
                     EuiccProfileInfo.Builder(it.iccid).apply {
                         setProfileName(it.name)
@@ -224,7 +221,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
                 )
             }
         } catch (e: EuiccChannelManager.EuiccChannelNotFoundException) {
-            return@withEuiccChannelManager GetEuiccProfileInfoListResult(
+            GetEuiccProfileInfoListResult(
                 RESULT_FIRST_USER,
                 arrayOf(),
                 true
