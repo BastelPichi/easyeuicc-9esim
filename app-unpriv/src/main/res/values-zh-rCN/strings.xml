@@ -28,4 +28,5 @@
     <string name="compatibility_check_verdict_unknown_likely_fail">我们无法确定是否可以在您的设备上管理可插拔 eSIM 卡。由于您的设备未声明支持OMAPI，因此更有可能不支持在此设备上管理可插拔 eSIM。\n%s</string>
     <string name="compatibility_check_verdict_unknown">我们无法确定是否可以在您的设备上管理可插拔 eSIM 卡。\n%s</string>
     <string name="compatibility_check_verdict_fail_shared">然而，已经加载了eSIM配置文件的可插拔 eSIM 卡仍然可以工作; 即使无法在装置上直接管理可插拔 eSIM 卡中的配置文件，您仍然可以使用 USB 卡读卡器来管理配置文件。</string>
+    <string name="toast_ara_m_copied">ARA-M SHA-1 已拷贝到剪贴板</string>
 </resources>
