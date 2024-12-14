@@ -9,7 +9,9 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import im.angry.openeuicc.OpenEuiccApplication
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "prefs")
 
@@ -51,9 +53,18 @@ class PreferenceRepository(private val context: Context) {
     val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
     val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 
-    private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T): Flow<T> =
-        context.dataStore.data.map { it[key] ?: defaultValue }
+    private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T) =
+        BoundPreference(context.dataStore, key, defaultValue)
+}
 
-    suspend fun <T> updatePreference(key: Preferences.Key<T>, value: T) =
-        context.dataStore.edit { it[key] = value }
+class BoundPreference<T>(
+    private val store: DataStore<Preferences>,
+    private val key: Preferences.Key<T>,
+    defaultValue: T
+) : Flow<T> {
+    private val flow = store.data.map { it[key] ?: defaultValue }
+
+    suspend fun emit(value: T) = store.edit { it[key] = value }
+
+    override suspend fun collect(collector: FlowCollector<T>) = flow.collect(collector)
 }
