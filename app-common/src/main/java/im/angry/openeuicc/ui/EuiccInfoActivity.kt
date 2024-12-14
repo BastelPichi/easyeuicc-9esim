@@ -3,6 +3,7 @@ package im.angry.openeuicc.ui
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -159,7 +160,9 @@ class EuiccInfoActivity : BaseEuiccAccessActivity() {
             val label = title.text.toString()
             root.context.getSystemService(ClipboardManager::class.java)!!
                 .setPrimaryClip(ClipData.newPlainText(label, content.text))
-            Toast.makeText(root.context, copiedToastResId!!, Toast.LENGTH_SHORT).show()
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) Toast
+                .makeText(root.context, copiedToastResId!!, Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
