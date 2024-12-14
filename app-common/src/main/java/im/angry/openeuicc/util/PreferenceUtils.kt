@@ -24,20 +24,20 @@ val Fragment.preferenceRepository: PreferenceRepository
 class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
-    val notificationDownloadFlow = bindBooleanFlow("notification_download", true)
-    val notificationDeleteFlow = bindBooleanFlow("notification_delete", true)
-    val notificationSwitchFlow = bindBooleanFlow("notification_switch", false)
+    val notificationDownloadFlow = bindFlow("notification_download", true)
+    val notificationDeleteFlow = bindFlow("notification_delete", true)
+    val notificationSwitchFlow = bindFlow("notification_switch", false)
 
     // ---- Advanced ----
-    val disableSafeguardFlow = bindBooleanFlow("disable_safeguard_removable_esim", false)
-    val verboseLoggingFlow = bindBooleanFlow("verbose_logging", false)
+    val disableSafeguardFlow = bindFlow("disable_safeguard_removable_esim", false)
+    val verboseLoggingFlow = bindFlow("verbose_logging", false)
 
     // ---- Developer Options ----
-    val developerOptionsEnabledFlow = bindBooleanFlow("developer_options_enabled", false)
-    val unfilteredProfileListFlow = bindBooleanFlow("unfiltered_profile_list", false)
-    val ignoreTLSCertificateFlow = bindBooleanFlow("ignore_tls_certificate", false)
+    val developerOptionsEnabledFlow = bindFlow("developer_options_enabled", false)
+    val unfilteredProfileListFlow = bindFlow("unfiltered_profile_list", false)
+    val ignoreTLSCertificateFlow = bindFlow("ignore_tls_certificate", false)
 
-    private fun bindBooleanFlow(name: String, defaultValue: Boolean) =
+    private fun bindFlow(name: String, defaultValue: Boolean) =
         bindFlow(booleanPreferencesKey(name), defaultValue)
 
     private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T) =
