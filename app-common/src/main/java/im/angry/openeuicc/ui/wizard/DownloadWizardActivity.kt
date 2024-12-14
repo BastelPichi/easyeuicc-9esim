@@ -209,7 +209,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
 
         protected fun showProgressBar(progressValue: Int) {
             (requireActivity() as DownloadWizardActivity).progressBar.apply {
-                visibility = View.VISIBLE
+                isVisible = true
                 if (progressValue >= 0) {
                     isIndeterminate = false
                     progress = progressValue
