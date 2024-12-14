@@ -21,37 +21,24 @@ val Context.preferenceRepository: PreferenceRepository
 val Fragment.preferenceRepository: PreferenceRepository
     get() = requireContext().preferenceRepository
 
-object PreferenceKeys {
-    // ---- Profile Notifications ----
-    val NOTIFICATION_DOWNLOAD = booleanPreferencesKey("notification_download")
-    val NOTIFICATION_DELETE = booleanPreferencesKey("notification_delete")
-    val NOTIFICATION_SWITCH = booleanPreferencesKey("notification_switch")
-
-    // ---- Advanced ----
-    val DISABLE_SAFEGUARD_REMOVABLE_ESIM = booleanPreferencesKey("disable_safeguard_removable_esim")
-    val VERBOSE_LOGGING = booleanPreferencesKey("verbose_logging")
-
-    // ---- Developer Options ----
-    val DEVELOPER_OPTIONS_ENABLED = booleanPreferencesKey("developer_options_enabled")
-    val UNFILTERED_PROFILE_LIST = booleanPreferencesKey("unfiltered_profile_list")
-    val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
-}
-
 class PreferenceRepository(private val context: Context) {
     // Expose flows so that we can also handle default values
     // ---- Profile Notifications ----
-    val notificationDownloadFlow = bindFlow(PreferenceKeys.NOTIFICATION_DOWNLOAD, true)
-    val notificationDeleteFlow = bindFlow(PreferenceKeys.NOTIFICATION_DELETE, true)
-    val notificationSwitchFlow = bindFlow(PreferenceKeys.NOTIFICATION_SWITCH, false)
+    val notificationDownloadFlow = bindBooleanFlow("notification_download", true)
+    val notificationDeleteFlow = bindBooleanFlow("notification_delete", true)
+    val notificationSwitchFlow = bindBooleanFlow("notification_switch", false)
 
     // ---- Advanced ----
-    val disableSafeguardFlow = bindFlow(PreferenceKeys.DISABLE_SAFEGUARD_REMOVABLE_ESIM, false)
-    val verboseLoggingFlow = bindFlow(PreferenceKeys.VERBOSE_LOGGING, false)
+    val disableSafeguardFlow = bindBooleanFlow("disable_safeguard_removable_esim", false)
+    val verboseLoggingFlow = bindBooleanFlow("verbose_logging", false)
 
     // ---- Developer Options ----
-    val developerOptionsEnabledFlow = bindFlow(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
-    val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
-    val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
+    val developerOptionsEnabledFlow = bindBooleanFlow("developer_options_enabled", false)
+    val unfilteredProfileListFlow = bindBooleanFlow("unfiltered_profile_list", false)
+    val ignoreTLSCertificateFlow = bindBooleanFlow("ignore_tls_certificate", false)
+
+    private fun bindBooleanFlow(name: String, defaultValue: Boolean) =
+        bindFlow(booleanPreferencesKey(name), defaultValue)
 
     private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T) =
         BoundPreference(context.dataStore, key, defaultValue)
