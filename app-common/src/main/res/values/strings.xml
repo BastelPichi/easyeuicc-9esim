@@ -31,6 +31,7 @@
     <string name="toast_profile_name_too_long">Nickname cannot be longer than 64 characters</string>
     <string name="toast_profile_delete_confirm_text_mismatched">Confirmation string mismatch</string>
     <string name="toast_iccid_copied">ICCID copied to clipboard</string>
+    <string name="toast_eid_copied">EID copied to clipboard</string>
 
     <string name="slot_select">Select Slot</string>
     <string name="slot_select_select">Select</string>
@@ -64,7 +65,6 @@
     <string name="download_wizard_back">Back</string>
     <string name="download_wizard_next">Next</string>
     <string name="download_wizard_slot_select">Select or confirm the eSIM you would like to download to:</string>
-    <string name="download_wizard_slot_title">Logical slot %d</string>
     <string name="download_wizard_slot_type">Type:</string>
     <string name="download_wizard_slot_type_removable">Removable</string>
     <string name="download_wizard_slot_type_internal">Internal</string>
@@ -94,6 +94,8 @@
     <string name="download_wizard_diagnostics_last_apdu_exception">Last APDU exception:</string>
     <string name="download_wizard_diagnostics_save">Save</string>
     <string name="download_wizard_diagnostics_file_template">Diagnostics at %s</string>
+
+    <string name="logs_saved_message">Logs have been saved to the selected path. Would you like to share the log through another app?</string>
 
     <string name="profile_rename_new_name">New nickname</string>
 

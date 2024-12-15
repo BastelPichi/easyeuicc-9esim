@@ -1,17 +1,23 @@
 package im.angry.openeuicc.util
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Resources
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultCaller
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
 import im.angry.openeuicc.common.R
+import java.io.FileOutputStream
 
 // Source: <https://stackoverflow.com/questions/12478520/how-to-set-dialogfragments-width-and-height>
 /**
@@ -68,5 +74,45 @@ fun setupRootViewInsets(view: ViewGroup) {
         v.updatePadding(bars.left, v.paddingTop, bars.right, bars.bottom)
 
         WindowInsetsCompat.CONSUMED
+    }
+}
+
+fun <T : ActivityResultCaller> T.setupLogSaving(
+    getLogFileName: () -> String,
+    getLogText: () -> String
+): () -> Unit {
+    val launchSaveIntent =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+            if (uri == null) return@registerForActivityResult
+
+            val context = when (this@setupLogSaving) {
+                is Context -> this@setupLogSaving
+                is Fragment -> requireContext()
+                else -> throw IllegalArgumentException("Must be either Context or Fragment!")
+            }
+
+            context.contentResolver.openFileDescriptor(uri, "w")?.use {
+                FileOutputStream(it.fileDescriptor).use { os ->
+                    os.write(getLogText().encodeToByteArray())
+                }
+            }
+
+            AlertDialog.Builder(context).apply {
+                setMessage(R.string.logs_saved_message)
+                setNegativeButton(R.string.no) { _, _ -> }
+                setPositiveButton(R.string.yes) { _, _ ->
+                    val intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                    }
+
+                    context.startActivity(Intent.createChooser(intent, null))
+                }
+            }.show()
+        }
+
+    return {
+        launchSaveIntent.launch(getLogFileName())
     }
 }

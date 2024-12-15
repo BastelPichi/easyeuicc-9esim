@@ -35,7 +35,8 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
         val eID: String,
         val freeSpace: Int,
         val imei: String,
-        val enabledProfileName: String?
+        val enabledProfileName: String?,
+        val intrinsicChannelName: String?,
     )
 
     private var loaded = false
@@ -106,7 +107,8 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
                     } catch (e: Exception) {
                         ""
                     },
-                    channel.lpa.profiles.find { it.state == LocalProfileInfo.State.Enabled }?.displayName
+                    channel.lpa.profiles.find { it.state == LocalProfileInfo.State.Enabled }?.displayName,
+                    channel.intrinsicChannelName,
                 )
             }
         }.toList().sortedBy { it.logicalSlotId }
@@ -177,9 +179,9 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
             }
 
             title.text = if (item.logicalSlotId == EuiccChannelManager.USB_CHANNEL_ID) {
-                root.context.getString(R.string.usb)
+                item.intrinsicChannelName ?: root.context.getString(R.string.usb)
             } else {
-                root.context.getString(R.string.download_wizard_slot_title, item.logicalSlotId)
+                appContainer.customizableTextProvider.formatInternalChannelName(item.logicalSlotId)
             }
             eID.text = item.eID
             activeProfile.text = item.enabledProfileName ?: root.context.getString(R.string.unknown)
