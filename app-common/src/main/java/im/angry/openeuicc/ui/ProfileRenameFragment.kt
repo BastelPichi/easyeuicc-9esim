@@ -10,6 +10,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -68,7 +69,11 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             progress = requireViewById(R.id.progress)
         }
 
-        onViewStateRestored(savedInstanceState)
+        editText.addTextChangedListener {
+            val isUnchanged = currentName == editedName
+            dialog!!.setCancelable(isUnchanged)
+            dialog!!.setCanceledOnTouchOutside(isUnchanged)
+        }
 
         toolbar.inflateMenu(R.menu.fragment_profile_rename)
 
@@ -110,35 +115,23 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         }
     }
 
-    private fun showErrorAndCancel(@StringRes errorResId: Int) {
-        Toast.makeText(requireContext(), errorResId, Toast.LENGTH_LONG)
-            .show()
-
-        renaming = false
-    }
-
     private fun rename() {
         renaming = true
-
         lifecycleScope.launch {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
             val throwable = euiccChannelManagerService
                 .launchProfileRenameTask(slotId, portId, iccid, editedName)
                 .waitDone()
+            val toastResId = when (throwable) {
+                is LocalProfileAssistant.ProfileNameTooLongException ->
+                    R.string.profile_rename_too_long
 
-            when (throwable) {
-                is LocalProfileAssistant.ProfileNameTooLongException -> {
-                    showErrorAndCancel(R.string.profile_rename_too_long)
-                }
+                is LocalProfileAssistant.ProfileNameIsInvalidUTF8Exception ->
+                    R.string.profile_rename_encoding_error
 
-                is LocalProfileAssistant.ProfileNameIsInvalidUTF8Exception -> {
-                    showErrorAndCancel(R.string.profile_rename_encoding_error)
-                }
-
-                is Throwable -> {
-                    showErrorAndCancel(R.string.profile_rename_failure)
-                }
+                is Throwable ->
+                    R.string.profile_rename_failure
 
                 else -> {
                     if (parentFragment is EuiccProfilesChangedListener) {
@@ -150,8 +143,13 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                     } catch (e: IllegalStateException) {
                         // Ignored
                     }
+                    null
                 }
             }
+            if (toastResId != null) Toast
+                .makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
+                .show()
         }
+        renaming = false
     }
 }
