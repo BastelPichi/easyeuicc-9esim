@@ -52,12 +52,8 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
     private var renaming = false
         set(value) {
-            if (value) {
-                progress.isIndeterminate = true
-                progress.visibility = View.VISIBLE
-            } else {
-                progress.visibility = View.GONE
-            }
+            progress.isIndeterminate = value
+            progress.visibility = if (value) View.VISIBLE else View.GONE
             field = value
         }
 
@@ -71,6 +67,8 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             editText = requireViewById<TextInputLayout>(R.id.profile_rename_new_name).editText!!
             progress = requireViewById(R.id.progress)
         }
+
+        onViewStateRestored(savedInstanceState)
 
         toolbar.inflateMenu(R.menu.fragment_profile_rename)
 
