@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputLayout
@@ -19,33 +21,56 @@ import net.typeblog.lpac_jni.LocalProfileAssistant
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "ProfileRenameFragment"
+        const val FIELD_ICCID = "iccid"
+        const val FIELD_CURRENT_NAME = "currentName"
+        const val FIELD_EDITED_NAME = "editedName"
 
         fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String): ProfileRenameFragment {
             val instance = newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId)
             instance.requireArguments().apply {
-                putString("iccid", iccid)
-                putString("currentName", currentName)
+                putString(FIELD_ICCID, iccid)
+                putString(FIELD_CURRENT_NAME, currentName)
             }
             return instance
         }
     }
 
     private lateinit var toolbar: Toolbar
-    private lateinit var profileRenameNewName: TextInputLayout
+    private lateinit var editText: EditText
     private lateinit var progress: ProgressBar
 
+    private val iccid by lazy {
+        requireArguments().getString(FIELD_ICCID)!!
+    }
+
+    private val currentName by lazy {
+        requireArguments().getString(FIELD_CURRENT_NAME)!!
+    }
+
+    private val editedName: String
+        get() = editText.text.toString().trim()
+
     private var renaming = false
+        set(value) {
+            if (value) {
+                progress.isIndeterminate = true
+                progress.visibility = View.VISIBLE
+            } else {
+                progress.visibility = View.GONE
+            }
+            field = value
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_profile_rename, container, false)
-
-        toolbar = view.requireViewById(R.id.toolbar)
-        profileRenameNewName = view.requireViewById(R.id.profile_rename_new_name)
-        progress = view.requireViewById(R.id.progress)
+        val view = inflater.inflate(R.layout.fragment_profile_rename, container, false).apply {
+            toolbar = requireViewById(R.id.toolbar)
+            editText = requireViewById<TextInputLayout>(R.id.profile_rename_new_name).editText!!
+            progress = requireViewById(R.id.progress)
+        }
 
         toolbar.inflateMenu(R.menu.fragment_profile_rename)
 
@@ -66,9 +91,14 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        profileRenameNewName.editText!!.setText(requireArguments().getString("currentName"))
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(FIELD_EDITED_NAME, editedName)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        editText.setText(savedInstanceState?.getString(FIELD_EDITED_NAME) ?: currentName)
     }
 
     override fun onResume() {
@@ -82,33 +112,24 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         }
     }
 
-    private fun showErrorAndCancel(errorStrRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            errorStrRes,
-            Toast.LENGTH_LONG
-        ).show()
+    private fun showErrorAndCancel(@StringRes errorResId: Int) {
+        Toast.makeText(requireContext(), errorResId, Toast.LENGTH_LONG)
+            .show()
 
         renaming = false
-        progress.visibility = View.GONE
     }
 
     private fun rename() {
         renaming = true
-        progress.isIndeterminate = true
-        progress.visibility = View.VISIBLE
 
         lifecycleScope.launch {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
-            val res = euiccChannelManagerService.launchProfileRenameTask(
-                slotId,
-                portId,
-                requireArguments().getString("iccid")!!,
-                profileRenameNewName.editText!!.text.toString().trim()
-            ).waitDone()
+            val throwable = euiccChannelManagerService
+                .launchProfileRenameTask(slotId, portId, iccid, editedName)
+                .waitDone()
 
-            when (res) {
+            when (throwable) {
                 is LocalProfileAssistant.ProfileNameTooLongException -> {
                     showErrorAndCancel(R.string.profile_rename_too_long)
                 }
