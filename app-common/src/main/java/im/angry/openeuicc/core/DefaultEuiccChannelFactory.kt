@@ -10,7 +10,11 @@ import im.angry.openeuicc.common.R
 import im.angry.openeuicc.core.usb.UsbApduInterface
 import im.angry.openeuicc.core.usb.getIoEndpoints
 import im.angry.openeuicc.util.*
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.lang.IllegalArgumentException
+import kotlin.math.max
+import kotlin.math.min
 
 open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccChannelFactory {
     private var seService: SEService? = null
@@ -33,21 +37,31 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
         ensureSEService()
 
         Log.i(DefaultEuiccChannelManager.TAG, "Trying OMAPI for physical slot ${port.card.physicalSlotIndex}")
+
+        val verboseLoggingFlow = context.preferenceRepository.verboseLoggingFlow
+        val ignoreTLSCertificateFlow = context.preferenceRepository.ignoreTLSCertificateFlow
+        val maxSegmentSizeFlow = context.preferenceRepository.maxSegmentSizeFlow
+
         try {
             return EuiccChannelImpl(
                 context.getString(R.string.omapi),
                 port,
                 intrinsicChannelName = null,
-                OmapiApduInterface(
-                    seService!!,
-                    port,
-                    context.preferenceRepository.verboseLoggingFlow
-                ),
-                context.preferenceRepository.verboseLoggingFlow,
-                context.preferenceRepository.ignoreTLSCertificateFlow,
+                OmapiApduInterface(seService!!, port, verboseLoggingFlow),
+                verboseLoggingFlow,
+                ignoreTLSCertificateFlow,
             ).also {
-                Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to 60")
-                it.lpa.setEs10xMss(60)
+                // SGP.22 v2.2.2, 2.5.5 Segmented Bound Profile Package (Page 33 of 268)
+                // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf#page=33
+                //
+                // Each segment of this list that is up to 255 bytes is transported in one APDU.
+                // Larger TLVs are sent in blocks of 255 bytes for the first blocks and a last block that MAY be shorter.
+                val mss = runBlocking {
+                    // [32, 255]
+                    min(max(maxSegmentSizeFlow.first(), 32), 255)
+                }
+                Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to $mss")
+                it.lpa.setEs10xMss(mss.toByte())
             }
         } catch (e: IllegalArgumentException) {
             // Failed

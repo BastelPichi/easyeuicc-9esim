@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import im.angry.openeuicc.OpenEuiccApplication
@@ -33,6 +34,7 @@ internal object PreferenceKeys {
     val DEVELOPER_OPTIONS_ENABLED = booleanPreferencesKey("developer_options_enabled")
     val UNFILTERED_PROFILE_LIST = booleanPreferencesKey("unfiltered_profile_list")
     val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
+    val MAX_SEGMENT_SIZE = intPreferencesKey("max_segment_size")
 }
 
 class PreferenceRepository(private val context: Context) {
@@ -50,6 +52,7 @@ class PreferenceRepository(private val context: Context) {
     val developerOptionsEnabledFlow = bindFlow(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
     val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
     val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
+    val maxSegmentSizeFlow = bindFlow(PreferenceKeys.MAX_SEGMENT_SIZE, 60)
 
     private fun <T> bindFlow(key: Preferences.Key<T>, defaultValue: T): PreferenceFlowWrapper<T> =
         PreferenceFlowWrapper(context, key, defaultValue)
