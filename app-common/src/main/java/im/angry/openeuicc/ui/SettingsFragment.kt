@@ -5,21 +5,35 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.InputFilter
+import android.text.InputType
+import android.text.Spanned
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
+import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import im.angry.openeuicc.common.R
-import im.angry.openeuicc.util.*
+import im.angry.openeuicc.util.PreferenceFlowWrapper
+import im.angry.openeuicc.util.preferenceRepository
+import im.angry.openeuicc.util.selfAppVersion
+import im.angry.openeuicc.util.setupRootViewInsets
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+
 open class SettingsFragment: PreferenceFragmentCompat() {
-    private lateinit var developerPref: PreferenceCategory
+    private val developerPref by lazy {
+        findPreference<PreferenceCategory>("pref_developer")!!
+    }
+
+    private val mss by lazy {
+        findPreference<EditTextPreference>("pref_developer_max_segment_size")!!
+    }
 
     // Hidden developer options switch
     private var numClicks = 0
@@ -29,12 +43,14 @@ open class SettingsFragment: PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.pref_settings, rootKey)
 
-        developerPref = findPreference("pref_developer")!!
-
-        // Show / hide developer preference based on whether it is enabled
         lifecycleScope.launch {
+            // Show / hide developer preference based on whether it is enabled
             preferenceRepository.developerOptionsEnabledFlow
                 .onEach { developerPref.isVisible = it }
+                .collect()
+            // Sync MSS latest value to Preference
+            preferenceRepository.maxSegmentSizeFlow
+                .onEach { mss.text = it.toString() }
                 .collect()
         }
 
@@ -55,6 +71,27 @@ open class SettingsFragment: PreferenceFragmentCompat() {
 
         findPreference<Preference>("pref_advanced_logs")?.apply {
             intent = Intent(requireContext(), LogsActivity::class.java)
+        }
+
+        findPreference<EditTextPreference>("pref_developer_max_segment_size")?.apply {
+            val setMSS = preferenceRepository.maxSegmentSizeFlow::updatePreference
+
+            setOnPreferenceChangeListener { _, newValue ->
+                // SGP.22 v2.2.2, 2.5.5 Segmented Bound Profile Package (Page 33 of 268)
+                // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf#page=33
+                //
+                // Each segment of this list that is up to 255 bytes is transported in one APDU.
+                // Larger TLVs are sent in blocks of 255 bytes for the first blocks and a last block that MAY be shorter.
+                val mss = newValue.toString().toInt()
+                val isValid = mss in 32..255
+                if (isValid) runBlocking { setMSS(mss) }
+                isValid
+            }
+
+            setOnBindEditTextListener {
+                it.inputType = InputType.TYPE_CLASS_NUMBER
+                it.selectAll()
+            }
         }
 
         findPreference<CheckBoxPreference>("pref_notifications_download")

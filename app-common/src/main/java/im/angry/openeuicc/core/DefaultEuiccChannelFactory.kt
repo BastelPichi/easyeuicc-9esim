@@ -51,17 +51,9 @@ open class DefaultEuiccChannelFactory(protected val context: Context) : EuiccCha
                 verboseLoggingFlow,
                 ignoreTLSCertificateFlow,
             ).also {
-                // SGP.22 v2.2.2, 2.5.5 Segmented Bound Profile Package (Page 33 of 268)
-                // https://www.gsma.com/solutions-and-impact/technologies/esim/wp-content/uploads/2020/06/SGP.22-v2.2.2.pdf#page=33
-                //
-                // Each segment of this list that is up to 255 bytes is transported in one APDU.
-                // Larger TLVs are sent in blocks of 255 bytes for the first blocks and a last block that MAY be shorter.
-                val mss = runBlocking {
-                    // [32, 255]
-                    min(max(maxSegmentSizeFlow.first(), 32), 255)
-                }
+                val mss = runBlocking { maxSegmentSizeFlow.first() }.toByte()
                 Log.i(DefaultEuiccChannelManager.TAG, "Is OMAPI channel, setting MSS to $mss")
-                it.lpa.setEs10xMss(mss.toByte())
+                it.lpa.setEs10xMss(mss)
             }
         } catch (e: IllegalArgumentException) {
             // Failed

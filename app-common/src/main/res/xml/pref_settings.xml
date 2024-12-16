@@ -69,6 +69,13 @@
             app:summary="@string/pref_developer_ignore_tls_certificate_desc"
             app:title="@string/pref_developer_ignore_tls_certificate" />
 
+        <EditTextPreference
+            app:dialogMessage="@string/pref_developer_mss_dialog_message"
+            app:iconSpaceReserved="false"
+            app:key="pref_developer_max_segment_size"
+            app:summary="@string/pref_developer_mss_desc"
+            app:title="@string/pref_developer_mss" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
