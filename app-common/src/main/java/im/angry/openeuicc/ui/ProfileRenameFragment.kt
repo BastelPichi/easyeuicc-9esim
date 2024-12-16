@@ -51,6 +51,11 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         get() = editText.text.toString().trim()
 
     private var renaming = false
+        set(value) {
+            progress.isIndeterminate = value
+            progress.visibility = if (value) View.VISIBLE else View.GONE
+            field = value
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,12 +87,10 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                 if (!renaming) dismiss()
             }
             setOnMenuItemClickListener {
-                if (!renaming) {
-                    progress.isIndeterminate = true
-                    progress.visibility = View.VISIBLE
-                    lifecycleScope.launch { invokeRename() }
-                    progress.isIndeterminate = false
-                    progress.visibility = View.GONE
+                if (!renaming) lifecycleScope.launch {
+                    renaming = true
+                    invokeRename()
+                    renaming = false
                 }
                 true
             }
@@ -118,39 +121,35 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     private suspend fun invokeRename() {
         ensureEuiccChannelManager()
         euiccChannelManagerService.waitForForegroundTask()
-        if (editedName == currentName) {
-            Toast
-                .makeText(requireContext(), R.string.profile_rename_unchanged, Toast.LENGTH_LONG)
-                .show()
-            dismiss()
-            return
-        }
+
         val throwable = euiccChannelManagerService
             .launchProfileRenameTask(slotId, portId, iccid, editedName)
             .waitDone()
+
         val toastResId = when (throwable) {
             is LocalProfileAssistant.ProfileNameTooLongException ->
                 R.string.profile_rename_too_long
-
             is LocalProfileAssistant.ProfileNameIsInvalidUTF8Exception ->
                 R.string.profile_rename_encoding_error
-
             is Throwable ->
                 R.string.profile_rename_failure
-
             else -> {
-                notifyProfileListChanged()
+                notifyEuiccProfilesChanged()
                 try {
                     dismiss()
                 } catch (e: IllegalStateException) {
                     // Ignored
                 }
-                if (editedName.isEmpty())
-                    R.string.profile_rename_restore_defaults
-                else
-                    null
+                when {
+                    editedName.isEmpty() ->
+                        R.string.profile_rename_restore_defaults
+                    editedName == currentName ->
+                        R.string.profile_rename_unchanged
+                    else -> null
+                }
             }
         }
+
         if (toastResId != null) Toast
             .makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
             .show()

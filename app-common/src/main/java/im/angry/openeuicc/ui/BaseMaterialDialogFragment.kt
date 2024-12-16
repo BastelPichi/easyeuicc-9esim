@@ -25,7 +25,11 @@ abstract class BaseMaterialDialogFragment: DialogFragment() {
         }
     }
 
-    protected fun notifyProfileListChanged() {
+    /**
+     * Trigger a refresh in the parent fragment -- it should wait until
+     * any foreground task is completed before actually doing a refresh
+     */
+    protected fun notifyEuiccProfilesChanged() {
         val fragment = parentFragment
         if (fragment is EuiccProfilesChangedListener) fragment.onEuiccProfilesChanged()
     }
