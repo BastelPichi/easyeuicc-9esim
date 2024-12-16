@@ -8,10 +8,7 @@ import im.angry.openeuicc.OpenEuiccApplication
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.util.*
 
-class SettingsActivity: AppCompatActivity() {
-    private val appContainer
-        get() = (application as OpenEuiccApplication).appContainer
-
+class SettingsActivity: AppCompatActivity(), EuiccChannelFragmentMarker {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
