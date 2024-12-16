@@ -69,6 +69,10 @@ class PreferenceFlowWrapper<T> private constructor(
         context.dataStore.data.map { it[key] ?: defaultValue }
     )
 
+    suspend fun removePreference() {
+        context.dataStore.edit { it.remove(key) }
+    }
+
     suspend fun updatePreference(value: T) {
         context.dataStore.edit { it[key] = value }
     }

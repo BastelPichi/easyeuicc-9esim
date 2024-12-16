@@ -5,9 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.text.InputFilter
 import android.text.InputType
-import android.text.Spanned
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
@@ -16,11 +14,9 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import im.angry.openeuicc.common.R
-import im.angry.openeuicc.util.PreferenceFlowWrapper
-import im.angry.openeuicc.util.preferenceRepository
-import im.angry.openeuicc.util.selfAppVersion
-import im.angry.openeuicc.util.setupRootViewInsets
+import im.angry.openeuicc.util.*
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -29,10 +25,6 @@ import kotlinx.coroutines.runBlocking
 open class SettingsFragment: PreferenceFragmentCompat() {
     private val developerPref by lazy {
         findPreference<PreferenceCategory>("pref_developer")!!
-    }
-
-    private val mss by lazy {
-        findPreference<EditTextPreference>("pref_developer_max_segment_size")!!
     }
 
     // Hidden developer options switch
@@ -47,10 +39,6 @@ open class SettingsFragment: PreferenceFragmentCompat() {
             // Show / hide developer preference based on whether it is enabled
             preferenceRepository.developerOptionsEnabledFlow
                 .onEach { developerPref.isVisible = it }
-                .collect()
-            // Sync MSS latest value to Preference
-            preferenceRepository.maxSegmentSizeFlow
-                .onEach { mss.text = it.toString() }
                 .collect()
         }
 
@@ -74,7 +62,11 @@ open class SettingsFragment: PreferenceFragmentCompat() {
         }
 
         findPreference<EditTextPreference>("pref_developer_max_segment_size")?.apply {
-            val setMSS = preferenceRepository.maxSegmentSizeFlow::updatePreference
+            val mssFlow = preferenceRepository.maxSegmentSizeFlow
+
+            lifecycleScope.launch {
+                mssFlow.onEach { text = it.toString() }.collect()
+            }
 
             setOnPreferenceChangeListener { _, newValue ->
                 // SGP.22 v2.2.2, 2.5.5 Segmented Bound Profile Package (Page 33 of 268)
@@ -82,10 +74,15 @@ open class SettingsFragment: PreferenceFragmentCompat() {
                 //
                 // Each segment of this list that is up to 255 bytes is transported in one APDU.
                 // Larger TLVs are sent in blocks of 255 bytes for the first blocks and a last block that MAY be shorter.
-                val mss = newValue.toString().toInt()
-                val isValid = mss in 32..255
-                if (isValid) runBlocking { setMSS(mss) }
-                isValid
+                text = runBlocking {
+                    val value = newValue as String
+                    when {
+                        value.isEmpty() -> mssFlow.removePreference()
+                        value.toInt() in 32..255 -> mssFlow.updatePreference(value.toInt())
+                    }
+                    mssFlow.first().toString()
+                }
+                false
             }
 
             setOnBindEditTextListener {
