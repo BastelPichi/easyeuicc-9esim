@@ -8,6 +8,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.color.DynamicColors
 import im.angry.openeuicc.common.R
+import im.angry.openeuicc.util.EuiccProfilesChangedListener
 
 abstract class BaseMaterialDialogFragment: DialogFragment() {
     override fun onGetLayoutInflater(savedInstanceState: Bundle?): LayoutInflater {
@@ -22,5 +23,10 @@ abstract class BaseMaterialDialogFragment: DialogFragment() {
             it.window?.requestFeature(Window.FEATURE_NO_TITLE)
             it.window?.setBackgroundDrawableResource(R.drawable.dialog_background)
         }
+    }
+
+    protected fun notifyProfileListChanged() {
+        val fragment = parentFragment
+        if (fragment is EuiccProfilesChangedListener) fragment.onEuiccProfilesChanged()
     }
 }

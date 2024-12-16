@@ -96,6 +96,8 @@
     <string name="logs_saved_message">Logs have been saved to the selected path. Would you like to share the log through another app?</string>
 
     <string name="profile_rename_new_name">New nickname</string>
+    <string name="profile_rename_unchanged">The profile nickname is unchanged</string>
+    <string name="profile_rename_restore_defaults">The profile nickname restored to defaults</string>
     <string name="profile_rename_encoding_error">Failed to encode nickname as UTF-8</string>
     <string name="profile_rename_too_long">Nickname is too long</string>
     <string name="profile_rename_failure">Unknown failure when renaming profile</string>
