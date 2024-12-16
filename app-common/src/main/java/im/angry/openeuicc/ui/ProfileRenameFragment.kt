@@ -57,6 +57,13 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             field = value
         }
 
+    private var toast: Toast? = null
+        set(value) {
+            field?.cancel()
+            field = value
+            field?.show()
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -119,6 +126,8 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     }
 
     private suspend fun invokeRename() {
+        toast?.cancel()
+
         ensureEuiccChannelManager()
         euiccChannelManagerService.waitForForegroundTask()
 
@@ -150,8 +159,7 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             }
         }
 
-        if (toastResId != null) Toast
+        if (toastResId != null) toast = Toast
             .makeText(requireContext(), toastResId, Toast.LENGTH_LONG)
-            .show()
     }
 }
