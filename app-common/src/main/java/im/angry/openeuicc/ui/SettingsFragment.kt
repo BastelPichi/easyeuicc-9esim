@@ -75,7 +75,7 @@ open class SettingsFragment: PreferenceFragmentCompat() {
         findPreference<CheckBoxPreference>("pref_developer_unfiltered_profile_list")
             ?.bindBooleanFlow(preferenceRepository.unfilteredProfileListFlow)
 
-        findPreference<CheckBoxPreference>("pref_ignore_tls_certificate")
+        findPreference<CheckBoxPreference>("pref_developer_ignore_tls_certificate")
             ?.bindBooleanFlow(preferenceRepository.ignoreTLSCertificateFlow)
     }
 
