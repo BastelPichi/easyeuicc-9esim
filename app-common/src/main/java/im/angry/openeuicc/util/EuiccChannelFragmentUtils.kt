@@ -37,6 +37,11 @@ val <T> T.euiccChannelManager: EuiccChannelManager where T: Fragment, T: OpenEui
 val <T> T.euiccChannelManagerService: EuiccChannelManagerService where T: Fragment, T: OpenEuiccContextMarker
     get() = (requireActivity() as BaseEuiccAccessActivity).euiccChannelManagerService
 
+fun <T> T.notifyEuiccProfilesChanged() where T : Fragment, T : OpenEuiccContextMarker {
+    val fragment = parentFragment
+    if (fragment is EuiccProfilesChangedListener) fragment.onEuiccProfilesChanged()
+}
+
 suspend fun <T, R> T.withEuiccChannel(fn: suspend (EuiccChannel) -> R): R where T : Fragment, T : EuiccChannelFragmentMarker {
     ensureEuiccChannelManager()
     return euiccChannelManager.withEuiccChannel(slotId, portId, fn)
