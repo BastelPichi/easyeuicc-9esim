@@ -8,7 +8,6 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.color.DynamicColors
 import im.angry.openeuicc.common.R
-import im.angry.openeuicc.util.EuiccProfilesChangedListener
 
 abstract class BaseMaterialDialogFragment: DialogFragment() {
     override fun onGetLayoutInflater(savedInstanceState: Bundle?): LayoutInflater {

@@ -20,9 +20,9 @@ import net.typeblog.lpac_jni.LocalProfileAssistant
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "ProfileRenameFragment"
-        private const val FIELD_ICCID = "iccid"
-        private const val FIELD_CURRENT_NAME = "currentName"
-        private const val FIELD_EDITED_NAME = "editedName"
+        const val FIELD_ICCID = "iccid"
+        const val FIELD_CURRENT_NAME = "currentName"
+        const val FIELD_EDITED_NAME = "editedName"
 
         fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String) =
             newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId) {
