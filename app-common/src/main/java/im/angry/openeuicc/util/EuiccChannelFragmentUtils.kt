@@ -13,7 +13,7 @@ interface EuiccChannelFragmentMarker: OpenEuiccContextMarker
 // in the definition of an interface, so the only way is to limit where the extension functions
 // can be applied.
 fun <T> newInstanceEuicc(clazz: Class<T>, slotId: Int, portId: Int, addArguments: Bundle.() -> Unit = {}): T where T: Fragment, T: EuiccChannelFragmentMarker {
-    val instance = clazz.newInstance()
+    val instance = clazz.getDeclaredConstructor().newInstance()
     instance.arguments = Bundle().apply {
         putInt("slotId", slotId)
         putInt("portId", portId)

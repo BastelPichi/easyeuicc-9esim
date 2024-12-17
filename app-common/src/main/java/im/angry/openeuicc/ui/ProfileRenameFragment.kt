@@ -1,6 +1,5 @@
 package im.angry.openeuicc.ui
 
-import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,18 +20,15 @@ import net.typeblog.lpac_jni.LocalProfileAssistant
 class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragmentMarker {
     companion object {
         const val TAG = "ProfileRenameFragment"
-        const val FIELD_ICCID = "iccid"
-        const val FIELD_CURRENT_NAME = "currentName"
-        const val FIELD_EDITED_NAME = "editedName"
+        private const val FIELD_ICCID = "iccid"
+        private const val FIELD_CURRENT_NAME = "currentName"
+        private const val FIELD_EDITED_NAME = "editedName"
 
-        fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String): ProfileRenameFragment {
-            val instance = newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId)
-            instance.requireArguments().apply {
+        fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String) =
+            newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId) {
                 putString(FIELD_ICCID, iccid)
                 putString(FIELD_CURRENT_NAME, currentName)
             }
-            return instance
-        }
     }
 
     private lateinit var toolbar: Toolbar
@@ -68,22 +64,18 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        val view = inflater.inflate(R.layout.fragment_profile_rename, container, false).apply {
-            toolbar = requireViewById(R.id.toolbar)
-            editText = requireViewById<TextInputLayout>(R.id.profile_rename_new_name).editText!!
-            progress = requireViewById(R.id.progress)
+    ): View = inflater.inflate(R.layout.fragment_profile_rename, container, false).apply {
+        toolbar = requireViewById<Toolbar>(R.id.toolbar).apply {
+            inflateMenu(R.menu.fragment_profile_rename)
         }
-
-        editText.addTextChangedListener {
-            val isUnchanged = currentName == editedName
-            dialog!!.setCancelable(isUnchanged)
-            dialog!!.setCanceledOnTouchOutside(isUnchanged)
+        editText = requireViewById<TextInputLayout>(R.id.profile_rename_new_name).editText!!.apply {
+            addTextChangedListener {
+                val isUnchanged = currentName == editedName
+                dialog!!.setCancelable(isUnchanged)
+                dialog!!.setCanceledOnTouchOutside(isUnchanged)
+            }
         }
-
-        toolbar.inflateMenu(R.menu.fragment_profile_rename)
-
-        return view
+        progress = requireViewById(R.id.progress)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -119,14 +111,8 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
         setWidthPercent(95)
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return super.onCreateDialog(savedInstanceState).also {
-            it.setCanceledOnTouchOutside(false)
-        }
-    }
-
     private suspend fun invokeRename() {
-        toast?.cancel()
+        toast = null
 
         ensureEuiccChannelManager()
         euiccChannelManagerService.waitForForegroundTask()
