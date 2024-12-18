@@ -82,6 +82,8 @@ fun <T : ActivityResultCaller> T.setupLogSaving(
     getLogFileName: () -> String,
     getLogText: () -> String
 ): () -> Unit {
+    var lastFileName = "untitled"
+
     val launchSaveIntent =
         registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
             if (uri == null) return@registerForActivityResult
@@ -102,12 +104,10 @@ fun <T : ActivityResultCaller> T.setupLogSaving(
                 setMessage(R.string.logs_saved_message)
                 setNegativeButton(R.string.no) { _, _ -> }
                 setPositiveButton(R.string.yes) { _, _ ->
-                    val fileName = getLogFileName()
-
                     val intent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        clipData = ClipData.newUri(context.contentResolver, fileName, uri)
-                        putExtra(Intent.EXTRA_TITLE, fileName)
+                        clipData = ClipData.newUri(context.contentResolver, lastFileName, uri)
+                        putExtra(Intent.EXTRA_TITLE, lastFileName)
                         putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
@@ -118,6 +118,7 @@ fun <T : ActivityResultCaller> T.setupLogSaving(
         }
 
     return {
-        launchSaveIntent.launch(getLogFileName())
+        lastFileName = getLogFileName()
+        launchSaveIntent.launch(lastFileName)
     }
 }
