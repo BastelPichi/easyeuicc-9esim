@@ -194,28 +194,27 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
 
     abstract class DownloadWizardStepFragment : Fragment(), OpenEuiccContextMarker {
         protected val state: DownloadWizardState
-            get() = (requireActivity() as DownloadWizardActivity).state
+            get() = wizardActivity.state
 
         abstract val hasNext: Boolean
         abstract val hasPrev: Boolean
         abstract fun createNextFragment(): DownloadWizardStepFragment?
         abstract fun createPrevFragment(): DownloadWizardStepFragment?
 
+        private val wizardActivity: DownloadWizardActivity
+            get() = requireActivity() as DownloadWizardActivity
+
         protected fun gotoNextFragment(next: DownloadWizardStepFragment? = null) {
             val realNext = next ?: createNextFragment()
-            (requireActivity() as DownloadWizardActivity).showFragment(
-                realNext!!,
-                R.anim.slide_in_right,
-                R.anim.slide_out_left
-            )
+            wizardActivity.showFragment(realNext!!, R.anim.slide_in_right, R.anim.slide_out_left)
         }
 
         protected fun hideProgressBar() {
-            (requireActivity() as DownloadWizardActivity).progressBar.visibility = View.GONE
+            wizardActivity.progressBar.visibility = View.GONE
         }
 
         protected fun showProgressBar(progressValue: Int) {
-            (requireActivity() as DownloadWizardActivity).progressBar.apply {
+            wizardActivity.progressBar.apply {
                 visibility = View.VISIBLE
                 if (progressValue >= 0) {
                     isIndeterminate = false
@@ -227,7 +226,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         protected fun refreshButtons() {
-            (requireActivity() as DownloadWizardActivity).refreshButtons()
+            wizardActivity.refreshButtons()
         }
 
         open fun beforeNext() {}
