@@ -243,7 +243,7 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
         // Check that the profile has been disabled on all slots
         val enabledAnywhere = ports.any { port ->
             euiccChannelManager.withEuiccChannel(slotId, port) { channel ->
-                channel.lpa.profiles.find { it.iccid == iccid }?.isEnabled ?: false
+                channel.lpa.profiles.enabled?.iccid == iccid
             }
         }
 
