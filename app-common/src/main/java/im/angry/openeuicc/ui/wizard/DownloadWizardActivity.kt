@@ -2,17 +2,24 @@ package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import im.angry.openeuicc.common.R
+import im.angry.openeuicc.core.EuiccChannelManager
 import im.angry.openeuicc.ui.BaseEuiccAccessActivity
 import im.angry.openeuicc.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity: BaseEuiccAccessActivity() {
@@ -84,6 +91,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
             val bars = insets.getInsets(
                 WindowInsetsCompat.Type.systemBars()
                         or WindowInsetsCompat.Type.displayCutout()
+                        or WindowInsetsCompat.Type.ime()
             )
             v.updatePadding(bars.left, 0, bars.right, bars.bottom)
             val newParams = navigation.layoutParams
@@ -132,6 +140,8 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
     }
 
     private fun onPrevPressed() {
+        hideIme()
+
         if (currentFragment?.hasPrev == true) {
             val prevFrag = currentFragment?.createPrevFragment()
             if (prevFrag == null) {
@@ -143,13 +153,41 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
     }
 
     private fun onNextPressed() {
-        if (currentFragment?.hasNext == true) {
-            currentFragment?.beforeNext()
-            val nextFrag = currentFragment?.createNextFragment()
-            if (nextFrag == null) {
-                finish()
-            } else {
-                showFragment(nextFrag, R.anim.slide_in_right, R.anim.slide_out_left)
+        hideIme()
+
+        nextButton.isEnabled = false
+        progressBar.visibility = View.VISIBLE
+        progressBar.isIndeterminate = true
+
+        lifecycleScope.launch(Dispatchers.Main) {
+            if (state.selectedLogicalSlot >= 0) {
+                try {
+                    // This is run on IO by default
+                    euiccChannelManager.withEuiccChannel(state.selectedLogicalSlot) { channel ->
+                        // Be _very_ sure that the channel we got is valid
+                        if (!channel.valid) throw EuiccChannelManager.EuiccChannelNotFoundException()
+                    }
+                } catch (e: EuiccChannelManager.EuiccChannelNotFoundException) {
+                    Toast.makeText(
+                        this@DownloadWizardActivity,
+                        R.string.download_wizard_slot_removed,
+                        Toast.LENGTH_LONG
+                    ).show()
+                    finish()
+                }
+            }
+
+            progressBar.visibility = View.GONE
+            nextButton.isEnabled = true
+
+            if (currentFragment?.hasNext == true) {
+                currentFragment?.beforeNext()
+                val nextFrag = currentFragment?.createNextFragment()
+                if (nextFrag == null) {
+                    finish()
+                } else {
+                    showFragment(nextFrag, R.anim.slide_in_right, R.anim.slide_out_left)
+                }
             }
         }
     }
@@ -189,6 +227,13 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
             } else {
                 View.GONE
             }
+        }
+    }
+
+    private fun hideIme() {
+        currentFocus?.let {
+            val imm = getSystemService(InputMethodManager::class.java)
+            imm.hideSoftInputFromWindow(it.windowToken, 0)
         }
     }
 

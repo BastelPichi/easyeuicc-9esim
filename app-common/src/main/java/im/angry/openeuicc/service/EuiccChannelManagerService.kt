@@ -362,9 +362,6 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
         )
     }
 
-    val isForegroundTaskRunning: Boolean
-        get() = foregroundTaskState.value != ForegroundTaskState.Idle
-
     suspend fun waitForForegroundTask() {
         foregroundTaskState.takeWhile { it != ForegroundTaskState.Idle }
             .collect()
@@ -448,7 +445,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
         portId: Int,
         iccid: String,
         enable: Boolean, // Enable or disable the profile indicated in iccid
-        reconnectTimeoutMillis: Long = 0 // 0 = do not wait for reconnect, useful for USB readers
+        reconnectTimeoutMillis: Long = 0 // 0 = do not wait for reconnect
     ): ForegroundTaskSubscriberFlow =
         launchForegroundTask(
             getString(R.string.task_profile_switch),
@@ -476,8 +473,9 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                     throw RuntimeException("Could not switch profile")
                 }
 
-                if (!refreshed) {
+                if (!refreshed && slotId != EuiccChannelManager.USB_CHANNEL_ID) {
                     // We may have switched the profile, but we could not refresh. Tell the caller about this
+                    // but only if we are talking to a modem and not a USB reader
                     throw SwitchingProfilesRefreshException()
                 }
 
