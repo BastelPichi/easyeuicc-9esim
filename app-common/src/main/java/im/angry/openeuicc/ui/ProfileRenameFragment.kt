@@ -37,6 +37,17 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
 
     private var renaming = false
 
+    private val iccid by lazy {
+        requireArguments().getString("iccid")!!
+    }
+
+    private val currentName by lazy {
+        requireArguments().getString("currentName")!!
+    }
+
+    private val editedName: String
+        get() = editText.text.toString().trim()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,17 +77,6 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
             }
         }
     }
-
-    private val iccid by lazy {
-        requireArguments().getString("iccid")!!
-    }
-
-    private val currentName by lazy {
-        requireArguments().getString("currentName")!!
-    }
-
-    private val editedName: String
-        get() = editText.text.toString().trim()
 
     override fun onResume() {
         super.onResume()
