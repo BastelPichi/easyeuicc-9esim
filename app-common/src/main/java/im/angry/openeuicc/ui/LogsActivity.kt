@@ -40,6 +40,7 @@ class LogsActivity : AppCompatActivity() {
         appendLine("Manufacturer: ${Build.MANUFACTURER}")
         appendLine("Brand: ${Build.BRAND}")
         appendLine("Model: ${Build.MODEL}")
+        appendLine("Fingerprint: ${Build.FINGERPRINT}")
         appendLine("SDK Version: ${Build.VERSION.SDK_INT}")
         appendLine("App Version: $selfAppVersion")
         appendLine("-".repeat(10))
