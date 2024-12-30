@@ -15,7 +15,7 @@ data class ActivationCode(
             if (input.isBlank()) {
                 throw IllegalArgumentException("Activation code cannot be empty")
             } else if (!input.startsWith(SCHEME)) {
-                throw IllegalArgumentException("Activation code cannot be $SCHEME")
+                throw IllegalArgumentException("Invalid activation code format")
             }
             val components = input.removePrefix(SCHEME).split(DELIMITER)
             if (components.size < 2) {
