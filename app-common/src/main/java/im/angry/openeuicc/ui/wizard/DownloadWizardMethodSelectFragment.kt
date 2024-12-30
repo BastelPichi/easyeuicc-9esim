@@ -124,9 +124,21 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
         processLpaString(text.toString())
     }
 
-    private fun processLpaString(s: String) {
-        val components = s.split("$")
-        if (components.size < 3 || components[0] != "LPA:1") {
+    private fun processLpaString(input: String) {
+        try {
+            val parsed = ActivationCode.fromString(input)
+            state.smdp = parsed.address
+            state.matchingId = parsed.matchingId
+            if (parsed.requiredConfirmationCode) {
+                AlertDialog.Builder(requireContext()).apply {
+                    setTitle(R.string.profile_download_required_confirmation_code)
+                    setMessage(R.string.profile_download_required_confirmation_code_message)
+                    setCancelable(true)
+                    setNegativeButton(android.R.string.cancel, null)
+                    show()
+                }
+            }
+        } catch (e: IllegalArgumentException) {
             AlertDialog.Builder(requireContext()).apply {
                 setTitle(R.string.profile_download_incorrect_lpa_string)
                 setMessage(R.string.profile_download_incorrect_lpa_string_message)
@@ -134,10 +146,7 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
                 setNegativeButton(android.R.string.cancel, null)
                 show()
             }
-            return
         }
-        state.smdp = components[1]
-        state.matchingId = components[2]
         gotoNextFragment(DownloadWizardDetailsFragment())
     }
 
