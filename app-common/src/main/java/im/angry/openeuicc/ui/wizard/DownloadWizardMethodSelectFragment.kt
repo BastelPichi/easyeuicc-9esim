@@ -138,6 +138,7 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
                     show()
                 }
             }
+            gotoNextFragment(DownloadWizardDetailsFragment())
         } catch (e: IllegalArgumentException) {
             AlertDialog.Builder(requireContext()).apply {
                 setTitle(R.string.profile_download_incorrect_lpa_string)
@@ -147,7 +148,6 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
                 show()
             }
         }
-        gotoNextFragment(DownloadWizardDetailsFragment())
     }
 
     private class DownloadMethodViewHolder(private val root: View) : ViewHolder(root) {
