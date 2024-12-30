@@ -134,7 +134,7 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
                     setTitle(R.string.profile_download_required_confirmation_code)
                     setMessage(R.string.profile_download_required_confirmation_code_message)
                     setCancelable(true)
-                    setNegativeButton(android.R.string.cancel, null)
+                    setPositiveButton(android.R.string.ok, null)
                     show()
                 }
             }
