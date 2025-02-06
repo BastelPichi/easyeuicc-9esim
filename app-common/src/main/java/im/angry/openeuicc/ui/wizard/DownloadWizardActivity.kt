@@ -6,7 +6,6 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.ViewCompat
@@ -24,13 +23,46 @@ import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity: BaseEuiccAccessActivity() {
     data class DownloadWizardState(
-        var currentStepFragmentClassName: String?,
+        var currentStepFragmentClassName: String? = null,
         var selectedLogicalSlot: Int,
-        var activationCode: ActivationCode,
-        var downloadStarted: Boolean,
-        var downloadTaskID: Long,
-        var downloadError: LocalProfileAssistant.ProfileDownloadException?,
-    )
+        var activationCode: ActivationCode = ActivationCode(),
+        var downloadStarted: Boolean = false,
+        var downloadTaskID: Long = -1,
+        var downloadError: LocalProfileAssistant.ProfileDownloadException? = null,
+    ) {
+        companion object {
+            private const val FRAGMENT = "currentStepFragmentClassName"
+            private const val SLOT = "selectedLogicalSlot"
+            private const val ACT_CODE = "activationCode"
+            private const val DL_STARTED = "downloadStarted"
+            private const val DL_ID = "downloadTaskID"
+        }
+
+        fun onSaveInstanceState(outState: Bundle) {
+            outState.putString(FRAGMENT, currentStepFragmentClassName)
+            outState.putInt(SLOT, selectedLogicalSlot)
+            outState.putParcelable(ACT_CODE, activationCode)
+            outState.putBoolean(DL_STARTED, downloadStarted)
+            outState.putLong(DL_ID, downloadTaskID)
+        }
+
+        fun onRestoreInstanceState(savedInstanceState: Bundle) {
+            currentStepFragmentClassName = savedInstanceState
+                .getString(FRAGMENT, currentStepFragmentClassName)
+            selectedLogicalSlot = savedInstanceState
+                .getInt(SLOT, selectedLogicalSlot)
+            activationCode = savedInstanceState
+                .getCompatParcelable(ACT_CODE, ActivationCode::class.java) ?: ActivationCode()
+            downloadStarted = savedInstanceState
+                .getBoolean(DL_STARTED, downloadStarted)
+            downloadTaskID = savedInstanceState
+                .getLong(DL_ID, downloadTaskID)
+        }
+
+        private fun <T> Bundle.getCompatParcelable(key: String, clazz: Class<T>): T? =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                getParcelable(key, clazz) else getParcelable(key)
+    }
 
     private lateinit var state: DownloadWizardState
 
@@ -58,12 +90,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         })
 
         state = DownloadWizardState(
-            currentStepFragmentClassName = null,
             selectedLogicalSlot = intent.getIntExtra("selectedLogicalSlot", 0),
-            activationCode = ActivationCode(),
-            downloadStarted = false,
-            downloadTaskID = -1,
-            downloadError = null
         )
 
         progressBar = requireViewById(R.id.progress)
@@ -107,26 +134,12 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString("currentStepFragmentClassName", state.currentStepFragmentClassName)
-        outState.putInt("selectedLogicalSlot", state.selectedLogicalSlot)
-        outState.putParcelable("activationCode", state.activationCode)
-        outState.putBoolean("downloadStarted", state.downloadStarted)
-        outState.putLong("downloadTaskID", state.downloadTaskID)
+        state.onSaveInstanceState(outState)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        state.currentStepFragmentClassName = savedInstanceState
-            .getString("currentStepFragmentClassName", state.currentStepFragmentClassName)
-        state.selectedLogicalSlot = savedInstanceState
-            .getInt("selectedLogicalSlot", state.selectedLogicalSlot)
-        state.activationCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            savedInstanceState.getParcelable("activationCode", ActivationCode::class.java) else
-            savedInstanceState.getParcelable("activationCode")) ?: ActivationCode()
-        state.downloadStarted = savedInstanceState
-            .getBoolean("downloadStarted", state.downloadStarted)
-        state.downloadTaskID = savedInstanceState
-            .getLong("downloadTaskID", state.downloadTaskID)
+        state.onRestoreInstanceState(savedInstanceState)
     }
 
     private fun onPrevPressed() {
@@ -158,11 +171,9 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
                         if (!channel.valid) throw EuiccChannelManager.EuiccChannelNotFoundException()
                     }
                 } catch (e: EuiccChannelManager.EuiccChannelNotFoundException) {
-                    Toast.makeText(
-                        this@DownloadWizardActivity,
-                        R.string.download_wizard_slot_removed,
-                        Toast.LENGTH_LONG
-                    ).show()
+                    this@DownloadWizardActivity
+                        .makeLongToast(R.string.download_wizard_slot_removed)
+                        .show()
                     finish()
                 }
             }

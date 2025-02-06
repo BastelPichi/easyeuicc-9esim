@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -113,11 +112,9 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
         val text = clipboard.primaryClip?.getItemAt(0)?.text
 
         if (text == null) {
-            Toast.makeText(
-                requireContext(),
-                R.string.profile_download_no_lpa_string,
-                Toast.LENGTH_SHORT
-            ).show()
+            requireContext()
+                .makeShortToast(R.string.profile_download_no_lpa_string)
+                .show()
             return
         }
 

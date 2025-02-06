@@ -19,7 +19,6 @@ import im.angry.openeuicc.util.*
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import net.typeblog.lpac_jni.LocalProfileInfo
 
 class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     companion object {
