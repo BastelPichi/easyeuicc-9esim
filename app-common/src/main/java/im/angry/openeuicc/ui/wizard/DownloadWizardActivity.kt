@@ -1,5 +1,6 @@
 package im.angry.openeuicc.ui.wizard
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -19,17 +20,13 @@ import im.angry.openeuicc.ui.BaseEuiccAccessActivity
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity: BaseEuiccAccessActivity() {
     data class DownloadWizardState(
         var currentStepFragmentClassName: String?,
         var selectedLogicalSlot: Int,
-        var smdp: String,
-        var matchingId: String?,
-        var confirmationCode: String?,
-        var imei: String?,
+        var activationCode: ActivationCode,
         var downloadStarted: Boolean,
         var downloadTaskID: Long,
         var downloadError: LocalProfileAssistant.ProfileDownloadException?,
@@ -61,15 +58,12 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         })
 
         state = DownloadWizardState(
-            null,
-            intent.getIntExtra("selectedLogicalSlot", 0),
-            "",
-            null,
-            null,
-            null,
-            false,
-            -1,
-            null
+            currentStepFragmentClassName = null,
+            selectedLogicalSlot = intent.getIntExtra("selectedLogicalSlot", 0),
+            activationCode = ActivationCode(),
+            downloadStarted = false,
+            downloadTaskID = -1,
+            downloadError = null
         )
 
         progressBar = requireViewById(R.id.progress)
@@ -115,28 +109,24 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         super.onSaveInstanceState(outState)
         outState.putString("currentStepFragmentClassName", state.currentStepFragmentClassName)
         outState.putInt("selectedLogicalSlot", state.selectedLogicalSlot)
-        outState.putString("smdp", state.smdp)
-        outState.putString("matchingId", state.matchingId)
-        outState.putString("confirmationCode", state.confirmationCode)
-        outState.putString("imei", state.imei)
+        outState.putParcelable("activationCode", state.activationCode)
         outState.putBoolean("downloadStarted", state.downloadStarted)
         outState.putLong("downloadTaskID", state.downloadTaskID)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        state.currentStepFragmentClassName = savedInstanceState.getString(
-            "currentStepFragmentClassName",
-            state.currentStepFragmentClassName
-        )
-        state.selectedLogicalSlot =
-            savedInstanceState.getInt("selectedLogicalSlot", state.selectedLogicalSlot)
-        state.smdp = savedInstanceState.getString("smdp", state.smdp)
-        state.matchingId = savedInstanceState.getString("matchingId", state.matchingId)
-        state.imei = savedInstanceState.getString("imei", state.imei)
-        state.downloadStarted =
-            savedInstanceState.getBoolean("downloadStarted", state.downloadStarted)
-        state.downloadTaskID = savedInstanceState.getLong("downloadTaskID", state.downloadTaskID)
+        state.currentStepFragmentClassName = savedInstanceState
+            .getString("currentStepFragmentClassName", state.currentStepFragmentClassName)
+        state.selectedLogicalSlot = savedInstanceState
+            .getInt("selectedLogicalSlot", state.selectedLogicalSlot)
+        state.activationCode = (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            savedInstanceState.getParcelable("activationCode", ActivationCode::class.java) else
+            savedInstanceState.getParcelable("activationCode")) ?: ActivationCode()
+        state.downloadStarted = savedInstanceState
+            .getBoolean("downloadStarted", state.downloadStarted)
+        state.downloadTaskID = savedInstanceState
+            .getLong("downloadTaskID", state.downloadTaskID)
     }
 
     private fun onPrevPressed() {
@@ -238,8 +228,11 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
     }
 
     abstract class DownloadWizardStepFragment : Fragment(), OpenEuiccContextMarker {
+        private val activity: DownloadWizardActivity
+            get() = requireActivity() as DownloadWizardActivity
+
         protected val state: DownloadWizardState
-            get() = (requireActivity() as DownloadWizardActivity).state
+            get() = activity.state
 
         abstract val hasNext: Boolean
         abstract val hasPrev: Boolean
@@ -247,20 +240,19 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         abstract fun createPrevFragment(): DownloadWizardStepFragment?
 
         protected fun gotoNextFragment(next: DownloadWizardStepFragment? = null) {
-            val realNext = next ?: createNextFragment()
-            (requireActivity() as DownloadWizardActivity).showFragment(
-                realNext!!,
+            activity.showFragment(
+                next ?: createNextFragment()!!,
                 R.anim.slide_in_right,
                 R.anim.slide_out_left
             )
         }
 
         protected fun hideProgressBar() {
-            (requireActivity() as DownloadWizardActivity).progressBar.visibility = View.GONE
+            activity.progressBar.visibility = View.GONE
         }
 
         protected fun showProgressBar(progressValue: Int) {
-            (requireActivity() as DownloadWizardActivity).progressBar.apply {
+            activity.progressBar.apply {
                 visibility = View.VISIBLE
                 if (progressValue >= 0) {
                     isIndeterminate = false
@@ -272,7 +264,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         protected fun refreshButtons() {
-            (requireActivity() as DownloadWizardActivity).refreshButtons()
+            activity.refreshButtons()
         }
 
         open fun beforeNext() {}

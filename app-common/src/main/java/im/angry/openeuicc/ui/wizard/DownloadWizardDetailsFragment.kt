@@ -1,10 +1,10 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
-import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -17,17 +17,19 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     override val hasPrev: Boolean
         get() = true
 
-    private lateinit var smdp: TextInputLayout
-    private lateinit var matchingId: TextInputLayout
-    private lateinit var confirmationCode: TextInputLayout
-    private lateinit var imei: TextInputLayout
+    private lateinit var address: EditText
+    private lateinit var matchingId: EditText
+    private lateinit var confirmationCode: EditText
+    private lateinit var imei: EditText
 
     private fun saveState() {
-        state.smdp = smdp.editText!!.text.toString().trim()
-        // Treat empty inputs as null -- this is important for the download step
-        state.matchingId = matchingId.editText!!.text.toString().trim().ifBlank { null }
-        state.confirmationCode = confirmationCode.editText!!.text.toString().trim().ifBlank { null }
-        state.imei = imei.editText!!.text.toString().ifBlank { null }
+        state.activationCode.let {
+            it.address = address.text.toString().trim()
+            // Treat empty inputs as null -- this is important for the download step
+            it.matchingId = matchingId.text.toString().trim()
+            it.confirmationCode = confirmationCode.text.toString().trim()
+            it.imei = imei.text.toString().trim()
+        }
     }
 
     override fun beforeNext() = saveState()
@@ -42,24 +44,23 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_download_details, container, false)
-        smdp = view.requireViewById(R.id.profile_download_server)
-        matchingId = view.requireViewById(R.id.profile_download_code)
-        confirmationCode = view.requireViewById(R.id.profile_download_confirmation_code)
-        imei = view.requireViewById(R.id.profile_download_imei)
-        smdp.editText!!.addTextChangedListener {
-            updateInputCompleteness()
-        }
-        return view
+    ): View = inflater.inflate(R.layout.fragment_download_details, container, false).apply {
+        address = requireViewById<TextInputLayout>(R.id.profile_download_server).editText!!
+        matchingId = requireViewById<TextInputLayout>(R.id.profile_download_code).editText!!
+        confirmationCode = requireViewById<TextInputLayout>(R.id.profile_download_confirmation_code).editText!!
+        imei = requireViewById<TextInputLayout>(R.id.profile_download_imei).editText!!
+
+        address.addTextChangedListener { updateInputCompleteness() }
     }
 
     override fun onStart() {
         super.onStart()
-        smdp.editText!!.setText(state.smdp)
-        matchingId.editText!!.setText(state.matchingId)
-        confirmationCode.editText!!.setText(state.confirmationCode)
-        imei.editText!!.setText(state.imei)
+        state.activationCode.let {
+            address.setText(it.address)
+            matchingId.setText(it.matchingId)
+            confirmationCode.setText(it.confirmationCode)
+            imei.setText(it.imei)
+        }
         updateInputCompleteness()
     }
 
@@ -69,7 +70,13 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     }
 
     private fun updateInputCompleteness() {
-        inputComplete = Patterns.DOMAIN_NAME.matcher(smdp.editText!!.text).matches()
+        saveState()
+        inputComplete = try {
+            state.activationCode.validate()
+            true
+        } catch (e: IllegalArgumentException) {
+            false
+        }
         refreshButtons()
     }
 }

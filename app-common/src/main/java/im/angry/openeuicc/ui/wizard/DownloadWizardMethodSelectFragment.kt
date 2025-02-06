@@ -126,10 +126,9 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
 
     private fun processLpaString(input: String) {
         try {
-            val parsed = ActivationCode.fromString(input)
-            state.smdp = parsed.address
-            state.matchingId = parsed.matchingId
-            if (parsed.confirmationCodeRequired) {
+            state.activationCode.fromToken(input)
+            state.activationCode.validate()
+            if (state.activationCode.confirmationCodeRequired) {
                 AlertDialog.Builder(requireContext()).apply {
                     setTitle(R.string.profile_download_required_confirmation_code)
                     setMessage(R.string.profile_download_required_confirmation_code_message)
@@ -176,6 +175,5 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
         override fun onBindViewHolder(holder: DownloadMethodViewHolder, position: Int) {
             holder.bind(downloadMethods[position])
         }
-
     }
 }

@@ -130,7 +130,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
         }
 
         if (slots.isNotEmpty()) {
-            state.imei = slots[adapter.currentSelectedIdx].imei
+            state.activationCode.imei = slots[adapter.currentSelectedIdx].imei
         }
 
         adapter.notifyDataSetChanged()
@@ -165,7 +165,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
             adapter.notifyItemChanged(curIdx)
             // Selected index isn't logical slot ID directly, needs a conversion
             state.selectedLogicalSlot = adapter.slots[adapter.currentSelectedIdx].logicalSlotId
-            state.imei = adapter.slots[adapter.currentSelectedIdx].imei
+            state.activationCode.imei = adapter.slots[adapter.currentSelectedIdx].imei
         }
 
         fun bind(item: SlotInfo, idx: Int) {

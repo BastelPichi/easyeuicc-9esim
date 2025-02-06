@@ -370,10 +370,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
     fun launchProfileDownloadTask(
         slotId: Int,
         portId: Int,
-        smdp: String,
-        matchingId: String?,
-        confirmationCode: String?,
-        imei: String?
+        activationCode: ActivationCode
     ): ForegroundTaskSubscriberFlow =
         launchForegroundTask(
             getString(R.string.task_profile_download),
@@ -383,10 +380,10 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
             euiccChannelManager.beginTrackedOperation(slotId, portId) {
                 euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
                     channel.lpa.downloadProfile(
-                        smdp,
-                        matchingId,
-                        imei,
-                        confirmationCode,
+                        activationCode.address,
+                        activationCode.matchingId,
+                        activationCode.imei,
+                        activationCode.confirmationCode,
                         object : ProfileDownloadCallback {
                             override fun onStateUpdate(state: ProfileDownloadCallback.DownloadState) {
                                 if (state.progress == 0) return

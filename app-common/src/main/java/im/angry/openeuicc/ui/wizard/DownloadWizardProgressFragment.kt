@@ -79,19 +79,11 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_download_progress, container, false)
-        val recyclerView = view.requireViewById<RecyclerView>(R.id.download_progress_list)
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager =
-            LinearLayoutManager(view.context, LinearLayoutManager.VERTICAL, false)
-        recyclerView.addItemDecoration(
-            DividerItemDecoration(
-                requireContext(),
-                LinearLayoutManager.VERTICAL
-            )
-        )
-        return view
+    ): View = inflater.inflate(R.layout.fragment_download_progress, container, false).apply {
+        val view = requireViewById<RecyclerView>(R.id.download_progress_list)
+        view.adapter = adapter
+        view.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        view.addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
     }
 
     override fun onStart() {
@@ -119,8 +111,9 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
                         // Change the state of the last InProgress item to success (or error)
                         progressItems.forEachIndexed { index, progressItem ->
                             if (progressItem.state == ProgressState.InProgress) {
-                                progressItem.state =
-                                    if (state.downloadError == null) ProgressState.Done else ProgressState.Error
+                                progressItem.state = if (state.downloadError == null)
+                                    ProgressState.Done else
+                                    ProgressState.Error
                             }
 
                             adapter.notifyItemChanged(index)
@@ -147,25 +140,15 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
         } else {
             euiccChannelManagerService.waitForForegroundTask()
 
-            val (slotId, portId) = euiccChannelManager.withEuiccChannel(state.selectedLogicalSlot) { channel ->
-                Pair(channel.slotId, channel.portId)
-            }
+            val (slotId, portId) = euiccChannelManager.withEuiccChannel(state.selectedLogicalSlot)
+            { channel -> Pair(channel.slotId, channel.portId) }
 
             // Set started to true even before we start -- in case we get killed in the middle
             state.downloadStarted = true
 
-            val ret = euiccChannelManagerService.launchProfileDownloadTask(
-                slotId,
-                portId,
-                state.smdp,
-                state.matchingId,
-                state.confirmationCode,
-                state.imei
-            )
-
-            state.downloadTaskID = ret.taskId
-
-            ret
+            euiccChannelManagerService
+                .launchProfileDownloadTask(slotId, portId, state.activationCode)
+                .also { state.downloadTaskID = it.taskId }
         }
 
     private fun updateProgress(progress: Int) {
@@ -189,10 +172,9 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
         }
     }
 
-    private inner class ProgressItemHolder(val root: View) : RecyclerView.ViewHolder(root) {
+    private inner class ProgressItemHolder(root: View) : RecyclerView.ViewHolder(root) {
         private val title = root.requireViewById<TextView>(R.id.download_progress_item_title)
-        private val progressBar =
-            root.requireViewById<ProgressBar>(R.id.download_progress_icon_progress)
+        private val progressBar = root.requireViewById<ProgressBar>(R.id.download_progress_icon_progress)
         private val icon = root.requireViewById<ImageView>(R.id.download_progress_icon)
 
         fun bind(item: ProgressItem) {
