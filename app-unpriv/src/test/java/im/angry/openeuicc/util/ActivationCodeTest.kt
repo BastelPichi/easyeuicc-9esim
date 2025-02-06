@@ -57,7 +57,7 @@ class ActivationCodeTest {
             "1", "LPA:1",
             "1$", "LPA:1$",
             "1$$", "LPA:1$$",
-            "2\$SMDP.GSMA.COM", "LPA:2\$SMsDP.GSMA.COM",
+            "2\$SMDP.GSMA.COM", "LPA:2\$SMDP.GSMA.COM",
         )
         for (fixture in fixtures) {
             assertThrows(IllegalArgumentException::class.java) {
