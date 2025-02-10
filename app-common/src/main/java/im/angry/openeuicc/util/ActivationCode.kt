@@ -32,23 +32,11 @@ class ActivationCode : Parcelable, Cloneable {
     }
 
     fun validate() {
-        require(address.isBlank()) { "SM-DP+ address is required" }
-        require(address.contains('.')) { "SM-DP+ address is invalid" }
-        require(address.split('.').all { it.isSegment() }) { "SM-DP+ address is invalid" }
-        if (matchingId.isNotBlank()) {
-            require(matchingId.isSegment()) { "Matching ID is invalid" }
-        }
-        if (oid.isNotBlank()) {
-            require(oid.contains('.')) { "OID is invalid" }
-            require(oid.split('.').all { it.toIntOrNull() != null }) { "OID is invalid" }
-        }
-        if (confirmationCodeRequired) {
-            require(confirmationCode.isNotBlank()) { "Confirmation code is required" }
-        }
-        if (imei.isNotBlank()) {
-            require(imei.length in 14..16) { "IMEI must be 14-16 digits" }
-            require(imei.all(Char::isDigit)) { "IMEI must be all digits" }
-        }
+        require(isValidDomain(address)) { "SM-DP+ address is invalid" }
+        require(isValidMatchingId(matchingId)) { "Matching ID is invalid" }
+        require(isValidOID(oid)) { "OID is invalid" }
+        require(confirmationCodeRequired && confirmationCode.isNotBlank()) { "Confirmation code is required" }
+        require(isValidIMEI(imei)) { "IMEI is invalid" }
     }
 
     fun fromToken(token: String) {
@@ -74,9 +62,6 @@ class ActivationCode : Parcelable, Cloneable {
         return parts.joinToString("$").trimEnd('$')
     }
 
-    private fun String.isSegment() = all {
-        it.isLetterOrDigit() || it == '-'
-    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(address)
@@ -123,4 +108,34 @@ class ActivationCode : Parcelable, Cloneable {
         override fun createFromParcel(parcel: Parcel) = ActivationCode(parcel)
         override fun newArray(size: Int): Array<ActivationCode?> = arrayOfNulls(size)
     }
+}
+
+private fun isValidSegment(segment: String): Boolean {
+    return segment.all { it.isLetterOrDigit() || it == '-' }
+}
+
+private fun isValidDomain(fqdn: String): Boolean {
+    val name = fqdn.trimEnd('.')
+    if (name.length !in 1..<255) return false
+    if (!name.contains('.')) return false
+    return name.split('.').all { it.length < 64 && isValidSegment(it) }
+}
+
+private fun isValidMatchingId(matchingId: String): Boolean {
+    // TODO: matching id string max length in specs not defined
+    if (matchingId.isBlank()) return true
+    return isValidSegment(matchingId)
+}
+
+private fun isValidOID(oid: String): Boolean {
+    if (oid.isBlank()) return true
+    if (!oid.contains('.')) return false
+    return oid.split('.').all { it.all(Char::isDigit) }
+}
+
+private fun isValidIMEI(imei: String): Boolean {
+    // TODO: Strong IMEI validation
+    if (imei.isBlank()) return true
+    if (imei.length !in 14..16) return false
+    return imei.all(Char::isDigit)
 }
