@@ -10,6 +10,7 @@ import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
 import net.typeblog.lpac_jni.ProfileDownloadCallback
+import net.typeblog.lpac_jni.Version
 
 class LocalProfileAssistantImpl(
     isdrAid: ByteArray,
@@ -28,9 +29,9 @@ class LocalProfileAssistantImpl(
         var lastApduResponse: ByteArray? = null
         var lastApduException: Exception? = null
 
-        override fun transmit(tx: ByteArray): ByteArray =
+        override fun transmit(handle: Int, tx: ByteArray): ByteArray =
             try {
-                apduInterface.transmit(tx).also {
+                apduInterface.transmit(handle, tx).also {
                     lastApduException = null
                     lastApduResponse = it
                 }
@@ -84,8 +85,8 @@ class LocalProfileAssistantImpl(
             throw IllegalArgumentException("Failed to initialize LPA")
         }
 
-        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: arrayOf()
-        httpInterface.usePublicKeyIds(pkids)
+        val pkids = euiccInfo2?.euiccCiPKIdListForVerification ?: setOf()
+        httpInterface.usePublicKeyIds(pkids.toTypedArray())
     }
 
     override fun setEs10xMss(mss: Byte) {
@@ -172,16 +173,16 @@ class LocalProfileAssistantImpl(
             }
 
             val ret = EuiccInfo2(
-                LpacJni.euiccInfo2GetSGP22Version(cInfo),
-                LpacJni.euiccInfo2GetProfileVersion(cInfo),
-                LpacJni.euiccInfo2GetEuiccFirmwareVersion(cInfo),
-                LpacJni.euiccInfo2GetGlobalPlatformVersion(cInfo),
+                Version(LpacJni.euiccInfo2GetSGP22Version(cInfo)),
+                Version(LpacJni.euiccInfo2GetProfileVersion(cInfo)),
+                Version(LpacJni.euiccInfo2GetEuiccFirmwareVersion(cInfo)),
+                Version(LpacJni.euiccInfo2GetGlobalPlatformVersion(cInfo)),
                 LpacJni.euiccInfo2GetSasAcreditationNumber(cInfo),
-                LpacJni.euiccInfo2GetPpVersion(cInfo),
+                Version(LpacJni.euiccInfo2GetPpVersion(cInfo)),
                 LpacJni.euiccInfo2GetFreeNonVolatileMemory(cInfo).toInt(),
                 LpacJni.euiccInfo2GetFreeVolatileMemory(cInfo).toInt(),
-                euiccCiPKIdListForSigning.toTypedArray(),
-                euiccCiPKIdListForVerification.toTypedArray()
+                euiccCiPKIdListForSigning.toTypedArray().toSet(),
+                euiccCiPKIdListForVerification.toTypedArray().toSet(),
             )
 
             LpacJni.euiccInfo2Free(cInfo)

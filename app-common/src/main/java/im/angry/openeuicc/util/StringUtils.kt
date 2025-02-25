@@ -12,13 +12,10 @@ fun String.decodeHex(): ByteArray {
     return out
 }
 
-fun ByteArray.encodeHex(): String {
-    val sb = StringBuilder()
-    val length = size
-    for (i in 0 until length) {
-        sb.append(String.format("%02X", this[i]))
+fun ByteArray.encodeHex(): String = buildString {
+    for (element in this@encodeHex) {
+        append(String.format("%02X", element))
     }
-    return sb.toString()
 }
 
 fun formatFreeSpace(size: Int): String =
