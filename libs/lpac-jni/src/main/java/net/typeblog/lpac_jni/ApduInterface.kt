@@ -8,7 +8,7 @@ interface ApduInterface {
     fun disconnect()
     fun logicalChannelOpen(aid: ByteArray): Int
     fun logicalChannelClose(handle: Int)
-    fun transmit(tx: ByteArray): ByteArray
+    fun transmit(handle: Int, tx: ByteArray): ByteArray
 
     /**
      * Is this APDU connection still valid?
@@ -16,4 +16,19 @@ interface ApduInterface {
      * callers should further check with the LPA to fully determine the validity of a channel
      */
     val valid: Boolean
+
+    fun <T> openChannel(aid: ByteArray, callback: (TransmitProvider) -> T): T {
+        val handle = logicalChannelOpen(aid)
+        return try {
+            callback(object : TransmitProvider {
+                override fun transmit(tx: ByteArray) = transmit(handle, tx)
+            })
+        } finally {
+            logicalChannelClose(handle)
+        }
+    }
+}
+
+interface TransmitProvider {
+    fun transmit(tx: ByteArray): ByteArray
 }
