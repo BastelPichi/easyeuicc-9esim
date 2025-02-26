@@ -39,7 +39,8 @@ class OmapiApduInterface(
     }
 
     override fun logicalChannelOpen(aid: ByteArray): Int {
-        val channel = session.openLogicalChannel(aid)!!
+        val channel = session.openLogicalChannel(aid)
+        check(channel != null) { "Failed to open logical channel (${aid.encodeHex()})" }
         val id = index.addAndGet(1)
         channels[id] = channel
         return id
@@ -47,11 +48,9 @@ class OmapiApduInterface(
 
     override fun logicalChannelClose(handle: Int) {
         val channel = channels[handle]
-        check(channel != null) {
-            "Invalid logical channel handle $handle"
-        }
+        check(channel != null) { "Invalid logical channel handle $handle" }
         channels.remove(handle)
-        channel.close()
+        if (channel.isOpen) channel.close()
     }
 
     override fun transmit(handle: Int, tx: ByteArray): ByteArray {
