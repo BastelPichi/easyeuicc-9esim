@@ -7,7 +7,6 @@ import android.util.Log
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.single
 import kotlinx.coroutines.runBlocking
 import net.typeblog.lpac_jni.ApduInterface
 
