@@ -6,8 +6,10 @@ import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
 import net.typeblog.lpac_jni.ProfileDownloadCallback
 
-class LocalProfileAssistantWrapper(private var _inner: LocalProfileAssistant?) :
+class LocalProfileAssistantWrapper(orig: LocalProfileAssistant) :
     LocalProfileAssistant {
+    private var _inner: LocalProfileAssistant? = orig
+
     private val lpa: LocalProfileAssistant
         get() {
             if (_inner == null) {
