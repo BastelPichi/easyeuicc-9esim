@@ -53,20 +53,23 @@ apdu_interface_logical_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, u
     jint ret = (*env)->CallIntMethod(env, LPAC_JNI_CTX(ctx)->apdu_interface,
                                      method_apdu_logical_channel_open, jbarr);
     LPAC_JNI_EXCEPTION_RETURN;
+    LPAC_JNI_CTX(ctx)->logical_channel_id = ret;
     return ret;
 }
 
-static void apdu_interface_logical_channel_close(struct euicc_ctx *ctx, uint8_t channel) {
+static void apdu_interface_logical_channel_close(struct euicc_ctx *ctx,
+                                                 __attribute__((unused)) uint8_t channel) {
     LPAC_JNI_SETUP_ENV;
+    jint logical_channel_id = LPAC_JNI_CTX(ctx)->logical_channel_id;
     (*env)->CallVoidMethod(env, LPAC_JNI_CTX(ctx)->apdu_interface,
-                           method_apdu_logical_channel_close, channel);
+                           method_apdu_logical_channel_close, logical_channel_id);
     (*env)->ExceptionClear(env);
 }
 
 static int
 apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, const uint8_t *tx,
                         uint32_t tx_len) {
-    const int logic_channel = ctx->apdu._internal.logic_channel;
+    const int logic_channel = LPAC_JNI_CTX(ctx)->logical_channel_id;
     LPAC_JNI_SETUP_ENV;
     jbyteArray txArr = (*env)->NewByteArray(env, tx_len);
     (*env)->SetByteArrayRegion(env, txArr, 0, tx_len, (const jbyte *) tx);

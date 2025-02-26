@@ -32,8 +32,8 @@ fun getESTKmeInfo(iface: ApduInterface): ESTKmeInfo? {
         return b.sliceArray(0 until b.size - 2).decodeToString()
     }
     return try {
-        iface.openChannel("A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()) {
-            fun invoke(p1: Byte) = decode(it.transmit(byteArrayOf(0x00, 0x00, p1, 0x00, 0x00)))
+        iface.withLogicalChannel("A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()) { transmit ->
+            fun invoke(p1: Byte) = decode(transmit(byteArrayOf(0x00, 0x00, p1, 0x00, 0x00)))
             ESTKmeInfo(
                 invoke(0x00), // serial number
                 invoke(0x01), // bootloader version

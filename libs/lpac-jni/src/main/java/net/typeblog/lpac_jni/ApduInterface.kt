@@ -17,18 +17,12 @@ interface ApduInterface {
      */
     val valid: Boolean
 
-    fun <T> openChannel(aid: ByteArray, callback: (TransmitProvider) -> T): T {
+    fun <T> withLogicalChannel(aid: ByteArray, callback: ((ByteArray) -> ByteArray) -> T): T {
         val handle = logicalChannelOpen(aid)
         return try {
-            callback(object : TransmitProvider {
-                override fun transmit(tx: ByteArray) = transmit(handle, tx)
-            })
+            callback { tx -> transmit(handle, tx) }
         } finally {
             logicalChannelClose(handle)
         }
     }
-}
-
-interface TransmitProvider {
-    fun transmit(tx: ByteArray): ByteArray
 }
