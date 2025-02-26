@@ -1,8 +1,10 @@
 package im.angry.openeuicc.vendored
 
 import android.util.Log
+import im.angry.openeuicc.core.ApduInterfaceAtrProvider
 import im.angry.openeuicc.util.TAG
 import im.angry.openeuicc.util.decodeHex
+import im.angry.openeuicc.util.encodeHex
 import net.typeblog.lpac_jni.ApduInterface
 
 data class ESTKmeInfo(
@@ -12,7 +14,11 @@ data class ESTKmeInfo(
     val skuName: String?,
 )
 
+fun isESTKmeATR(atr: ByteArray?): Boolean =
+    atr != null && atr.encodeHex().contains("estk.me".encodeToByteArray().encodeHex())
+
 fun getESTKmeInfo(iface: ApduInterface): ESTKmeInfo? {
+    if (!isESTKmeATR((iface as ApduInterfaceAtrProvider?)?.atr)) return null
     fun decode(b: ByteArray): String? {
         if (b.size < 2) return null
         if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
