@@ -287,13 +287,13 @@ class UsbCcidTransceiver(
         val startTime = SystemClock.elapsedRealtime()
         skipAvailableInput()
         var response: CcidDataBlock? = null
-        for (v in usbCcidDescription.voltages) {
-            Log.v(TAG, "CCID: attempting to power on with voltage $v")
+        for (voltage in usbCcidDescription.voltages) {
+            Log.v(TAG, "CCID: attempting to power on with voltage $voltage")
             response = try {
-                iccPowerOnVoltage(v.powerOnValue)
+                iccPowerOnVoltage(voltage.powerOnValue)
             } catch (e: UsbCcidErrorException) {
                 if (e.errorResponse.bError.toInt() == 7) { // Power select error
-                    Log.v(TAG, "CCID: failed to power on with voltage $v")
+                    Log.v(TAG, "CCID: failed to power on with voltage $voltage")
                     iccPowerOff()
                     Log.v(TAG, "CCID: powered off")
                     continue

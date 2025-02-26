@@ -85,14 +85,10 @@ data class UsbCcidDescription(
     private fun hasFeature(feature: Int): Boolean =
         (dwFeatures and feature) != 0
 
-    val voltages: Array<Voltage>
+    val voltages: List<Voltage>
         get() {
-            if (hasFeature(FEATURE_AUTOMATIC_VOLTAGE)) {
-                return arrayOf(Voltage.AUTO)
-            }
-            return Voltage.entries
-                .mapNotNull { if ((it.mask.toInt() and bVoltageSupport.toInt()) != 0) it else null }
-                .toTypedArray()
+            if (hasFeature(FEATURE_AUTOMATIC_VOLTAGE)) return listOf(Voltage.AUTO)
+            return Voltage.entries.filter { (it.mask.toInt() and bVoltageSupport.toInt()) != 0 }
         }
 
     val hasAutomaticPps: Boolean
