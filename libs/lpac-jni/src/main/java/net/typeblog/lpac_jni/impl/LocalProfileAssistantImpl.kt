@@ -158,20 +158,6 @@ class LocalProfileAssistantImpl(
             val cInfo = LpacJni.es10cexGetEuiccInfo2(contextHandle)
             if (cInfo == 0L) return null
 
-            val euiccCiPKIdListForSigning = mutableListOf<String>()
-            var curr = LpacJni.euiccInfo2GetEuiccCiPKIdListForSigning(cInfo)
-            while (curr != 0L) {
-                euiccCiPKIdListForSigning.add(LpacJni.stringDeref(curr))
-                curr = LpacJni.stringArrNext(curr)
-            }
-
-            val euiccCiPKIdListForVerification = mutableListOf<String>()
-            curr = LpacJni.euiccInfo2GetEuiccCiPKIdListForVerification(cInfo)
-            while (curr != 0L) {
-                euiccCiPKIdListForVerification.add(LpacJni.stringDeref(curr))
-                curr = LpacJni.stringArrNext(curr)
-            }
-
             val ret = EuiccInfo2(
                 Version(LpacJni.euiccInfo2GetSGP22Version(cInfo)),
                 Version(LpacJni.euiccInfo2GetProfileVersion(cInfo)),
@@ -181,8 +167,20 @@ class LocalProfileAssistantImpl(
                 Version(LpacJni.euiccInfo2GetPpVersion(cInfo)),
                 LpacJni.euiccInfo2GetFreeNonVolatileMemory(cInfo).toInt(),
                 LpacJni.euiccInfo2GetFreeVolatileMemory(cInfo).toInt(),
-                euiccCiPKIdListForSigning.toTypedArray().toSet(),
-                euiccCiPKIdListForVerification.toTypedArray().toSet(),
+                buildSet {
+                    var cursor = LpacJni.euiccInfo2GetEuiccCiPKIdListForSigning(cInfo)
+                    while (cursor != 0L) {
+                        add(LpacJni.stringDeref(cursor))
+                        cursor = LpacJni.stringArrNext(cursor)
+                    }
+                },
+                buildSet {
+                    var cursor = LpacJni.euiccInfo2GetEuiccCiPKIdListForVerification(cInfo)
+                    while (cursor != 0L) {
+                        add(LpacJni.stringDeref(cursor))
+                        cursor = LpacJni.stringArrNext(cursor)
+                    }
+                },
             )
 
             LpacJni.euiccInfo2Free(cInfo)
