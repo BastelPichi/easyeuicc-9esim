@@ -95,7 +95,6 @@ class UsbCcidTransceiver(
     data class UsbCcidErrorException(val msg: String, val errorResponse: CcidDataBlock) :
         Exception(msg)
 
-    @Suppress("ArrayInDataClass")
     data class CcidDataBlock(
         val dwLength: Int,
         val bSlot: Byte,
@@ -184,26 +183,31 @@ class UsbCcidTransceiver(
                 usbBulkIn, inputBuffer, inputBuffer.size, DEVICE_COMMUNICATE_TIMEOUT_MILLIS
             )
             if (runBlocking { verboseLoggingFlow.first() }) {
-                Log.d(TAG, "Received $readBytes bytes: ${inputBuffer.encodeHex()}")
+                Log.d(TAG, "Received " + readBytes + " bytes: " + inputBuffer.encodeHex())
             }
         } while (readBytes <= 0 && attempts-- > 0)
         if (readBytes < CCID_HEADER_LENGTH) {
             throw UsbTransportException("USB-CCID error - failed to receive CCID header")
         }
         if (inputBuffer[0] != MESSAGE_TYPE_RDR_TO_PC_DATA_BLOCK.toByte()) {
-            throw UsbTransportException(buildString {
-                append("USB-CCID error - bad CCID header")
-                append(", type ")
-                append("%d (expected %d)".format(inputBuffer[0], MESSAGE_TYPE_RDR_TO_PC_DATA_BLOCK))
-                if (expectedSequenceNumber != inputBuffer[6]) {
-                    append(", sequence number ")
-                    append("%d (expected %d)".format(inputBuffer[6], expectedSequenceNumber))
-                }
-            })
+            if (expectedSequenceNumber != inputBuffer[6]) {
+                throw UsbTransportException(
+                    ((("USB-CCID error - bad CCID header, type " + inputBuffer[0]) + " (expected " +
+                            MESSAGE_TYPE_RDR_TO_PC_DATA_BLOCK) + "), sequence number " + inputBuffer[6]
+                            ) + " (expected " +
+                            expectedSequenceNumber + ")"
+                )
+            }
+            throw UsbTransportException(
+                "USB-CCID error - bad CCID header type " + inputBuffer[0]
+            )
         }
         var result = CcidDataBlock.parseHeaderFromBytes(inputBuffer)
         if (expectedSequenceNumber != result.bSeq) {
-            throw UsbTransportException("USB-CCID error - expected sequence number $expectedSequenceNumber, got $result")
+            throw UsbTransportException(
+                ("USB-CCID error - expected sequence number " +
+                        expectedSequenceNumber + ", got " + result)
+            )
         }
 
         val dataBuffer = ByteArray(result.dwLength)
@@ -214,7 +218,9 @@ class UsbCcidTransceiver(
                 usbBulkIn, inputBuffer, inputBuffer.size, DEVICE_COMMUNICATE_TIMEOUT_MILLIS
             )
             if (readBytes < 0) {
-                throw UsbTransportException("USB error - failed reading response data! Header: $result")
+                throw UsbTransportException(
+                    "USB error - failed reading response data! Header: $result"
+                )
             }
             System.arraycopy(inputBuffer, 0, dataBuffer, bufferedBytes, readBytes)
             bufferedBytes += readBytes
@@ -279,7 +285,7 @@ class UsbCcidTransceiver(
         }
         val ccidDataBlock = receiveDataBlock(sequenceNumber)
         val elapsedTime = SystemClock.elapsedRealtime() - startTime
-        Log.d(TAG, "USB XferBlock call took ${elapsedTime}ms")
+        Log.d(TAG, "USB XferBlock call took " + elapsedTime + "ms")
         return ccidDataBlock
     }
 
@@ -287,13 +293,13 @@ class UsbCcidTransceiver(
         val startTime = SystemClock.elapsedRealtime()
         skipAvailableInput()
         var response: CcidDataBlock? = null
-        for (voltage in usbCcidDescription.voltages) {
-            Log.v(TAG, "CCID: attempting to power on with voltage $voltage")
+        for (v in usbCcidDescription.voltages) {
+            Log.v(TAG, "CCID: attempting to power on with voltage $v")
             response = try {
-                iccPowerOnVoltage(voltage.powerOnValue)
+                iccPowerOnVoltage(v.powerOnValue)
             } catch (e: UsbCcidErrorException) {
                 if (e.errorResponse.bError.toInt() == 7) { // Power select error
-                    Log.v(TAG, "CCID: failed to power on with voltage $voltage")
+                    Log.v(TAG, "CCID: failed to power on with voltage $v")
                     iccPowerOff()
                     Log.v(TAG, "CCID: powered off")
                     continue
@@ -308,11 +314,8 @@ class UsbCcidTransceiver(
         val elapsedTime = SystemClock.elapsedRealtime() - startTime
         Log.d(
             TAG,
-            buildString {
-                append("Usb transport connected")
-                append(", took ", elapsedTime, "ms")
-                append(", ATR=", response.data?.encodeHex())
-            }
+            "Usb transport connected, took " + elapsedTime + "ms, ATR=" +
+                    response.data?.encodeHex()
         )
         return response
     }

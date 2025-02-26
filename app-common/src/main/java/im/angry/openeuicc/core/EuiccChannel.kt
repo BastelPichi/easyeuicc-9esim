@@ -1,8 +1,6 @@
 package im.angry.openeuicc.core
 
 import im.angry.openeuicc.util.*
-import im.angry.openeuicc.vendored.ESTKmeInfo
-import net.typeblog.lpac_jni.ApduInterface
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
 interface EuiccChannel {
@@ -29,11 +27,6 @@ interface EuiccChannel {
      * the reader device.
      */
     val intrinsicChannelName: String?
-
-    /**
-     * The underlying APDU interface for this channel
-     */
-    val apduInterface: ApduInterface
 
     fun close()
 }
