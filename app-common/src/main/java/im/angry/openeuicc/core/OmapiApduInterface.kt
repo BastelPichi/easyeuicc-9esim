@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import net.typeblog.lpac_jni.ApduInterface
-import java.util.concurrent.atomic.AtomicInteger
 
 class OmapiApduInterface(
     private val service: SEService,
@@ -21,8 +20,12 @@ class OmapiApduInterface(
     }
 
     private lateinit var session: Session
-    private val channels = mutableMapOf<Int, Channel>()
-    private val index = AtomicInteger(0)
+    private val channels = arrayOf<Channel?>(
+        null,
+        null,
+        null,
+        null,
+    )
 
     override val valid: Boolean
         get() = service.isConnected && (this::session.isInitialized && !session.isClosed)
@@ -41,23 +44,22 @@ class OmapiApduInterface(
     override fun logicalChannelOpen(aid: ByteArray): Int {
         val channel = session.openLogicalChannel(aid)
         check(channel != null) { "Failed to open logical channel (${aid.encodeHex()})" }
-        val id = index.addAndGet(1)
-        channels[id] = channel
-        return id
+        val index = channels.indexOf(null)
+        check(index != -1) { "No free logical channel slots" }
+        synchronized(channels) { channels[index] = channel }
+        return index
     }
 
     override fun logicalChannelClose(handle: Int) {
-        val channel = channels[handle]
+        val channel = channels.getOrNull(handle)
         check(channel != null) { "Invalid logical channel handle $handle" }
-        channels.remove(handle)
         if (channel.isOpen) channel.close()
+        synchronized(channels) { channels[handle] = null }
     }
 
     override fun transmit(handle: Int, tx: ByteArray): ByteArray {
-        val channel = channels[handle]
-        check(channel != null) {
-            "Invalid logical channel handle $handle"
-        }
+        val channel = channels.getOrNull(handle)
+        check(channel != null) { "Invalid logical channel handle $handle" }
 
         if (runBlocking { verboseLoggingFlow.first() }) {
             Log.d(TAG, "OMAPI APDU: ${tx.encodeHex()}")

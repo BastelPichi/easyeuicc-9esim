@@ -1,5 +1,7 @@
 package net.typeblog.lpac_jni
 
+import java.io.Closeable
+
 /*
  * Should reflect euicc_apdu_interface in lpac/euicc/interface.h
  */
@@ -17,18 +19,26 @@ interface ApduInterface {
      */
     val valid: Boolean
 
-    fun <T> openChannel(aid: ByteArray, callback: (TransmitProvider) -> T): T {
+    fun <T> withLogicalChannel(aid: ByteArray, callback: (ApduLogicalChannelHandle) -> T): T {
         val handle = logicalChannelOpen(aid)
-        return try {
-            callback(object : TransmitProvider {
-                override fun transmit(tx: ByteArray) = transmit(handle, tx)
-            })
-        } finally {
-            logicalChannelClose(handle)
-        }
+        return ApduLogicalChannelHandle(handle, this).use(callback)
     }
 }
 
-interface TransmitProvider {
-    fun transmit(tx: ByteArray): ByteArray
+data class ApduLogicalChannelHandle(
+    private val handle: Int,
+    private val apduInterface: ApduInterface,
+) : Closeable {
+    private var closed: Boolean = false
+
+    fun transmit(tx: ByteArray) {
+        check(closed) { "Logical channel is already closed" }
+        apduInterface.transmit(handle, tx)
+    }
+
+    override fun close() {
+        if (closed) return
+        apduInterface.logicalChannelClose(handle)
+        closed = true
+    }
 }
