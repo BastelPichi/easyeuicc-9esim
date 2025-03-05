@@ -30,7 +30,21 @@
         <activity
             android:exported="true"
             android:name="im.angry.openeuicc.ui.wizard.DownloadWizardActivity"
-            android:label="@string/download_wizard" />
+            android:label="@string/download_wizard">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Accepts URIs that begin with "openeuicc://lpa" -->
+                <!-- for example: "openeuicc://lpa/LPA:1$..." -->
+                <data android:scheme="openeuicc" />
+                <data android:host="lpa" />
+                <data android:pathPrefix="/1$" />
+                <data android:pathPrefix="/LPA:1$" />
+            </intent-filter>
+        </activity>
 
         <activity-alias
             android:exported="true"

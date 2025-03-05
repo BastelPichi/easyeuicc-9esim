@@ -35,8 +35,12 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     override fun createNextFragment(): DownloadWizardActivity.DownloadWizardStepFragment =
         DownloadWizardProgressFragment()
 
-    override fun createPrevFragment(): DownloadWizardActivity.DownloadWizardStepFragment =
-        DownloadWizardMethodSelectFragment()
+    override fun createPrevFragment(): DownloadWizardActivity.DownloadWizardStepFragment {
+        if (requireWizardActivity().getActivationCodeFromIntent() != null) {
+            return DownloadWizardSlotSelectFragment()
+        }
+        return DownloadWizardMethodSelectFragment()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
