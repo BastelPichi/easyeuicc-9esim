@@ -22,4 +22,8 @@
     <string name="lui_desc">Your device supports eSIMs. To connect to mobile network, download your eSIM issued by a carrier, or insert a physical SIM.</string>
     <string name="lui_skip">Skip</string>
     <string name="lui_download">Download eSIM</string>
+
+    <!-- Preference -->
+    <string name="pref_developer_tmapi_removable">Using TMAPI for removable</string>
+    <string name="pref_developer_tmapi_removable_desc">TMAPI (TelephonyManager API) will not be enabled in non-euicc mode and some removable eSIM cards may not work.\nEnable this option to skip detection and force TMAPI to be enabled.</string>
 </resources>
