@@ -42,10 +42,10 @@ class OmapiApduInterface(
     }
 
     override fun logicalChannelOpen(aid: ByteArray): Int {
-        val channel = session.openLogicalChannel(aid)
-        check(channel != null) { "Failed to open logical channel (${aid.encodeHex()})" }
         val index = channels.indexOf(null)
         check(index != -1) { "No free logical channel slots" }
+        val channel = session.openLogicalChannel(aid)
+        check(channel != null) { "Failed to open logical channel (${aid.encodeHex()})" }
         synchronized(channels) { channels[index] = channel }
         return index
     }

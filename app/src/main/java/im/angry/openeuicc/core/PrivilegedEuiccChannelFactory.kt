@@ -38,6 +38,7 @@ class PrivilegedEuiccChannelFactory(context: Context) : DefaultEuiccChannelFacto
                     ),
                     context.preferenceRepository.verboseLoggingFlow,
                     context.preferenceRepository.ignoreTLSCertificateFlow,
+                    context.preferenceRepository.isdRAidFallbackFlow,
                 )
             } catch (e: IllegalArgumentException) {
                 // Failed

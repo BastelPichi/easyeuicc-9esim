@@ -8,6 +8,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.CheckBoxPreference
+import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -72,11 +73,42 @@ open class SettingsFragment: PreferenceFragmentCompat() {
         requirePreference<CheckBoxPreference>("pref_advanced_verbose_logging")
             .bindBooleanFlow(preferenceRepository.verboseLoggingFlow)
 
+        requirePreference<EditTextPreference>("pref_developer_custom_aids")
+            .let(::setCustomAIDs)
+
         requirePreference<CheckBoxPreference>("pref_developer_unfiltered_profile_list")
             .bindBooleanFlow(preferenceRepository.unfilteredProfileListFlow)
 
         requirePreference<CheckBoxPreference>("pref_developer_ignore_tls_certificate")
             .bindBooleanFlow(preferenceRepository.ignoreTLSCertificateFlow)
+    }
+
+    private fun setCustomAIDs(preference: EditTextPreference) {
+        val flow = preferenceRepository.isdRAidFallbackFlow
+        val separator = "\n"
+
+        fun prepare(text: String) = text.uppercase().lines()
+            .map(String::trim).toSet()
+            .filter { it.length % 2 == 0 && it.length in 10..32 && it.all(Char::isHex) }
+            .take(10) // limit to 10 AIDs
+
+        lifecycleScope.launch {
+            flow.collect { preference.text = it.joinToString(separator) }
+        }
+
+        preference.setOnBindEditTextListener {
+            it.filters += allowedInputFilter { c -> c.isHex() || c == '\n' }
+            it.setText(prepare(it.text.toString()).joinToString(separator))
+            it.setSelection(it.text.length)
+            it.requestFocus()
+        }
+
+        preference.setOnPreferenceChangeListener { _, newValue ->
+            runBlocking {
+                flow.updatePreference(prepare(newValue as String).toSet())
+            }
+            true
+        }
     }
 
     protected fun <T : Preference> requirePreference(key: CharSequence) =

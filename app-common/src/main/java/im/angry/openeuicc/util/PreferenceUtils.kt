@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.fragment.app.Fragment
 import im.angry.openeuicc.OpenEuiccApplication
@@ -31,6 +32,7 @@ internal object PreferenceKeys {
 
     // ---- Developer Options ----
     val DEVELOPER_OPTIONS_ENABLED = booleanPreferencesKey("developer_options_enabled")
+    val ISD_R_AID_FALLBACK = stringSetPreferencesKey("isd_r_aid_fallback")
     val UNFILTERED_PROFILE_LIST = booleanPreferencesKey("unfiltered_profile_list")
     val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
 }
@@ -48,6 +50,7 @@ class PreferenceRepository(private val context: Context) {
 
     // ---- Developer Options ----
     val developerOptionsEnabledFlow = bindFlow(PreferenceKeys.DEVELOPER_OPTIONS_ENABLED, false)
+    val isdRAidFallbackFlow = bindFlow(PreferenceKeys.ISD_R_AID_FALLBACK, emptySet())
     val unfilteredProfileListFlow = bindFlow(PreferenceKeys.UNFILTERED_PROFILE_LIST, false)
     val ignoreTLSCertificateFlow = bindFlow(PreferenceKeys.IGNORE_TLS_CERTIFICATE, false)
 

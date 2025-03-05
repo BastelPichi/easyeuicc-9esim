@@ -57,6 +57,13 @@
         app:title="@string/pref_developer"
         app:iconSpaceReserved="false">
 
+        <EditTextPreference
+            app:iconSpaceReserved="false"
+            app:key="pref_developer_custom_aids"
+            app:summary="@string/pref_developer_custom_aids_desc"
+            app:dialogMessage="@string/pref_developer_custom_aids_desc"
+            app:title="@string/pref_developer_custom_aids" />
+
         <CheckBoxPreference
             app:iconSpaceReserved="false"
             app:key="pref_developer_unfiltered_profile_list"
