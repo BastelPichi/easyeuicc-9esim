@@ -19,7 +19,6 @@ import im.angry.openeuicc.ui.BaseEuiccAccessActivity
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity: BaseEuiccAccessActivity() {
@@ -61,15 +60,15 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         })
 
         state = DownloadWizardState(
-            null,
-            intent.getIntExtra("selectedLogicalSlot", 0),
-            "",
-            null,
-            null,
-            null,
-            false,
-            -1,
-            null
+            currentStepFragmentClassName = null,
+            selectedLogicalSlot = intent.getIntExtra("selectedLogicalSlot", 0),
+            smdp = "",
+            matchingId = null,
+            confirmationCode = null,
+            imei = null,
+            downloadStarted = false,
+            downloadTaskID = -1,
+            downloadError = null
         )
 
         progressBar = requireViewById(R.id.progress)
@@ -237,18 +236,28 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
     }
 
+    internal fun getActivationCodeFromIntent(): String? {
+        val uri = intent.data ?: return null
+        if (uri.scheme != "openeuicc" || uri.host != "lpa") return null
+        return uri.path?.drop(1)
+    }
+
     abstract class DownloadWizardStepFragment : Fragment(), OpenEuiccContextMarker {
         protected val state: DownloadWizardState
-            get() = (requireActivity() as DownloadWizardActivity).state
+            get() = requireWizardActivity().state
 
         abstract val hasNext: Boolean
         abstract val hasPrev: Boolean
         abstract fun createNextFragment(): DownloadWizardStepFragment?
         abstract fun createPrevFragment(): DownloadWizardStepFragment?
 
+        protected fun requireWizardActivity(): DownloadWizardActivity {
+            return requireActivity() as DownloadWizardActivity
+        }
+
         protected fun gotoNextFragment(next: DownloadWizardStepFragment? = null) {
             val realNext = next ?: createNextFragment()
-            (requireActivity() as DownloadWizardActivity).showFragment(
+            requireWizardActivity().showFragment(
                 realNext!!,
                 R.anim.slide_in_right,
                 R.anim.slide_out_left
@@ -256,11 +265,11 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         protected fun hideProgressBar() {
-            (requireActivity() as DownloadWizardActivity).progressBar.visibility = View.GONE
+            requireWizardActivity().progressBar.visibility = View.GONE
         }
 
         protected fun showProgressBar(progressValue: Int) {
-            (requireActivity() as DownloadWizardActivity).progressBar.apply {
+            requireWizardActivity().progressBar.apply {
                 visibility = View.VISIBLE
                 if (progressValue >= 0) {
                     isIndeterminate = false
@@ -272,7 +281,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         protected fun refreshButtons() {
-            (requireActivity() as DownloadWizardActivity).refreshButtons()
+            requireWizardActivity().refreshButtons()
         }
 
         open fun beforeNext() {}

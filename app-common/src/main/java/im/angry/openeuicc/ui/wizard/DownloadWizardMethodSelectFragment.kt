@@ -89,6 +89,11 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
     override fun createPrevFragment(): DownloadWizardActivity.DownloadWizardStepFragment =
         DownloadWizardSlotSelectFragment()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        requireWizardActivity().getActivationCodeFromIntent()?.let(::processLpaString)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

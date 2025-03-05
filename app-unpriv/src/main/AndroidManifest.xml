@@ -24,6 +24,24 @@
         </activity>
 
         <activity
+            android:name="im.angry.openeuicc.ui.wizard.DownloadWizardActivity"
+            android:exported="true"
+            android:label="@string/download_wizard">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Accepts URIs that begin with "openeuicc://lpa" -->
+                <!-- for example: "openeuicc://lpa/LPA:1$..." -->
+                <data
+                    android:host="lpa"
+                    android:scheme="openeuicc" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name="im.angry.openeuicc.ui.CompatibilityCheckActivity"
             android:exported="false"
             android:label="@string/compatibility_check" />
