@@ -48,9 +48,13 @@ class EuiccChannelImpl(
     override fun close() = lpa.close()
 
     private fun findISDRAID(): ByteArray {
+        val aids = buildList {
+            add(STANDARD_ISDR_AID.encodeHex())
+            addAll(runBlocking { isdRAidFallback.first() })
+        }
         try {
             apduInterface.connect()
-            for (aid in runBlocking { isdRAidFallback.first() }) {
+            for (aid in aids) {
                 val channel = aid.decodeHex()
                 try {
                     Log.d(TAG, "Trying ISD-R AID: $aid")
