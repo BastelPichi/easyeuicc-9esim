@@ -60,12 +60,14 @@
         <CheckBoxPreference
             app:iconSpaceReserved="false"
             app:key="pref_developer_unfiltered_profile_list"
+            app:order="2"
             app:summary="@string/pref_developer_unfiltered_profile_list_desc"
             app:title="@string/pref_developer_unfiltered_profile_list" />
 
         <CheckBoxPreference
             app:iconSpaceReserved="false"
             app:key="pref_developer_ignore_tls_certificate"
+            app:order="3"
             app:summary="@string/pref_developer_ignore_tls_certificate_desc"
             app:title="@string/pref_developer_ignore_tls_certificate" />
 

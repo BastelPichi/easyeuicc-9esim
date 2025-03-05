@@ -6,9 +6,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.util.encodeHex
+import im.angry.openeuicc.util.preferenceRepository
 import java.security.MessageDigest
 
 class UnprivilegedSettingsFragment : SettingsFragment() {
@@ -29,7 +31,11 @@ class UnprivilegedSettingsFragment : SettingsFragment() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         super.onCreatePreferences(savedInstanceState, rootKey)
         addPreferencesFromResource(R.xml.pref_unprivileged_settings)
+        mergePreferenceOverlay("pref_developer_overlay", "pref_developer")
         mergePreferenceOverlay("pref_info_overlay", "pref_info")
+
+        requirePreference<CheckBoxPreference>("pref_developer_refreshed_after_switch")
+            .bindBooleanFlow(preferenceRepository.refreshAfterSwitchFlow)
 
         requirePreference<Preference>("pref_info_ara_m").apply {
             summary = firstSigner.encodeHex()

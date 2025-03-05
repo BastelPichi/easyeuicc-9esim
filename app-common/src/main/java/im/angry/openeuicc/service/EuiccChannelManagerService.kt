@@ -457,7 +457,8 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                     slotId,
                     portId
                 ) { channel ->
-                    if (!channel.lpa.switchProfile(iccid, enable, refresh = true)) {
+                    val refresh = preferenceRepository.refreshAfterSwitchFlow.first()
+                    if (!channel.lpa.switchProfile(iccid, enable, refresh = refresh)) {
                         // Sometimes, we *can* enable or disable the profile, but we cannot
                         // send the refresh command to the modem because the profile somehow
                         // makes the modem "busy". In this case, we can still switch by setting
@@ -465,7 +466,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                         // user resets the modem manually by toggling airplane mode or rebooting.
                         Pair(channel.lpa.switchProfile(iccid, enable, refresh = false), false)
                     } else {
-                        Pair(true, true)
+                        Pair(true, refresh)
                     }
                 }
 
