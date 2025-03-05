@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -98,6 +99,7 @@ open class SettingsFragment: PreferenceFragmentCompat() {
 
         preference.setOnBindEditTextListener {
             it.filters += allowedInputFilter { c -> c.isHex() || c == '\n' }
+            it.typeface = Typeface.MONOSPACE
             it.setText(prepare(it.text.toString()).joinToString(separator))
             it.setSelection(it.text.length)
             it.requestFocus()
