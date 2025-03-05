@@ -75,7 +75,7 @@ class HttpInterfaceImpl(
 
             return HttpInterface.HttpResponse(conn.responseCode, bytes)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to transmit", e)
             throw e
         }
     }

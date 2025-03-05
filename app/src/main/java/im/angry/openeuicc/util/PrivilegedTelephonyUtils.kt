@@ -3,6 +3,7 @@ package im.angry.openeuicc.util
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import android.telephony.UiccSlotMapping
+import android.util.Log
 import im.angry.openeuicc.core.EuiccChannel
 import im.angry.openeuicc.core.EuiccChannelManager
 import kotlinx.coroutines.flow.onEach
@@ -68,7 +69,7 @@ suspend fun TelephonyManager.updateSimSlotMapping(
     try {
         simSlotMapping = newMapping
     } catch (e: Exception) {
-        e.printStackTrace()
+        Log.e(TAG, "Failed to update sim slot mapping", e)
         undo.forEach { it() } // Undo what we just did
         throw e // Rethrow for caller to handle
     }

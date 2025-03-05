@@ -99,7 +99,7 @@ suspend inline fun EuiccChannelManager.beginTrackedOperation(
             }
         } catch (e: Exception) {
             // Ignore any error during notification handling
-            e.printStackTrace()
+            Log.e(TAG, "Error during notification handling", e)
         }
     }
     Log.d(TAG, "Operation complete")

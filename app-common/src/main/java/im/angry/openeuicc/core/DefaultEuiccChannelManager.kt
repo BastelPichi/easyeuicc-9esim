@@ -258,7 +258,7 @@ open class DefaultEuiccChannelManager(
                     }
                 } catch (e: Exception) {
                     // Ignored -- skip forward
-                    e.printStackTrace()
+                    Log.e(TAG, "Failed to open eUICC channel on USB device ${device.deviceId}:${device.vendorId}", e)
                 }
                 Log.i(TAG, "No valid eUICC channel found on USB device ${device.deviceId}:${device.vendorId}")
             }

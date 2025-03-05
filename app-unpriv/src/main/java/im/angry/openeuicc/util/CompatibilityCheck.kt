@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.se.omapi.Reader
 import android.telephony.TelephonyManager
+import android.util.Log
 import im.angry.easyeuicc.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -155,7 +156,7 @@ internal class IsdrChannelAccessCheck(private val context: Context): Compatibili
                 // SecurityException is only thrown when Channel is constructed, which means everything else needs to succeed
                 Pair(it.slotIndex, State.SUCCESS)
             } catch (e: IOException) {
-                e.printStackTrace()
+                Log.e(TAG, "Failed to open logical channel", e)
                 if (e.message?.contains("Secure Element is not present") == true) {
                     failureDescription = context.getString(R.string.compatibility_check_isdr_channel_desc_unknown)
                     Pair(it.slotIndex, State.FAILURE_UNKNOWN)
@@ -163,7 +164,7 @@ internal class IsdrChannelAccessCheck(private val context: Context): Compatibili
                     Pair(it.slotIndex, State.FAILURE)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e(TAG, "Failed to open logical channel", e)
                 Pair(it.slotIndex, State.FAILURE)
             }
         }.fold(Pair(mutableListOf<Int>(), State.SUCCESS)) { (ids, result), (id, ok) ->

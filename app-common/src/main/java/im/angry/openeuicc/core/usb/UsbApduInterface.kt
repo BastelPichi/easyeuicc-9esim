@@ -42,7 +42,7 @@ class UsbApduInterface(
             // https://www.usb.org/sites/default/files/DWG_Smart-Card_USB-ICC_ICCD_rev10.pdf
             atr = transceiver.iccPowerOn().data
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "Failed to power on ICC", e)
             throw e
         }
     }
@@ -60,7 +60,7 @@ class UsbApduInterface(
         val resp = try {
             transmitApduByChannel(req, 0)
         } catch (e: Exception) {
-            e.printStackTrace()
+            Log.e(TAG, "OPEN LOGICAL CHANNEL failed", e)
             return -1
         }
 

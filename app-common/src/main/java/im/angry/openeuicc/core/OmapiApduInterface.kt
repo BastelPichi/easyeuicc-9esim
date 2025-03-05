@@ -82,8 +82,7 @@ class OmapiApduInterface(
 
             throw RuntimeException("Retransmit attempts exhausted; this was likely caused by checksum errors")
         } catch (e: Exception) {
-            Log.e(TAG, "OMAPI APDU exception")
-            e.printStackTrace()
+            Log.e(TAG, "OMAPI APDU exception", e)
             throw e
         }
     }
