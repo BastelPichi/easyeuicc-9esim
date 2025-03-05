@@ -1,6 +1,5 @@
 package im.angry.openeuicc.ui.wizard
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
