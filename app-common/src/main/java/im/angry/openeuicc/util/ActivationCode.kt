@@ -24,8 +24,8 @@ data class ActivationCode(
 
     init {
         check(isFQDN(address)) { "Invalid SM-DP+ address" }
-        check(isMatchingID(matchingId)) { "Invalid Matching ID" }
-        check(isObjectIdentifier(oid)) { "Invalid OID" }
+        check(matchingId == null || isMatchingID(matchingId)) { "Invalid Matching ID" }
+        check(oid == null || isObjectIdentifier(oid)) { "Invalid OID" }
     }
 
     override fun toString(): String {
@@ -47,7 +47,7 @@ data class ActivationCode(
  * restricted to the Alphanumeric mode character set defined in table 5 of ISO/IEC 18004 [15]
  * excluding '$'
  */
-private fun isFQDN(input: String): Boolean {
+private fun isFQDN(input: CharSequence): Boolean {
     if (input.isEmpty() || input.length > 255) return false
     val parts = input.split('.')
     if (parts.size < 2) return false
@@ -64,20 +64,14 @@ private fun isFQDN(input: String): Boolean {
  *
  * Matching ID is a string of alphanumeric characters and hyphens.
  */
-private fun isMatchingID(input: String?): Boolean {
-    if (input == null) return true
-    return input.all { it.isLetterOrDigit() || it == '-' }
-}
+private fun isMatchingID(input: CharSequence) =
+    input.all { it.isLetterOrDigit() || it == '-' }
 
 /**
  * SGP.22 4.1 Activation Code (v2.2.2, p111)
  *
  * SM-DP+ OID in the CERT.DPauth.ECDSA
  */
-private fun isObjectIdentifier(input: String?): Boolean {
-    if (input == null) return true
-    if (input.length > 255) return false
-    val parts = input.split('.')
-    if (parts.size < 2) return false
-    return parts.all { it.all(Char::isDigit) }
-}
+private fun isObjectIdentifier(input: CharSequence) = input.length < 255 &&
+        input.count { it == '.' } > 2 &&
+        input.split('.').all { it.isNotEmpty() && it.all(Char::isDigit) }

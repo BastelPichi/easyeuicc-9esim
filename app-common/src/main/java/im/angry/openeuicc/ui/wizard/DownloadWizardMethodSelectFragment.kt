@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.ClipboardManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,9 @@ import com.journeyapps.barcodescanner.ScanOptions
 import im.angry.openeuicc.common.R
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
@@ -130,28 +133,30 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
     }
 
     private fun processLpaString(input: String) {
+        if (runBlocking { preferenceRepository.verboseLoggingFlow.first() }) {
+            Log.i(TAG, "Processing LPA string: $input")
+        }
         try {
             val parsed = ActivationCode.fromString(input)
             state.smdp = parsed.address
             state.matchingId = parsed.matchingId
             if (parsed.confirmationCodeRequired) {
-                AlertDialog.Builder(requireContext()).apply {
-                    setTitle(R.string.profile_download_required_confirmation_code)
-                    setMessage(R.string.profile_download_required_confirmation_code_message)
-                    setCancelable(true)
-                    setPositiveButton(android.R.string.ok, null)
-                    show()
-                }
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.profile_download_required_confirmation_code)
+                    .setMessage(R.string.profile_download_required_confirmation_code_message)
+                    .setCancelable(true)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
             }
             gotoNextFragment(DownloadWizardDetailsFragment())
-        } catch (e: IllegalArgumentException) {
-            AlertDialog.Builder(requireContext()).apply {
-                setTitle(R.string.profile_download_incorrect_lpa_string)
-                setMessage(R.string.profile_download_incorrect_lpa_string_message)
-                setCancelable(true)
-                setNegativeButton(android.R.string.cancel, null)
-                show()
-            }
+        } catch (e: IllegalStateException) {
+            Log.d(TAG, "Failed to parse LPA string", e)
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.profile_download_incorrect_lpa_string)
+                .setMessage(R.string.profile_download_incorrect_lpa_string_message)
+                .setCancelable(true)
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
 
