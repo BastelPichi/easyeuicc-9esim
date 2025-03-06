@@ -37,16 +37,17 @@ class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.open_sim_toolkit) {
+    override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
+        R.id.open_sim_toolkit -> {
             SIMToolkit.getDisabledPackageName(item.intent)?.also { packageName ->
                 val label = requireContext().packageManager.getApplicationLabel(packageName)
                 val message = getString(R.string.toast_prompt_to_enable_sim_toolkit, label)
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
             }
-            return super.onOptionsItemSelected(item)
+            super.onOptionsItemSelected(item) // handling intent
         }
-        return super.onOptionsItemSelected(item)
+
+        else -> super.onOptionsItemSelected(item)
     }
 }
 
