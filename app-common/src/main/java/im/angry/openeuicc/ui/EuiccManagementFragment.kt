@@ -57,7 +57,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
     private lateinit var fab: FloatingActionButton
     private lateinit var profileList: RecyclerView
     private var logicalSlotId: Int = -1
-    private var eid: String? = null
+    private lateinit var eid: String
 
     private val adapter = EuiccProfileAdapter()
 
@@ -164,7 +164,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
         }
 
         R.id.euicc_memory_reset -> {
-            EuiccMemoryResetFragment.newInstance(slotId, portId, eid!!)
+            EuiccMemoryResetFragment.newInstance(slotId, portId, eid)
                 .show(childFragmentManager, EuiccMemoryResetFragment.TAG)
             true
         }
