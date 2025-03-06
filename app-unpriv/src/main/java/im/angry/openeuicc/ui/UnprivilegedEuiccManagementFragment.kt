@@ -39,9 +39,7 @@ class UnprivilegedEuiccManagementFragment : EuiccManagementFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.open_sim_toolkit) {
-            val intent = item.intent ?: return false
-            if (intent.action == Settings.ACTION_APPLICATION_DETAILS_SETTINGS) {
-                val packageName = intent.data!!.schemeSpecificPart
+            SIMToolkit.getDisabledPackageName(item.intent)?.also { packageName ->
                 val label = requireContext().packageManager.getApplicationLabel(packageName)
                 val message = getString(R.string.toast_prompt_to_enable_sim_toolkit, label)
                 Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
