@@ -39,6 +39,7 @@
 
                 <!-- Accepts URIs that begin with "lpa:" -->
                 <!-- for example: "LPA:1$..." -->
+                <!-- refs: https://www.iana.org/assignments/uri-schemes/prov/lpa -->
                 <data
                     android:scheme="lpa"
                     android:sspPrefix="1$" />
