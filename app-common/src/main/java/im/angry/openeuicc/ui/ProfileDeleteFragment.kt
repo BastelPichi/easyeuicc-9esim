@@ -20,13 +20,10 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
         private const val FIELD_ICCID = "iccid"
         private const val FIELD_NAME = "name"
 
-        fun newInstance(slotId: Int, portId: Int, iccid: String, name: String): ProfileDeleteFragment {
-            val instance = newInstanceEuicc(ProfileDeleteFragment::class.java, slotId, portId)
-            instance.requireArguments().apply {
+        fun newInstance(slotId: Int, portId: Int, iccid: String, name: String) =
+            newInstanceEuicc(ProfileDeleteFragment::class.java, slotId, portId) {
                 putString(FIELD_ICCID, iccid)
                 putString(FIELD_NAME, name)
-            }
-            return instance
         }
     }
 

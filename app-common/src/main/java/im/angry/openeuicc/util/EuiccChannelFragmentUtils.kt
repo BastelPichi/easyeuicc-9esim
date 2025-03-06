@@ -12,12 +12,12 @@ private const val FIELD_PORT_ID = "portId"
 
 interface EuiccChannelFragmentMarker : OpenEuiccContextMarker
 
-typealias ArgumentSetter = Bundle.() -> Unit
+private typealias BundleSetter = Bundle.() -> Unit
 
 // We must use extension functions because there is no way to add bounds to the type of "self"
 // in the definition of an interface, so the only way is to limit where the extension functions
 // can be applied.
-fun <T> newInstanceEuicc(clazz: Class<T>, slotId: Int, portId: Int, addArguments: ArgumentSetter): T
+fun <T> newInstanceEuicc(clazz: Class<T>, slotId: Int, portId: Int, addArguments: BundleSetter = {}): T
         where T : Fragment, T : EuiccChannelFragmentMarker =
     clazz.getDeclaredConstructor().newInstance().apply {
         arguments = Bundle()

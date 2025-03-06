@@ -20,14 +20,11 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
     companion object {
         const val TAG = "ProfileRenameFragment"
 
-        fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String): ProfileRenameFragment {
-            val instance = newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId)
-            instance.requireArguments().apply {
+        fun newInstance(slotId: Int, portId: Int, iccid: String, currentName: String) =
+            newInstanceEuicc(ProfileRenameFragment::class.java, slotId, portId) {
                 putString("iccid", iccid)
                 putString("currentName", currentName)
             }
-            return instance
-        }
     }
 
     private lateinit var toolbar: Toolbar
