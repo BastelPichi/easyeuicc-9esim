@@ -495,4 +495,19 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                 preferenceRepository.notificationSwitchFlow.first()
             }
         }
+
+    fun launchMemoryReset(slotId: Int, portId: Int): ForegroundTaskSubscriberFlow =
+        launchForegroundTask(
+            getString(R.string.task_euicc_memory_reset),
+            getString(R.string.task_euicc_memory_reset_failure),
+            R.drawable.ic_task_delete
+        ) {
+            euiccChannelManager.beginTrackedOperation(slotId, portId) {
+                euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
+                    channel.lpa.euiccMemoryReset()
+                }
+
+                preferenceRepository.euiccMemoryResetFlow.first()
+            }
+        }
 }
