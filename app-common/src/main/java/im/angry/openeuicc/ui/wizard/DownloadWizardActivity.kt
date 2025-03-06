@@ -238,11 +238,8 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
 
     internal fun getActivationCodeFromIntent(): String? {
         val uri = intent.data ?: return null
-        return when {
-            uri.scheme == "lpa" -> uri.schemeSpecificPart
-            uri.scheme == "openeuicc" && uri.host == "lpa" -> uri.path?.drop(1)
-            else -> null
-        }
+        if (uri.scheme != "lpa") return null
+        return uri.schemeSpecificPart
     }
 
     abstract class DownloadWizardStepFragment : Fragment(), OpenEuiccContextMarker {
