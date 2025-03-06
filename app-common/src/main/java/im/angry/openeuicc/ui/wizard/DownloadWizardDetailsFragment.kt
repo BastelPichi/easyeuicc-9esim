@@ -1,13 +1,13 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
-import im.angry.openeuicc.util.ActivationCode
 
 class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     private var inputComplete = false
@@ -73,13 +73,7 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     }
 
     private fun updateInputCompleteness() {
-        val result = runCatching {
-            ActivationCode(
-                smdp.editText!!.text.toString(),
-                matchingId.editText!!.text.toString(),
-            )
-        }
-        inputComplete = result.isSuccess
+        inputComplete = Patterns.DOMAIN_NAME.matcher(smdp.editText!!.text).matches()
         refreshButtons()
     }
 }
