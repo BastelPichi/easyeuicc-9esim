@@ -49,7 +49,9 @@ data class ActivationCode(
  */
 private fun isFQDN(input: String): Boolean {
     if (input.isEmpty() || input.length > 255) return false
-    for (part in input.split('.')) {
+    val parts = input.split('.')
+    if (parts.size < 2) return false
+    for (part in parts) {
         if (part.isEmpty() || part.length > 63) return false
         if (part.all { it.isLetterOrDigit() || it == '-' }) continue
         return false
@@ -68,10 +70,14 @@ private fun isMatchingID(input: String?): Boolean {
 }
 
 /**
+ * SGP.22 4.1 Activation Code (v2.2.2, p111)
+ *
  * SM-DP+ OID in the CERT.DPauth.ECDSA
  */
 private fun isObjectIdentifier(input: String?): Boolean {
     if (input == null) return true
     if (input.length > 255) return false
-    return input.split('.').all { it.all(Char::isDigit) }
+    val parts = input.split('.')
+    if (parts.size < 2) return false
+    return parts.all { it.all(Char::isDigit) }
 }
