@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
-import android.widget.Toast
 import androidx.annotation.ArrayRes
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.core.EuiccChannelManager
