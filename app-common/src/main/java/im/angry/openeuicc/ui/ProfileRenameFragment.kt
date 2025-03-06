@@ -118,15 +118,9 @@ class ProfileRenameFragment : BaseMaterialDialogFragment(), EuiccChannelFragment
                 }
 
                 else -> {
-                    if (parentFragment is EuiccProfilesChangedListener) {
-                        (parentFragment as EuiccProfilesChangedListener).onEuiccProfilesChanged()
-                    }
+                    parentFragment?.notifyEuiccProfilesChanged()
 
-                    try {
-                        dismiss()
-                    } catch (e: IllegalStateException) {
-                        // Ignored
-                    }
+                    runCatching(::dismiss)
                 }
             }
         }

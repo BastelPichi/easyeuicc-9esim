@@ -92,11 +92,7 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
             euiccChannelManagerService.launchProfileDeleteTask(slotId, portId, iccid).onStart {
-                if (parentFragment is EuiccProfilesChangedListener) {
-                    // Trigger a refresh in the parent fragment -- it should wait until
-                    // any foreground task is completed before actually doing a refresh
-                    (parentFragment as EuiccProfilesChangedListener).onEuiccProfilesChanged()
-                }
+                parentFragment?.notifyEuiccProfilesChanged()
 
                 try {
                     dismiss()
