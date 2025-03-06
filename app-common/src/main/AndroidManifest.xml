@@ -37,6 +37,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
+                <!-- Accepts URIs that begin with "lpa:" -->
+                <!-- for example: "LPA:1$..." -->
+                <data
+                    android:scheme="lpa"
+                    android:sspPrefix="1$" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
                 <!-- Accepts URIs that begin with "openeuicc://lpa" -->
                 <!-- for example: "openeuicc://lpa/LPA:1$..." -->
                 <data android:scheme="openeuicc" />
