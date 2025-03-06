@@ -48,9 +48,8 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         matchingId = view.requireViewById(R.id.profile_download_code)
         confirmationCode = view.requireViewById(R.id.profile_download_confirmation_code)
         imei = view.requireViewById(R.id.profile_download_imei)
-        smdp.editText!!.addTextChangedListener {
-            updateInputCompleteness()
-        }
+        smdp.editText!!.addTextChangedListener { updateInputCompleteness() }
+        imei.editText!!.addTextChangedListener { updateInputCompleteness() }
         return view
     }
 
@@ -69,7 +68,43 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     }
 
     private fun updateInputCompleteness() {
-        inputComplete = Patterns.DOMAIN_NAME.matcher(smdp.editText!!.text).matches()
+        validate()
+        val errors = arrayOf(
+            smdp.error,
+            imei.error,
+        )
+        inputComplete = errors.all { it == null }
         refreshButtons()
     }
+
+    private fun validate() {
+        smdp.error = smdp.editText!!.text?.let {
+            when {
+                it.isEmpty() -> getString(R.string.download_wizard_error_address_required)
+                it.contains("://") -> getString(R.string.download_wizard_error_cannot_url)
+                Patterns.DOMAIN_NAME.matcher(it).matches() -> null
+                else -> getString(R.string.download_wizard_error_address_invalid_format)
+            }
+        }
+        imei.error = imei.editText!!.text?.let {
+            when {
+                it.isEmpty() -> null
+                it.length == 15 && luhnValid(it) -> null
+                else -> getString(R.string.download_wizard_error_imei_invalid_format)
+            }
+        }
+    }
+}
+
+private fun luhnValid(number: CharSequence, mod: Int = 10): Boolean {
+    if (!number.all(Char::isDigit)) return false
+    var checksum = 0
+    for (i in number.length - 1 downTo 0 step 2) {
+        checksum += number[i] - '0'
+    }
+    for (i in number.length - 2 downTo 0 step 2) {
+        val n: Int = (number[i] - '0') * 2
+        checksum += if (n > 9) n - 9 else n
+    }
+    return checksum % mod == 0
 }

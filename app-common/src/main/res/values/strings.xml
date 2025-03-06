@@ -98,6 +98,10 @@
     <string name="download_wizard_diagnostics_last_apdu_exception">Last APDU exception:</string>
     <string name="download_wizard_diagnostics_save">Save</string>
     <string name="download_wizard_diagnostics_file_template">Diagnostics at %s</string>
+    <string name="download_wizard_error_address_required">Server address is required</string>
+    <string name="download_wizard_error_cannot_url">Server address not is URL</string>
+    <string name="download_wizard_error_address_invalid_format">Invalid Server address</string>
+    <string name="download_wizard_error_imei_invalid_format">Invalid IMEI format</string>
 
     <string name="logs_saved_message">Logs have been saved to the selected path. Would you like to share the log through another app?</string>
 
