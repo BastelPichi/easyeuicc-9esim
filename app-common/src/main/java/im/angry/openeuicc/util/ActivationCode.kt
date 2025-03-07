@@ -11,7 +11,7 @@ data class ActivationCode(
             val components = input.removePrefix("LPA:").split('$')
                 .map(String::trim).map { it.ifBlank { null } }
             if (components.size < 2 || components[0] != "1" || components[1] == null) {
-                throw IllegalArgumentException("Invalid activation code format")
+                throw IllegalStateException("Invalid activation code format")
             }
             return ActivationCode(
                 components[1]!!,
