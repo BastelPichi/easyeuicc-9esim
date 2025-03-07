@@ -115,5 +115,5 @@ private fun isMatchingID(input: CharSequence) =
 private fun luhnValid(input: CharSequence) = input.all(Char::isDigit) && input
     .map(Char::digitToInt)
     .mapIndexed { index, digit -> if (index % 2 == 0) digit else digit * 2 }
-    .fold(0) { sum, n -> sum + if (n > 9) n - 9 else n }
+    .sumOf { if (it > 9) it - 9 else it }
     .rem(10) == 0
