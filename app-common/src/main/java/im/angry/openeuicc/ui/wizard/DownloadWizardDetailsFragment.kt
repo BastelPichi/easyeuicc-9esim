@@ -96,7 +96,9 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         imei.error = imei.editText!!.text?.let {
             when {
                 it.isEmpty() -> null
-                it.length == 15 && luhnValid(it) -> null
+                !it.all(Char::isDigit) -> getString(R.string.download_wizard_error_imei_not_numeric)
+                it.length != 15 -> getString(R.string.download_wizard_error_imei_length, it.length)
+                luhnValid(it) -> null
                 else -> getString(R.string.download_wizard_error_imei_invalid_format)
             }
         }

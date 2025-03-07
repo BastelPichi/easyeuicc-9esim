@@ -101,7 +101,10 @@
     <string name="download_wizard_error_address_required">Server address is required</string>
     <string name="download_wizard_error_cannot_url">Server address not is URL</string>
     <string name="download_wizard_error_address_invalid_format">Invalid Server address</string>
-    <string name="download_wizard_error_imei_invalid_format">Invalid IMEI format</string>
+    <string name="download_wizard_error_matching_id_invalid_format">Invalid Matching ID format</string>
+    <string name="download_wizard_error_imei_not_numeric">The IMEI must be numeric</string>
+    <string name="download_wizard_error_imei_length">The IMEI length error (expected: 15, actual: %d)</string>
+    <string name="download_wizard_error_imei_invalid_format">The IMEI format check failed</string>
 
     <string name="logs_saved_message">Logs have been saved to the selected path. Would you like to share the log through another app?</string>
 
@@ -183,5 +186,4 @@
     <string name="pref_info_app_version">App Version</string>
     <string name="pref_info_source_code">Source Code</string>
     <string name="pref_info_source_code_url" translatable="false">https://gitea.angry.im/PeterCxy/OpenEUICC</string>
-    <string name="download_wizard_error_matching_id_invalid_format">Invalid Matching ID format</string>
 </resources>
