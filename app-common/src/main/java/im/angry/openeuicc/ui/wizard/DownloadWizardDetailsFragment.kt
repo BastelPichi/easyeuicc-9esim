@@ -73,12 +73,9 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
 
     private fun updateInputCompleteness() {
         validate()
-        val errors = arrayOf(
-            smdp.error,
-            matchingId.error,
-            imei.error,
-        )
-        inputComplete = errors.all { it == null }
+        val layouts = arrayOf(smdp, matchingId, imei)
+        for (layout in layouts) layout.isErrorEnabled = layout.error != null
+        inputComplete = layouts.all { it.error == null }
         refreshButtons()
     }
 
