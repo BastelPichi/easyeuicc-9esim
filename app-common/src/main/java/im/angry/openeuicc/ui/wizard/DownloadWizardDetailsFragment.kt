@@ -112,15 +112,8 @@ private fun isFQDN(input: CharSequence) =
 private fun isMatchingID(input: CharSequence) =
     input.all { it.isLetterOrDigit() || it == '-' }
 
-private fun luhnValid(number: CharSequence, mod: Int = 10): Boolean {
-    if (!number.all(Char::isDigit)) return false
-    var checksum = 0
-    for (i in number.length - 1 downTo 0 step 2) {
-        checksum += number[i] - '0'
-    }
-    for (i in number.length - 2 downTo 0 step 2) {
-        val n: Int = (number[i] - '0') * 2
-        checksum += if (n > 9) n - 9 else n
-    }
-    return checksum % mod == 0
-}
+private fun luhnValid(input: CharSequence) = input.all(Char::isDigit) && input
+    .map(Char::digitToInt)
+    .mapIndexed { index, digit -> if (index % 2 == 0) digit else digit * 2 }
+    .fold(0) { sum, n -> sum + if (n > 9) n - 9 else n }
+    .rem(10) == 0
