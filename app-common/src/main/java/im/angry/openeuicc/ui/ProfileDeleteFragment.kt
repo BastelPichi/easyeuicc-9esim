@@ -88,15 +88,12 @@ class ProfileDeleteFragment : DialogFragment(), EuiccChannelFragmentMarker {
         requireParentFragment().lifecycleScope.launch {
             ensureEuiccChannelManager()
             euiccChannelManagerService.waitForForegroundTask()
-            euiccChannelManagerService.launchProfileDeleteTask(slotId, portId, iccid).onStart {
-                parentFragment?.notifyEuiccProfilesChanged()
-
-                try {
-                    dismiss()
-                } catch (e: IllegalStateException) {
-                    // Ignored
+            euiccChannelManagerService.launchProfileDeleteTask(slotId, portId, iccid)
+                .onStart {
+                    parentFragment?.notifyEuiccProfilesChanged()
+                    runCatching(::dismiss)
                 }
-            }.waitDone()
+                .waitDone()
         }
     }
 }
