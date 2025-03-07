@@ -89,7 +89,6 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         }
         matchingId.error = matchingId.editText!!.text?.let {
             when {
-                it.isEmpty() -> null
                 isMatchingID(it) -> null
                 else -> getString(R.string.download_wizard_error_matching_id_invalid_format)
             }
@@ -104,13 +103,19 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
     }
 }
 
-private fun isFQDN(input: CharSequence) =
-    input.length < 255 && input.count { it == '.' } > 2 && input.split('.').all { part ->
-        part.isNotEmpty() && part.length < 64 && part.all { it.isLetterOrDigit() || it == '-' }
+private fun isFQDN(input: CharSequence): Boolean {
+    if (input.isEmpty() || input.length > 255) return false
+    if (!input.contains('.')) return false
+    for (label in input.split('.')) {
+        if (label.isEmpty() || label.length > 63) return false
+        if (label.all { it.isLetterOrDigit() || it == '-' }) continue
+        return false
     }
+    return true
+}
 
 private fun isMatchingID(input: CharSequence) =
-    input.all { it.isLetterOrDigit() || it == '-' }
+    input.isEmpty() || input.all { it.isLetterOrDigit() || it == '-' }
 
 private fun luhnValid(input: CharSequence) = input.all(Char::isDigit) && input
     .map(Char::digitToInt)
