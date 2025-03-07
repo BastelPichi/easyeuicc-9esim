@@ -31,7 +31,7 @@
             android:exported="true"
             android:name="im.angry.openeuicc.ui.wizard.DownloadWizardActivity"
             android:label="@string/download_wizard">
-            <intent-filter>
+            <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -42,6 +42,9 @@
                 <!-- refs: https://www.iana.org/assignments/uri-schemes/prov/lpa -->
                 <data
                     android:scheme="lpa"
+                    android:sspPrefix="1$" />
+                <data
+                    android:scheme="LPA"
                     android:sspPrefix="1$" />
             </intent-filter>
         </activity>
