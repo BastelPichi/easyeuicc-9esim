@@ -500,7 +500,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
         launchForegroundTask(
             getString(R.string.task_euicc_memory_reset),
             getString(R.string.task_euicc_memory_reset_failure),
-            R.drawable.ic_task_delete
+            R.drawable.ic_euicc_memory_reset
         ) {
             euiccChannelManager.beginTrackedOperation(slotId, portId) {
                 euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
