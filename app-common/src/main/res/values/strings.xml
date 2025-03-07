@@ -183,4 +183,5 @@
     <string name="pref_info_app_version">App Version</string>
     <string name="pref_info_source_code">Source Code</string>
     <string name="pref_info_source_code_url" translatable="false">https://gitea.angry.im/PeterCxy/OpenEUICC</string>
+    <string name="download_wizard_error_matching_id_invalid_format">Invalid Matching ID format</string>
 </resources>

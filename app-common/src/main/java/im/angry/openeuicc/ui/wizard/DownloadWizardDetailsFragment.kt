@@ -49,6 +49,7 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         confirmationCode = view.requireViewById(R.id.profile_download_confirmation_code)
         imei = view.requireViewById(R.id.profile_download_imei)
         smdp.editText!!.addTextChangedListener { updateInputCompleteness() }
+        matchingId.editText!!.addTextChangedListener { updateInputCompleteness() }
         imei.editText!!.addTextChangedListener { updateInputCompleteness() }
         return view
     }
@@ -71,6 +72,7 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         validate()
         val errors = arrayOf(
             smdp.error,
+            matchingId.error,
             imei.error,
         )
         inputComplete = errors.all { it == null }
@@ -82,8 +84,15 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
             when {
                 it.isEmpty() -> getString(R.string.download_wizard_error_address_required)
                 it.contains("://") -> getString(R.string.download_wizard_error_cannot_url)
-                Patterns.DOMAIN_NAME.matcher(it).matches() -> null
+                isFQDN(it) -> null
                 else -> getString(R.string.download_wizard_error_address_invalid_format)
+            }
+        }
+        matchingId.error = matchingId.editText!!.text?.let {
+            when {
+                it.isEmpty() -> null
+                isMatchingID(it) -> null
+                else -> getString(R.string.download_wizard_error_matching_id_invalid_format)
             }
         }
         imei.error = imei.editText!!.text?.let {
@@ -95,6 +104,14 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         }
     }
 }
+
+private fun isFQDN(input: CharSequence) =
+    input.length < 255 && input.count { it == '.' } > 2 && input.split('.').all { part ->
+        part.isNotEmpty() && part.length < 64 && part.all { it.isLetterOrDigit() || it == '-' }
+    }
+
+private fun isMatchingID(input: CharSequence) =
+    input.all { it.isLetterOrDigit() || it == '-' }
 
 private fun luhnValid(number: CharSequence, mod: Int = 10): Boolean {
     if (!number.all(Char::isDigit)) return false

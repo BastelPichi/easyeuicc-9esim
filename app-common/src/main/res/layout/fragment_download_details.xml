@@ -29,6 +29,7 @@
             android:id="@+id/profile_download_server"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            app:errorEnabled="true"
             android:hint="@string/profile_download_server">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -44,6 +45,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="@string/profile_download_code"
+            app:errorEnabled="true"
             app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -59,6 +61,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="@string/profile_download_confirmation_code"
+            app:errorEnabled="true"
             app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -76,6 +79,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginBottom="6dp"
             android:hint="@string/profile_download_imei"
+            app:errorEnabled="true"
             app:passwordToggleEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
