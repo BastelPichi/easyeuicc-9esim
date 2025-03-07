@@ -80,27 +80,19 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
 
     private fun validate() {
         smdp.error = smdp.editText!!.text?.let {
-            when {
-                it.isEmpty() -> getString(R.string.download_wizard_error_address_required)
-                it.contains("://") -> getString(R.string.download_wizard_error_cannot_url)
-                isFQDN(it) -> null
-                else -> getString(R.string.download_wizard_error_address_invalid_format)
-            }
+            if (it.isEmpty()) return@let getString(R.string.download_wizard_error_address_required)
+            if (it.contains("://")) return@let getString(R.string.download_wizard_error_cannot_url)
+            if (!isFQDN(it)) return@let getString(R.string.download_wizard_error_address_incorrect_format)
+            null
         }
         matchingId.error = matchingId.editText!!.text?.let {
-            when {
-                isMatchingID(it) -> null
-                else -> getString(R.string.download_wizard_error_matching_id_invalid_format)
-            }
+            if (isMatchingID(it)) return@let null
+            getString(R.string.download_wizard_error_matching_id_incorrect_format)
         }
         imei.error = imei.editText!!.text?.let {
-            when {
-                it.isEmpty() -> null
-                !it.all(Char::isDigit) -> getString(R.string.download_wizard_error_imei_not_numeric)
-                it.length != 15 -> getString(R.string.download_wizard_error_imei_length, it.length)
-                luhnValid(it) -> null
-                else -> getString(R.string.download_wizard_error_imei_invalid_format)
-            }
+            if (it.isEmpty()) return@let null
+            if (it.length == 15 && it.all(Char::isDigit) && luhnValid(it)) return@let null
+            getString(R.string.download_wizard_error_imei_incorrect_format)
         }
     }
 }
@@ -119,7 +111,7 @@ private fun isFQDN(input: CharSequence): Boolean {
 private fun isMatchingID(input: CharSequence) =
     input.isEmpty() || input.all { it.isLetterOrDigit() || it == '-' }
 
-private fun luhnValid(input: CharSequence) = input.all(Char::isDigit) && input
+private fun luhnValid(input: CharSequence) = input
     .map(Char::digitToInt)
     .mapIndexed { index, digit -> if (index % 2 == 0) digit else digit * 2 }
     .sumOf { if (it > 9) it - 9 else it }
