@@ -1,9 +1,13 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
@@ -49,6 +53,7 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         imei = view.requireViewById(R.id.profile_download_imei)
         smdp.editText!!.addTextChangedListener { updateInputCompleteness() }
         matchingId.editText!!.addTextChangedListener { updateInputCompleteness() }
+        confirmationCode.setEndIconOnClickListener { onConfirmationCodeEndIconClick(confirmationCode) }
         imei.editText!!.addTextChangedListener { updateInputCompleteness() }
         return view
     }
@@ -93,6 +98,25 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
             if (it.isEmpty()) return@let null
             if (it.length == 15 && it.all(Char::isDigit) && luhnValid(it)) return@let null
             getString(R.string.download_wizard_error_imei_incorrect_format)
+        }
+    }
+
+    private fun onConfirmationCodeEndIconClick(layout: TextInputLayout) {
+        val editText = layout.editText ?: return
+        fun getDrawable(@DrawableRes resId: Int) =
+            ContextCompat.getDrawable(requireActivity(), resId)
+        layout.endIconDrawable = when (editText.inputType) {
+            EditorInfo.TYPE_CLASS_NUMBER -> {
+                editText.inputType = EditorInfo.TYPE_CLASS_TEXT
+                getDrawable(R.drawable.ic_format_text)
+            }
+
+            EditorInfo.TYPE_CLASS_TEXT -> {
+                editText.inputType = EditorInfo.TYPE_CLASS_NUMBER
+                getDrawable(R.drawable.ic_format_number)
+            }
+
+            else -> null
         }
     }
 }
