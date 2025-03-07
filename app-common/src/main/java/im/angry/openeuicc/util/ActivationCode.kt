@@ -7,14 +7,13 @@ data class ActivationCode(
     val confirmationCodeRequired: Boolean = false,
 ) {
     companion object {
-        fun fromString(input: String): ActivationCode {
-            val components = input.removePrefix("LPA:").split('$')
-                .map(String::trim).map { it.ifBlank { null } }
-            if (components.size < 2 || components[0] != "1" || components[1] == null) {
-                throw IllegalStateException("Invalid activation code format")
-            }
+        fun fromString(token: String): ActivationCode {
+            val input = if (token.startsWith("LPA:", true)) token.drop(4) else token
+            val components = input.split('$').map { it.trim().ifEmpty { null } }
+            check(components.size >= 2) { "Invalid activation code format" }
+            check(components[0] == "1") { "Invalid activation code version" }
             return ActivationCode(
-                components[1]!!,
+                checkNotNull(components[1]) { "Invalid SM-DP+ address" },
                 components.getOrNull(2),
                 components.getOrNull(3),
                 components.getOrNull(4) == "1",
