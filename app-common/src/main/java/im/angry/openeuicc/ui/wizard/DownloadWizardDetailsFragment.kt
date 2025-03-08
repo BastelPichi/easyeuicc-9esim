@@ -1,9 +1,7 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +11,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import com.google.android.material.textfield.TextInputLayout
 import im.angry.openeuicc.common.R
-import org.w3c.dom.Text
 
 class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     private var inputComplete = false
