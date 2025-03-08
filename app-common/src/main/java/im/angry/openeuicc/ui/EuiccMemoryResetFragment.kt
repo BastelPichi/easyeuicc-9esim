@@ -17,6 +17,7 @@ import im.angry.openeuicc.util.EuiccProfilesChangedListener
 import im.angry.openeuicc.util.ensureEuiccChannelManager
 import im.angry.openeuicc.util.euiccChannelManagerService
 import im.angry.openeuicc.util.newInstanceEuicc
+import im.angry.openeuicc.util.notifyEuiccProfilesChanged
 import im.angry.openeuicc.util.portId
 import im.angry.openeuicc.util.slotId
 import kotlinx.coroutines.flow.onStart
@@ -104,7 +105,7 @@ class EuiccMemoryResetFragment : DialogFragment(), EuiccChannelFragmentMarker {
 
             euiccChannelManagerService.launchMemoryReset(slotId, portId)
                 .onStart {
-                    notifyChanged(parentFragment)
+                    parentFragment?.notifyEuiccProfilesChanged()
 
                     val resId = R.string.toast_euicc_memory_reset_finitshed
                     toast = Toast.makeText(requireContext(), resId, Toast.LENGTH_LONG)
@@ -121,13 +122,5 @@ class EuiccMemoryResetFragment : DialogFragment(), EuiccChannelFragmentMarker {
         alertDialog.setCanceledOnTouchOutside(false)
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = false
-    }
-}
-
-private fun notifyChanged(fragment: Fragment?) {
-    if (fragment is EuiccProfilesChangedListener) {
-        // Trigger a refresh in the parent fragment -- it should wait until
-        // any foreground task is completed before actually doing a refresh
-        fragment.onEuiccProfilesChanged()
     }
 }
