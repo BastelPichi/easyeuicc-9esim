@@ -1,6 +1,7 @@
 package im.angry.openeuicc.ui.wizard
 
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -101,17 +102,14 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         val editText = layout.editText ?: return
         fun getDrawable(@DrawableRes resId: Int) =
             ContextCompat.getDrawable(requireActivity(), resId)
-        layout.endIconDrawable = when (editText.inputType) {
-            EditorInfo.TYPE_CLASS_NUMBER -> {
-                editText.inputType = EditorInfo.TYPE_CLASS_TEXT
-                getDrawable(R.drawable.ic_format_text)
-            }
-
-            EditorInfo.TYPE_CLASS_TEXT -> {
-                editText.inputType = EditorInfo.TYPE_CLASS_NUMBER
-                getDrawable(R.drawable.ic_format_number)
-            }
-
+        editText.inputType = when (editText.inputType and EditorInfo.TYPE_MASK_CLASS) {
+            EditorInfo.TYPE_CLASS_NUMBER -> InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            EditorInfo.TYPE_CLASS_TEXT -> InputType.TYPE_CLASS_NUMBER
+            else -> EditorInfo.TYPE_NULL
+        }
+        layout.endIconDrawable = when (editText.inputType and EditorInfo.TYPE_MASK_CLASS) {
+            EditorInfo.TYPE_CLASS_NUMBER -> getDrawable(R.drawable.ic_format_number)
+            EditorInfo.TYPE_CLASS_TEXT -> getDrawable(R.drawable.ic_format_text)
             else -> null
         }
     }
