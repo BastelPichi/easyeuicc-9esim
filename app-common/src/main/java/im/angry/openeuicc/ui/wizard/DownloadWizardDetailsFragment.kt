@@ -86,29 +86,29 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
 
     private fun validate() {
         smdp.error = smdp.editText!!.text?.let {
-            if (it.isEmpty()) return@let getString(R.string.download_wizard_error_address_required)
-            if (it.contains("://")) return@let getString(R.string.download_wizard_error_cannot_url)
-            if (!isFQDN(it)) return@let getString(R.string.download_wizard_error_address_incorrect_format)
+            if (it.isEmpty()) return@let getString(R.string.download_wizard_details_error_address_required)
+            if (it.contains("://")) return@let getString(R.string.download_wizard_details_error_cannot_url)
+            if (!isFQDN(it)) return@let getString(R.string.download_wizard_details_error_address_incorrect_format)
             null
         }
         matchingId.error = matchingId.editText!!.text?.let {
             if (isMatchingID(it)) return@let null
-            getString(R.string.download_wizard_error_matching_id_incorrect_format)
+            getString(R.string.download_wizard_details_error_matching_id_incorrect_format)
         }
         confirmationCode.error = confirmationCode.editText!!.let {
             if (it.text.isEmpty()) return@let null
             val passed = when (it.inputType and EditorInfo.TYPE_MASK_CLASS) {
                 EditorInfo.TYPE_CLASS_NUMBER -> it.text.all(Char::isDigit)
                 EditorInfo.TYPE_CLASS_TEXT -> true
-                else -> false
+                else -> return@let null
             }
             if (passed) return@let null
-            getString(R.string.download_wizard_error_confirmation_code_incorrect_format)
+            getString(R.string.download_wizard_details_error_confirmation_code_incorrect_format)
         }
         imei.error = imei.editText!!.text?.let {
             if (it.isEmpty()) return@let null
             if (it.length == 15 && it.all(Char::isDigit) && luhnValid(it)) return@let null
-            getString(R.string.download_wizard_error_imei_incorrect_format)
+            getString(R.string.download_wizard_details_error_imei_incorrect_format)
         }
     }
 

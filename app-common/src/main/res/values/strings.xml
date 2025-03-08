@@ -81,6 +81,12 @@
     <string name="download_wizard_method_clipboard">Load from Clipboard</string>
     <string name="download_wizard_method_manual">Enter manually</string>
     <string name="download_wizard_details">Input or confirm details for downloading your eSIM:</string>
+    <string name="download_wizard_details_error_address_required">Server address is required</string>
+    <string name="download_wizard_details_error_cannot_url">Server address not is URL</string>
+    <string name="download_wizard_details_error_address_incorrect_format">Incorrect Server address</string>
+    <string name="download_wizard_details_error_matching_id_incorrect_format">Incorrect Matching ID format</string>
+    <string name="download_wizard_details_error_confirmation_code_incorrect_format">Incorrect Confirmation Code format</string>
+    <string name="download_wizard_details_error_imei_incorrect_format">Incorrect IMEI format</string>
     <string name="download_wizard_progress">Downloading your eSIM…</string>
     <string name="download_wizard_progress_step_preparing">Preparing</string>
     <string name="download_wizard_progress_step_connecting">Establishing connection to server</string>
@@ -98,12 +104,6 @@
     <string name="download_wizard_diagnostics_last_apdu_exception">Last APDU exception:</string>
     <string name="download_wizard_diagnostics_save">Save</string>
     <string name="download_wizard_diagnostics_file_template">Diagnostics at %s</string>
-    <string name="download_wizard_error_address_required">Server address is required</string>
-    <string name="download_wizard_error_cannot_url">Server address not is URL</string>
-    <string name="download_wizard_error_address_incorrect_format">Incorrect Server address</string>
-    <string name="download_wizard_error_matching_id_incorrect_format">Incorrect Matching ID format</string>
-    <string name="download_wizard_error_confirmation_code_incorrect_format">Incorrect Confirmation Code format</string>
-    <string name="download_wizard_error_imei_incorrect_format">Incorrect IMEI format</string>
 
     <string name="logs_saved_message">Logs have been saved to the selected path. Would you like to share the log through another app?</string>
 
