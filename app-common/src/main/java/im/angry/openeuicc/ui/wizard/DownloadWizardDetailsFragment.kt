@@ -88,8 +88,9 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         smdp.error = smdp.editText!!.text?.let {
             if (it.isEmpty()) return@let getString(R.string.download_wizard_details_error_address_required)
             if (it.contains("://")) return@let getString(R.string.download_wizard_details_error_cannot_url)
-            if (!isFQDN(it)) return@let getString(R.string.download_wizard_details_error_address_incorrect_format)
-            null
+            val (host, port) = splitHostPort(it)
+            if (isFQDN(host) && port in 1..65535) return@let null
+            getString(R.string.download_wizard_details_error_address_incorrect_format)
         }
         matchingId.error = matchingId.editText!!.text?.let {
             if (isMatchingID(it)) return@let null
@@ -127,6 +128,15 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
             else -> null
         }
     }
+}
+
+private fun splitHostPort(input: CharSequence): Pair<CharSequence, Int?> {
+    val portIndex = input.lastIndexOf(':')
+    if (portIndex == -1) return Pair(input, 443)
+    return Pair(
+        input.slice(0 until portIndex),
+        input.slice(portIndex + 1 until input.length).toString().toIntOrNull()
+    )
 }
 
 private fun isFQDN(input: CharSequence): Boolean {
