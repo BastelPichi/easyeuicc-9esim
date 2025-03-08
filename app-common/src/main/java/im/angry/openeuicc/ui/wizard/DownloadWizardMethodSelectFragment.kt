@@ -28,6 +28,10 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
+    companion object {
+        const val TAG = "DownloadWizardMethodSelectFragment"
+    }
+
     data class DownloadMethod(
         val iconRes: Int,
         val titleRes: Int,
