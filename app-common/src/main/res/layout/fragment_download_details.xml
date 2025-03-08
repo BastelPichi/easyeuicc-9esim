@@ -35,7 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="textVisiblePassword"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:typeface="monospace" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -49,7 +50,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="textVisiblePassword"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:typeface="monospace" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -66,7 +68,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="number"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:typeface="monospace" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -82,7 +85,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="number"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:typeface="monospace" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
