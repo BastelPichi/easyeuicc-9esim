@@ -53,8 +53,12 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         imei = view.requireViewById(R.id.profile_download_imei)
         smdp.editText!!.addTextChangedListener { updateInputCompleteness() }
         matchingId.editText!!.addTextChangedListener { updateInputCompleteness() }
-        confirmationCode.setEndIconOnClickListener { onConfirmationCodeEndIconClick(confirmationCode) }
+        confirmationCode.editText!!.addTextChangedListener { updateInputCompleteness() }
         imei.editText!!.addTextChangedListener { updateInputCompleteness() }
+        confirmationCode.setEndIconOnClickListener {
+            onConfirmationCodeEndIconClick(confirmationCode)
+            validate()
+        }
         return view
     }
 
@@ -90,6 +94,16 @@ class DownloadWizardDetailsFragment : DownloadWizardActivity.DownloadWizardStepF
         matchingId.error = matchingId.editText!!.text?.let {
             if (isMatchingID(it)) return@let null
             getString(R.string.download_wizard_error_matching_id_incorrect_format)
+        }
+        confirmationCode.error = confirmationCode.editText!!.let {
+            if (it.text.isEmpty()) return@let null
+            val passed = when (it.inputType and EditorInfo.TYPE_MASK_CLASS) {
+                EditorInfo.TYPE_CLASS_NUMBER -> it.text.all(Char::isDigit)
+                EditorInfo.TYPE_CLASS_TEXT -> true
+                else -> false
+            }
+            if (passed) return@let null
+            getString(R.string.download_wizard_error_confirmation_code_incorrect_format)
         }
         imei.error = imei.editText!!.text?.let {
             if (it.isEmpty()) return@let null
