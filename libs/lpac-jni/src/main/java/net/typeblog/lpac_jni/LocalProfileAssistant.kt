@@ -12,6 +12,15 @@ interface LocalProfileAssistant {
         val lastApduException: Exception?,
     ) : Exception("Failed to download profile")
 
+    @Suppress("ArrayInDataClass")
+    data class ProfileDiscoveryException(
+        val lpaErrorReason: String,
+        val lastHttpResponse: HttpResponse?,
+        val lastHttpException: Exception?,
+        val lastApduResponse: ByteArray?,
+        val lastApduException: Exception?,
+    ) : Exception("Failed to discovery profile")
+
     class ProfileRenameException() : Exception("Failed to rename profile")
     class ProfileNameTooLongException() : Exception("Profile name too long")
     class ProfileNameIsInvalidUTF8Exception() : Exception("Profile name is invalid UTF-8")
@@ -30,6 +39,9 @@ interface LocalProfileAssistant {
      */
     fun setEs10xMss(mss: Byte)
 
+    // es10a
+    fun getEuiccConfiguredAddresses(): EuiccConfiguredAddresses
+
     // All blocking functions in this class assume that they are executed on non-Main threads
     // The IO context in Kotlin's coroutine library is recommended.
     fun enableProfile(iccid: String, refresh: Boolean = true): Boolean
@@ -38,6 +50,7 @@ interface LocalProfileAssistant {
 
     fun downloadProfile(smdp: String, matchingId: String?, imei: String?,
                         confirmationCode: String?, callback: ProfileDownloadCallback)
+    fun discoveryProfile(smds: String, imei: String?, callback: ProfileDiscoveryCallback)
 
     fun deleteNotification(seqNumber: Long): Boolean
     fun handleNotification(seqNumber: Long): Boolean

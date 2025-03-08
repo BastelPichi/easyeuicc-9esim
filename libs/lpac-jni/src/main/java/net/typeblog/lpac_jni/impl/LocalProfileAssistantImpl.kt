@@ -3,12 +3,14 @@ package net.typeblog.lpac_jni.impl
 import android.util.Log
 import net.typeblog.lpac_jni.LpacJni
 import net.typeblog.lpac_jni.ApduInterface
+import net.typeblog.lpac_jni.EuiccConfiguredAddresses
 import net.typeblog.lpac_jni.EuiccInfo2
 import net.typeblog.lpac_jni.HttpInterface
 import net.typeblog.lpac_jni.HttpInterface.HttpResponse
 import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
+import net.typeblog.lpac_jni.ProfileDiscoveryCallback
 import net.typeblog.lpac_jni.ProfileDownloadCallback
 import net.typeblog.lpac_jni.Version
 
@@ -92,6 +94,9 @@ class LocalProfileAssistantImpl(
     override fun setEs10xMss(mss: Byte) {
         LpacJni.euiccSetMss(contextHandle, mss)
     }
+
+    override fun getEuiccConfiguredAddresses(): EuiccConfiguredAddresses =
+        LpacJni.es10aGetEuiccConfiguredAddresses(contextHandle)
 
     override val valid: Boolean
         get() = !finalized && apduInterface.valid && try {
@@ -227,6 +232,18 @@ class LocalProfileAssistantImpl(
 
             throw err
         }
+    }
+
+    override fun discoveryProfile(smds: String, imei: String?, callback: ProfileDiscoveryCallback) {
+        val res = LpacJni.discoveryProfile(contextHandle, smds, imei, callback)
+        if (res == 0) return
+        throw LocalProfileAssistant.ProfileDiscoveryException(
+            lpaErrorReason = LpacJni.downloadErrCodeToString(-res),
+            httpInterface.lastHttpResponse,
+            httpInterface.lastHttpException,
+            apduInterface.lastApduResponse,
+            apduInterface.lastApduException,
+        )
     }
 
     @Synchronized

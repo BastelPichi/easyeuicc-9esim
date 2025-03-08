@@ -29,6 +29,12 @@ internal object LpacJni {
     external fun es10bListNotification(handle: Long): Long // A native pointer to a linked list. Handle with linked list-related methods below. May be 0 (null)
     external fun es10bDeleteNotification(handle: Long, seqNumber: Long): Int
 
+    // es10a
+    external fun es10aGetEuiccConfiguredAddresses(handle: Long): EuiccConfiguredAddresses
+
+    // es9p + es11
+    external fun discoveryProfile(handle: Long, address: String, imei: String?, callback: ProfileDiscoveryCallback): Int
+
     // es9p + es10b
     // We do not expose all of the functions because of tediousness :)
     external fun downloadProfile(handle: Long, smdp: String, matchingId: String?, imei: String?,

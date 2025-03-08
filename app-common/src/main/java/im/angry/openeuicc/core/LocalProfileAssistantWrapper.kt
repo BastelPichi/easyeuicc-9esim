@@ -1,9 +1,11 @@
 package im.angry.openeuicc.core
 
+import net.typeblog.lpac_jni.EuiccConfiguredAddresses
 import net.typeblog.lpac_jni.EuiccInfo2
 import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
+import net.typeblog.lpac_jni.ProfileDiscoveryCallback
 import net.typeblog.lpac_jni.ProfileDownloadCallback
 
 class LocalProfileAssistantWrapper(orig: LocalProfileAssistant) :
@@ -32,6 +34,9 @@ class LocalProfileAssistantWrapper(orig: LocalProfileAssistant) :
 
     override fun setEs10xMss(mss: Byte) = lpa.setEs10xMss(mss)
 
+    override fun getEuiccConfiguredAddresses(): EuiccConfiguredAddresses =
+        lpa.getEuiccConfiguredAddresses()
+
     override fun enableProfile(iccid: String, refresh: Boolean): Boolean =
         lpa.enableProfile(iccid, refresh)
 
@@ -47,6 +52,9 @@ class LocalProfileAssistantWrapper(orig: LocalProfileAssistant) :
         confirmationCode: String?,
         callback: ProfileDownloadCallback
     ) = lpa.downloadProfile(smdp, matchingId, imei, confirmationCode, callback)
+
+    override fun discoveryProfile(smds: String, imei: String?, callback: ProfileDiscoveryCallback) =
+        lpa.discoveryProfile(smds, imei, callback)
 
     override fun deleteNotification(seqNumber: Long): Boolean = lpa.deleteNotification(seqNumber)
 
