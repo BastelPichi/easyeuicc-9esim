@@ -42,21 +42,16 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
         registerForActivityResult(ActivityResultContracts.GetContent()) { result ->
             if (result == null) return@registerForActivityResult
 
-            lifecycleScope.launch(Dispatchers.IO) {
-                runCatching {
-                    requireContext().contentResolver.openInputStream(result)?.let { input ->
-                        val bmp = BitmapFactory.decodeStream(input)
-                        input.close()
-
-                        decodeQrFromBitmap(bmp)?.let {
-                            withContext(Dispatchers.Main) {
-                                processLpaString(it)
-                            }
+            lifecycleScope.launch {
+                val decoded = withContext(Dispatchers.IO) {
+                    runCatching {
+                        requireContext().contentResolver.openInputStream(result)?.use { input ->
+                            BitmapFactory.decodeStream(input).use(::decodeQrFromBitmap)
                         }
-
-                        bmp.recycle()
                     }
                 }
+
+                decoded.getOrNull()?.let { processLpaString(it) }
             }
         }
 
@@ -126,18 +121,10 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
 
     private fun processLpaString(input: String) {
         try {
-            val parsed = ActivationCode.fromString(input)
+            val parsed = LPAString.parse(input)
             state.smdp = parsed.address
             state.matchingId = parsed.matchingId
-            if (parsed.confirmationCodeRequired) {
-                AlertDialog.Builder(requireContext()).apply {
-                    setTitle(R.string.profile_download_required_confirmation_code)
-                    setMessage(R.string.profile_download_required_confirmation_code_message)
-                    setCancelable(true)
-                    setPositiveButton(android.R.string.ok, null)
-                    show()
-                }
-            }
+            state.confirmationCodeRequired = parsed.confirmationCodeRequired
             gotoNextFragment(DownloadWizardDetailsFragment())
         } catch (e: IllegalArgumentException) {
             AlertDialog.Builder(requireContext()).apply {
@@ -150,14 +137,19 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
         }
     }
 
-    private class DownloadMethodViewHolder(private val root: View) : ViewHolder(root) {
+    private inner class DownloadMethodViewHolder(private val root: View) : ViewHolder(root) {
         private val icon = root.requireViewById<ImageView>(R.id.download_method_icon)
         private val title = root.requireViewById<TextView>(R.id.download_method_title)
 
         fun bind(item: DownloadMethod) {
             icon.setImageResource(item.iconRes)
             title.setText(item.titleRes)
-            root.setOnClickListener { item.onClick() }
+            root.setOnClickListener {
+                // If the user elected to use another download method, reset the confirmation code flag
+                // too
+                state.confirmationCodeRequired = false
+                item.onClick()
+            }
         }
     }
 

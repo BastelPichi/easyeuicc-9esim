@@ -1,5 +1,6 @@
 package im.angry.openeuicc.ui.wizard
 
+import android.app.assist.AssistContent
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
@@ -8,6 +9,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -19,7 +21,6 @@ import im.angry.openeuicc.ui.BaseEuiccAccessActivity
 import im.angry.openeuicc.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileAssistant
 
 class DownloadWizardActivity: BaseEuiccAccessActivity() {
@@ -33,6 +34,8 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         var downloadStarted: Boolean,
         var downloadTaskID: Long,
         var downloadError: LocalProfileAssistant.ProfileDownloadException?,
+        var skipMethodSelect: Boolean,
+        var confirmationCodeRequired: Boolean,
     )
 
     private lateinit var state: DownloadWizardState
@@ -61,16 +64,20 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         })
 
         state = DownloadWizardState(
-            null,
-            intent.getIntExtra("selectedLogicalSlot", 0),
-            "",
-            null,
-            null,
-            null,
-            false,
-            -1,
-            null
+            currentStepFragmentClassName = null,
+            selectedLogicalSlot = intent.getIntExtra("selectedLogicalSlot", 0),
+            smdp = "",
+            matchingId = null,
+            confirmationCode = null,
+            imei = null,
+            downloadStarted = false,
+            downloadTaskID = -1,
+            downloadError = null,
+            skipMethodSelect = false,
+            confirmationCodeRequired = false,
         )
+
+        handleDeepLink()
 
         progressBar = requireViewById(R.id.progress)
         nextButton = requireViewById(R.id.download_wizard_next)
@@ -111,6 +118,35 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
     }
 
+    private fun handleDeepLink() {
+        // If we get an LPA string from deep-link intents, extract from there.
+        // Note that `onRestoreInstanceState` could override this with user input,
+        // but that _is_ the desired behavior.
+        val uri = intent.data
+        if (uri?.scheme == "lpa") {
+            val parsed = LPAString.parse(uri.schemeSpecificPart)
+            state.smdp = parsed.address
+            state.matchingId = parsed.matchingId
+            state.confirmationCodeRequired = parsed.confirmationCodeRequired
+            state.skipMethodSelect = true
+        }
+    }
+
+    override fun onProvideAssistContent(outContent: AssistContent?) {
+        super.onProvideAssistContent(outContent)
+        outContent?.webUri = try {
+            val activationCode = LPAString(
+                state.smdp,
+                state.matchingId,
+                null,
+                state.confirmationCode != null,
+            )
+            "LPA:$activationCode".toUri()
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString("currentStepFragmentClassName", state.currentStepFragmentClassName)
@@ -121,6 +157,7 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         outState.putString("imei", state.imei)
         outState.putBoolean("downloadStarted", state.downloadStarted)
         outState.putLong("downloadTaskID", state.downloadTaskID)
+        outState.putBoolean("confirmationCodeRequired", state.confirmationCodeRequired)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -137,6 +174,8 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         state.downloadStarted =
             savedInstanceState.getBoolean("downloadStarted", state.downloadStarted)
         state.downloadTaskID = savedInstanceState.getLong("downloadTaskID", state.downloadTaskID)
+        state.confirmationCode = savedInstanceState.getString("confirmationCode", state.confirmationCode)
+        state.confirmationCodeRequired = savedInstanceState.getBoolean("confirmationCodeRequired", state.confirmationCodeRequired)
     }
 
     private fun onPrevPressed() {

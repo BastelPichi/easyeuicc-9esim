@@ -77,6 +77,9 @@ open class SettingsFragment: PreferenceFragmentCompat() {
 
         requirePreference<CheckBoxPreference>("pref_developer_ignore_tls_certificate")
             .bindBooleanFlow(preferenceRepository.ignoreTLSCertificateFlow)
+
+        requirePreference<CheckBoxPreference>("pref_developer_euicc_memory_reset")
+            .bindBooleanFlow(preferenceRepository.euiccMemoryResetFlow)
     }
 
     protected fun <T : Preference> requirePreference(key: CharSequence) =
