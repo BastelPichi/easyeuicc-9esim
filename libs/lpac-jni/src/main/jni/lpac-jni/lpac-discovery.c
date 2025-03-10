@@ -13,20 +13,19 @@ jmethodID on_discovered;
 
 #define EUICC_CONFIGURED_ADDRESSES_CLASS "net/typeblog/lpac_jni/EuiccConfiguredAddresses"
 #define DISCOVERY_CALLBACK_CLASS "net/typeblog/lpac_jni/ProfileDiscoveryCallback"
-#define STRING_CLASS "java/lang/String"
 
 void lpac_discovery_init() {
     LPAC_JNI_SETUP_ENV;
 
     jclass download_callback_class = (*env)->FindClass(env, DISCOVERY_CALLBACK_CLASS);
     on_discovered = (*env)->GetMethodID(env, download_callback_class, "onDiscovered",
-                                        "([L" STRING_CLASS ";)V");
+                                        "(Ljava/util/ArrayList;)V");
 
     euicc_configured_addresses_class = (*env)->FindClass(env, EUICC_CONFIGURED_ADDRESSES_CLASS);
     euicc_configured_addresses_class = (*env)->NewGlobalRef(env, euicc_configured_addresses_class);
     euicc_configured_addresses_constructor = (*env)->GetMethodID(
             env, euicc_configured_addresses_class, "<init>",
-            "(L" STRING_CLASS ";L" STRING_CLASS ";)V");
+            "(Ljava/lang/String;Ljava/lang/String;)V");
 }
 
 JNIEXPORT jobject JNICALL
@@ -38,13 +37,15 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10aGetEuiccConfiguredAddresses(
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
     struct es10a_euicc_configured_addresses addresses;
     jobject ret = NULL;
-    if (es10a_get_euicc_configured_addresses(ctx, &addresses) == 0) {
-        jstring default_dp_address = toJString(env, addresses.defaultDpAddress);
-        jstring root_ds_address = toJString(env, addresses.rootDsAddress);
-        ret = (*env)->NewObject(env, euicc_configured_addresses_class,
-                                euicc_configured_addresses_constructor,
-                                default_dp_address, root_ds_address);
+    if (es10a_get_euicc_configured_addresses(ctx, &addresses) < 0) {
+        goto out;
     }
+    jstring default_dp_address = toJString(env, addresses.defaultDpAddress);
+    jstring root_ds_address = toJString(env, addresses.rootDsAddress);
+    ret = (*env)->NewObject(env, euicc_configured_addresses_class,
+                            euicc_configured_addresses_constructor,
+                            default_dp_address, root_ds_address);
+    out:
     es10a_euicc_configured_addresses_free(&addresses);
     return ret;
 }
@@ -101,14 +102,18 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
         goto out;
     }
 
+    jclass array_list_class = (*env)->FindClass(env, "java/util/ArrayList");
+    array_list_class = (*env)->NewGlobalRef(env, array_list_class);
+    jmethodID array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
+
+    jmethodID add_element = (*env)->GetMethodID(env, array_list_class, "add",
+                                                "(Ljava/lang/Object;)Z");
+
+    addresses = (*env)->NewObject(env, array_list_class, array_list_constructor);
+
     jsize n = 0;
-    for (n = 0; smdp_list[n] != NULL; n++) continue;
-
-    addresses = (*env)->NewObjectArray(env, n, string_class, NULL);
-
-    for (jsize index = 0; index < n; index++) {
-        jstring element = toJString(env, smdp_list[index]);
-        (*env)->SetObjectArrayElement(env, addresses, index, element);
+    for (n = 0; smdp_list[n] != NULL; n++) {
+        (*env)->CallBooleanMethod(env, addresses, add_element, toJString(env, smdp_list[n]));
     }
 
     (*env)->CallVoidMethod(env, callback, on_discovered, addresses);
