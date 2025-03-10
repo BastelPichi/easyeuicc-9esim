@@ -110,9 +110,9 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
 
     addresses = (*env)->NewObject(env, array_list_class, array_list_constructor);
 
-    jsize n = 0;
-    for (n = 0; smdp_list[n] != NULL; n++) {
-        (*env)->CallBooleanMethod(env, addresses, add_element, toJString(env, smdp_list[n]));
+    for (jsize index = 0; smdp_list[index] != NULL; index++) {
+        jstring element = toJString(env, smdp_list[index]);
+        (*env)->CallBooleanMethod(env, addresses, add_element, element);
     }
 
     (*env)->CallVoidMethod(env, callback, on_discovered, addresses);
