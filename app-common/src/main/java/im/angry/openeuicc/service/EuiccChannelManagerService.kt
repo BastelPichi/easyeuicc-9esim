@@ -380,6 +380,14 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
             getString(R.string.task_profile_download_failure),
             R.drawable.ic_task_sim_card_download
         ) {
+            val callback = object : ProfileDownloadCallback {
+                override var isCancelled: Boolean = false
+
+                override fun onStateUpdate(state: ProfileDownloadCallback.DownloadState) {
+                    if (state.progress == 0) return
+                    foregroundTaskState.value = ForegroundTaskState.InProgress(state.progress)
+                }
+            }
             euiccChannelManager.beginTrackedOperation(slotId, portId) {
                 euiccChannelManager.withEuiccChannel(slotId, portId) { channel ->
                     channel.lpa.downloadProfile(
@@ -387,13 +395,8 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                         matchingId,
                         imei,
                         confirmationCode,
-                        object : ProfileDownloadCallback {
-                            override fun onStateUpdate(state: ProfileDownloadCallback.DownloadState) {
-                                if (state.progress == 0) return
-                                foregroundTaskState.value =
-                                    ForegroundTaskState.InProgress(state.progress)
-                            }
-                        })
+                        callback
+                    )
                 }
 
                 preferenceRepository.notificationDownloadFlow.first()

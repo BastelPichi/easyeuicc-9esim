@@ -12,6 +12,8 @@ jobject download_state_downloading;
 jobject download_state_finalizing;
 
 jmethodID on_state_update;
+jmethodID is_cancelled;
+jmethodID set_cancelled;
 
 void lpac_download_init() {
     LPAC_JNI_SETUP_ENV;
@@ -54,13 +56,23 @@ void lpac_download_init() {
                                                        "net/typeblog/lpac_jni/ProfileDownloadCallback");
     on_state_update = (*env)->GetMethodID(env, download_callback_class, "onStateUpdate",
                                           "(Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;)V");
+    is_cancelled = (*env)->GetMethodID(env, download_callback_class, "isCancelled", "()Z");
+    set_cancelled = (*env)->GetMethodID(env, download_callback_class, "setCancelled", "(Z)V");
 }
 
+#define IS_CANCELLED (*env)->CallBooleanMethod(env, callback, is_cancelled)
+
 JNIEXPORT jint JNICALL
-Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, jlong handle,
-                                                    jstring smdp, jstring matching_id,
-                                                    jstring imei, jstring confirmation_code,
-                                                    jobject callback) {
+Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
+        JNIEnv *env,
+        __attribute__((unused)) jobject thiz,
+        jlong handle,
+        jstring smdp,
+        jstring matching_id,
+        jstring imei,
+        jstring confirmation_code,
+        jobject callback
+) {
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
     struct es10b_load_bound_profile_package_result es10b_load_bound_profile_package_result;
     const char *_confirmation_code = NULL;
@@ -79,6 +91,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
 
     ctx->http.server_address = _smdp;
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
+    // callback.onStateUpdate(DownloadState.Preparing)
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_preparing);
     ret = es10b_get_euicc_challenge_and_info(ctx);
     syslog(LOG_INFO, "es10b_get_euicc_challenge_and_info %d", ret);
@@ -87,6 +104,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
+    // callback.onStateUpdate(DownloadState.Connecting)
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_connecting);
     ret = es9p_initiate_authentication(ctx);
     syslog(LOG_INFO, "es9p_initiate_authentication %d", ret);
@@ -95,6 +117,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
+    // callback.onStateUpdate(DownloadState.Authenticating)
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_authenticating);
     ret = es10b_authenticate_server(ctx, _matching_id, _imei);
     syslog(LOG_INFO, "es10b_authenticate_server %d", ret);
@@ -103,12 +130,22 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
     ret = es9p_authenticate_client(ctx);
+    syslog(LOG_INFO, "es9p_authenticate_client %d", ret);
     if (ret < 0) {
         ret = -ES10B_ERROR_REASON_UNDEFINED;
         goto out;
     }
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
+    // callback.onStateUpdate(DownloadState.Downloading)
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_downloading);
     ret = es10b_prepare_download(ctx, _confirmation_code);
     syslog(LOG_INFO, "es10b_prepare_download %d", ret);
@@ -117,10 +154,20 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
     ret = es9p_get_bound_profile_package(ctx);
+    syslog(LOG_INFO, "es9p_get_bound_profile_package %d", ret);
     if (ret < 0)
         goto out;
 
+    if (IS_CANCELLED) { // callback.isCancelled()
+        ret = -ES10B_ERROR_REASON_UNDEFINED;
+        goto out;
+    }
+    // callback.onStateUpdate(DownloadState.Finalizing)
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_finalizing);
     ret = es10b_load_bound_profile_package(ctx, &es10b_load_bound_profile_package_result);
     syslog(LOG_INFO, "es10b_load_bound_profile_package %d, reason %d", ret, es10b_load_bound_profile_package_result.errorReason);
@@ -132,6 +179,9 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
     euicc_http_cleanup(ctx);
 
     out:
+    if (IS_CANCELLED == 0 && ret == -ES10B_ERROR_REASON_UNDEFINED) {
+        (*env)->CallVoidMethod(env, callback, set_cancelled, JNI_TRUE);
+    }
     // We expect Java side to call cancelSessions after any error -- thus, `euicc_http_cleanup` is done there
     // This is so that Java side can access the last HTTP and/or APDU errors when we return.
     if (_confirmation_code != NULL)

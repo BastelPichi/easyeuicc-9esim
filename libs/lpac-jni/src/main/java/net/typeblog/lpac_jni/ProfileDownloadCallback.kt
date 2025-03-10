@@ -21,5 +21,7 @@ interface ProfileDownloadCallback {
         Finalizing(80), // load bpp
     }
 
+    var isCancelled: Boolean
+
     fun onStateUpdate(state: DownloadState)
 }
