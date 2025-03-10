@@ -4,15 +4,107 @@
 #include <malloc.h>
 #include <syslog.h>
 
-JNIEXPORT jlong JNICALL
-Java_net_typeblog_lpac_1jni_LpacJni_es10bListNotification(JNIEnv *env, jobject thiz, jlong handle) {
+jclass local_profile_notification_class;
+
+jobject profile_management_operation_install;
+jobject profile_management_operation_enable;
+jobject profile_management_operation_disable;
+jobject profile_management_operation_delete;
+jobject profile_management_operation_unknown;
+
+jmethodID local_profile_notification_constructor;
+
+#define LOCAL_PROFILE_NOTIFICATION_CLASS "net/typeblog/lpac_jni/LocalProfileNotification"
+#define PROFILE_MANAGEMENT_OPERATION_CLASS "net/typeblog/lpac_jni/ProfileManagementOperation"
+
+static jobject bind_static_field(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
+    jfieldID field = (*env)->GetStaticFieldID(env, clazz, name, sig);
+    jobject bound = (*env)->GetStaticObjectField(env, clazz, field);
+    return (*env)->NewGlobalRef(env, bound);
+}
+
+#define BIND_NOTIFICATION_OPERATION_FIELD(NAME, FIELD) \
+    profile_management_operation_##NAME = bind_static_field( \
+        env, profile_management_operation_class, FIELD, "L" PROFILE_MANAGEMENT_OPERATION_CLASS ";")
+
+void lpac_notifications_init(JNIEnv *env) {
+    local_profile_notification_class = (*env)->FindClass(env, LOCAL_PROFILE_NOTIFICATION_CLASS);
+    local_profile_notification_class = (*env)->NewGlobalRef(env, local_profile_notification_class);
+    local_profile_notification_constructor = (*env)->GetMethodID(
+            env, local_profile_notification_class, "<init>",
+            "("
+            "J"                                        // seqNumber
+            "L" PROFILE_MANAGEMENT_OPERATION_CLASS ";" // profileManagementOperation
+            "Ljava/lang/String;"                       // notificationAddress
+            "Ljava/lang/String;"                       // iccid
+            ")"
+            "V"                                        // (returns) void
+    );
+
+    jclass profile_management_operation_class = (*env)->FindClass(
+            env, PROFILE_MANAGEMENT_OPERATION_CLASS);
+    profile_management_operation_class = (*env)->NewGlobalRef(
+            env, profile_management_operation_class);
+
+    BIND_NOTIFICATION_OPERATION_FIELD(install, "Install");
+    BIND_NOTIFICATION_OPERATION_FIELD(delete, "Delete");
+    BIND_NOTIFICATION_OPERATION_FIELD(enable, "Enable");
+    BIND_NOTIFICATION_OPERATION_FIELD(disable, "Disable");
+    BIND_NOTIFICATION_OPERATION_FIELD(unknown, "Unknown");
+}
+
+#undef BIND_NOTIFICATION_OPERATION_FIELD
+
+static jobject to_profile_management_operation(enum es10b_profile_management_operation operation) {
+    switch (operation) {
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
+            return profile_management_operation_install;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
+            return profile_management_operation_delete;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
+            return profile_management_operation_enable;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
+            return profile_management_operation_disable;
+        default:
+            return profile_management_operation_unknown;
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_net_typeblog_lpac_1jni_LpacJni_es10bListNotification(
+        JNIEnv *env,
+        __attribute__((unused)) jobject thiz,
+        jlong handle,
+        jobject notifications
+) {
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
-    struct es10b_notification_metadata_list *info = NULL;
+    struct es10b_notification_metadata_list *metadata = NULL;
+    int ret = es10b_list_notification(ctx, &metadata);
+    if (ret < 0) {
+        goto out;
+    }
 
-    if (es10b_list_notification(ctx, &info) < 0)
-        return 0;
+    jmethodID add_notification = (*env)->GetMethodID(
+            env,
+            (*env)->GetObjectClass(env, notifications),
+            "add", "(Ljava/lang/Object;)Z"
+    );
 
-    return (jlong) info;
+    jobject element;
+    while (metadata) {
+        jlong sequence_number = metadata->seqNumber;
+        jobject operation = to_profile_management_operation(metadata->profileManagementOperation);
+        jstring address = toJString(env, metadata->notificationAddress);
+        jstring iccid = toJString(env, metadata->iccid);
+        element = (*env)->NewObject(
+                env, local_profile_notification_class, local_profile_notification_constructor,
+                sequence_number, operation, address, iccid);
+        (*env)->CallBooleanMethod(env, notifications, add_notification, element);
+        metadata = metadata->next;
+    }
+    out:
+    es10b_notification_metadata_list_free_all(metadata);
+    return ret;
 }
 
 JNIEXPORT jint JNICALL
@@ -45,35 +137,3 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10bDeleteNotification(JNIEnv *env, jobject
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
     return es10b_remove_notification_from_list(ctx, (unsigned long) seq_number);
 }
-
-JNIEXPORT jstring JNICALL
-Java_net_typeblog_lpac_1jni_LpacJni_notificationGetOperationString(JNIEnv *env, jobject thiz,
-                                                                   jlong curr) {
-    struct es10b_notification_metadata_list *info = (struct es10b_notification_metadata_list *) curr;
-    const char *profileManagementOperationStr = NULL;
-    switch (info->profileManagementOperation) {
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
-            profileManagementOperationStr = "install";
-            break;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
-            profileManagementOperationStr = "delete";
-            break;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
-            profileManagementOperationStr = "enable";
-            break;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
-            profileManagementOperationStr = "disable";
-            break;
-        default:
-            profileManagementOperationStr = "unknown";
-            break;
-    }
-
-    return toJString(env, profileManagementOperationStr);
-}
-
-LPAC_JNI_STRUCT_GETTER_LINKED_LIST_NEXT(struct es10b_notification_metadata_list, notifications)
-LPAC_JNI_STRUCT_FREE(struct es10b_notification_metadata_list, notifications, es10b_notification_metadata_list_free_all)
-LPAC_JNI_STRUCT_GETTER_LONG(struct es10b_notification_metadata_list, notification, seqNumber, Seq)
-LPAC_JNI_STRUCT_GETTER_STRING(struct es10b_notification_metadata_list, notification, notificationAddress, Address)
-LPAC_JNI_STRUCT_GETTER_STRING(struct es10b_notification_metadata_list, notification, iccid, Iccid)

@@ -132,20 +132,10 @@ class LocalProfileAssistantImpl(
     override val notifications: List<LocalProfileNotification>
         @Synchronized
         get() {
-            val head = LpacJni.es10bListNotification(contextHandle)
-            var curr = head
-            val ret = mutableListOf<LocalProfileNotification>()
-            while (curr != 0L) {
-                ret.add(LocalProfileNotification(
-                    LpacJni.notificationGetSeq(curr),
-                    LocalProfileNotification.Operation.fromString(LpacJni.notificationGetOperationString(curr)),
-                    LpacJni.notificationGetAddress(curr),
-                    LpacJni.notificationGetIccid(curr),
-                ))
-                curr = LpacJni.notificationsNext(curr)
-            }
-            LpacJni.notificationsFree(head)
-            return ret.sortedBy { it.seqNumber }.reversed()
+            val notifications = mutableListOf<LocalProfileNotification>()
+            val ret = LpacJni.es10bListNotification(contextHandle, notifications)
+            if (ret < 0) throw IllegalStateException("Failed to list notifications")
+            return notifications.sortedBy(LocalProfileNotification::seqNumber).reversed()
         }
 
     override val eID: String

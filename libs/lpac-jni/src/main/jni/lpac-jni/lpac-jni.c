@@ -19,10 +19,12 @@ jmethodID string_constructor;
 
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     jvm = vm;
+    LPAC_JNI_SETUP_ENV;
+
     interface_wrapper_init();
     lpac_download_init();
+    lpac_notifications_init(env);
 
-    LPAC_JNI_SETUP_ENV;
     string_class = (*env)->FindClass(env, "java/lang/String");
     string_class = (*env)->NewGlobalRef(env, string_class);
     string_constructor = (*env)->GetMethodID(env, string_class, "<init>",

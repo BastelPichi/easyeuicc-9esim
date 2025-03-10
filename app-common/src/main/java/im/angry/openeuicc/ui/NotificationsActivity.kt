@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.typeblog.lpac_jni.LocalProfileNotification
+import net.typeblog.lpac_jni.ProfileManagementOperation
 
 class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
     private lateinit var swipeRefresh: SwipeRefreshLayout
@@ -163,14 +164,14 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         }
 
 
-        private fun operationToLocalizedText(operation: LocalProfileNotification.Operation) =
-            root.context.getText(
-                when (operation) {
-                    LocalProfileNotification.Operation.Install -> R.string.profile_notification_operation_download
-                    LocalProfileNotification.Operation.Delete -> R.string.profile_notification_operation_delete
-                    LocalProfileNotification.Operation.Enable -> R.string.profile_notification_operation_enable
-                    LocalProfileNotification.Operation.Disable -> R.string.profile_notification_operation_disable
-                })
+        private fun operationToLocalizedText(operation: ProfileManagementOperation) =
+            root.context.getText(when (operation) {
+                ProfileManagementOperation.Install -> R.string.profile_notification_operation_download
+                ProfileManagementOperation.Delete -> R.string.profile_notification_operation_delete
+                ProfileManagementOperation.Enable -> R.string.profile_notification_operation_enable
+                ProfileManagementOperation.Disable -> R.string.profile_notification_operation_disable
+                else -> throw IllegalStateException("Unknown operation")
+            })
 
         fun updateNotification(value: LocalProfileNotificationWrapper) {
             notification = value
