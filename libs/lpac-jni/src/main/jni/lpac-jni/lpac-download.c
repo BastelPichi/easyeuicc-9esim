@@ -1,3 +1,4 @@
+#include <euicc/es8p.h>
 #include <euicc/es9p.h>
 #include <euicc/es10b.h>
 #include <stdlib.h>
@@ -12,6 +13,9 @@ jobject download_state_downloading;
 jobject download_state_finalizing;
 
 jmethodID on_state_update;
+jmethodID on_profile_metadata;
+
+#define PROFILE_METADATA_CLASS "net/typeblog/lpac_jni/ProfileDownloadCallback$ProfileMetadata"
 
 void lpac_download_init() {
     LPAC_JNI_SETUP_ENV;
@@ -54,6 +58,66 @@ void lpac_download_init() {
                                                        "net/typeblog/lpac_jni/ProfileDownloadCallback");
     on_state_update = (*env)->GetMethodID(env, download_callback_class, "onStateUpdate",
                                           "(Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;)V");
+    on_profile_metadata = (*env)->GetMethodID(env, download_callback_class, "onProfileMetadata",
+                                              "(L" PROFILE_METADATA_CLASS ";)V");
+}
+
+static jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata) {
+    if (metadata == NULL) return NULL;
+
+    jclass profile_metadata_class = (*env)->FindClass(env, PROFILE_METADATA_CLASS);
+    jmethodID profile_metadata_constructor = (*env)->GetMethodID(
+            env, profile_metadata_class, "<init>",
+            "("
+            "Ljava/lang/String;" // iccid
+            "Ljava/lang/String;" // serviceProviderName
+            "Ljava/lang/String;" // profileName
+            "Ljava/lang/String;" // iconType
+            "Ljava/lang/String;" // icon (base64-encoded)
+            "Ljava/lang/String;" // profileClass
+            ")"
+            "V"                  // (returns) void
+    );
+
+    const char *icon_type;
+    const char *profile_class;
+
+    switch (metadata->iconType) {
+        case ES10C_ICON_TYPE_JPEG:
+            icon_type = "jpeg";
+            break;
+        case ES10C_ICON_TYPE_PNG:
+            icon_type = "png";
+            break;
+        default:
+            icon_type = "unknown";
+            break;
+    }
+
+    switch (metadata->profileClass) {
+        case ES10C_PROFILE_CLASS_TEST:
+            profile_class = "test";
+            break;
+        case ES10C_PROFILE_CLASS_PROVISIONING:
+            profile_class = "provisioning";
+            break;
+        case ES10C_PROFILE_CLASS_OPERATIONAL:
+            profile_class = "operational";
+            break;
+        default:
+            profile_class = "unknown";
+            break;
+    }
+
+    return (*env)->NewObject(
+            env, profile_metadata_class, profile_metadata_constructor,
+            toJString(env, metadata->iccid),
+            toJString(env, metadata->serviceProviderName),
+            toJString(env, metadata->profileName),
+            toJString(env, icon_type),
+            toJString(env, metadata->icon),
+            toJString(env, profile_class)
+    );
 }
 
 JNIEXPORT jint JNICALL
@@ -63,6 +127,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
                                                     jobject callback) {
     struct euicc_ctx *ctx = (struct euicc_ctx *) handle;
     struct es10b_load_bound_profile_package_result es10b_load_bound_profile_package_result;
+    struct es8p_metadata *profile_metadata = NULL;
     const char *_confirmation_code = NULL;
     const char *_matching_id = NULL;
     const char *_smdp = NULL;
@@ -109,6 +174,17 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
         goto out;
     }
 
+    const char *b64_profileMetadata = ctx->http._internal.prepare_download_param->b64_profileMetadata;
+    if (b64_profileMetadata != NULL) {
+        ret = es8p_metadata_parse(&profile_metadata, b64_profileMetadata);
+        if (ret < 0) {
+            ret = -ES10B_ERROR_REASON_UNDEFINED;
+            goto out;
+        }
+        (*env)->CallVoidMethod(env, callback, on_profile_metadata,
+                               build_profile_metadata(env, profile_metadata));
+    }
+
     (*env)->CallVoidMethod(env, callback, on_state_update, download_state_downloading);
     ret = es10b_prepare_download(ctx, _confirmation_code);
     syslog(LOG_INFO, "es10b_prepare_download %d", ret);
@@ -134,6 +210,8 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, j
     out:
     // We expect Java side to call cancelSessions after any error -- thus, `euicc_http_cleanup` is done there
     // This is so that Java side can access the last HTTP and/or APDU errors when we return.
+    if (profile_metadata != NULL)
+        es8p_metadata_free(&profile_metadata);
     if (_confirmation_code != NULL)
         (*env)->ReleaseStringUTFChars(env, confirmation_code, _confirmation_code);
     if (_matching_id != NULL)

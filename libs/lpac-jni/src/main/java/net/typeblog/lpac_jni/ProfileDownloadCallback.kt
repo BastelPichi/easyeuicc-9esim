@@ -2,15 +2,14 @@ package net.typeblog.lpac_jni
 
 interface ProfileDownloadCallback {
     companion object {
-        fun lookupStateFromProgress(progress: Int): DownloadState =
-            when (progress) {
-                0 -> DownloadState.Preparing
-                20 -> DownloadState.Connecting
-                40 -> DownloadState.Authenticating
-                60 -> DownloadState.Downloading
-                80 -> DownloadState.Finalizing
-                else -> throw IllegalArgumentException("Unknown state")
-            }
+        fun lookupStateFromProgress(progress: Int): DownloadState = when (progress) {
+            0 -> DownloadState.Preparing
+            20 -> DownloadState.Connecting
+            40 -> DownloadState.Authenticating
+            60 -> DownloadState.Downloading
+            80 -> DownloadState.Finalizing
+            else -> throw IllegalArgumentException("Unknown state")
+        }
     }
 
     enum class DownloadState(val progress: Int) {
@@ -21,5 +20,16 @@ interface ProfileDownloadCallback {
         Finalizing(80), // load bpp
     }
 
+    data class ProfileMetadata(
+        val iccid: String,
+        val serviceProviderName: String,
+        val profileName: String,
+        val iconType: String,
+        val icon: String,
+        val profileClass: String,
+    )
+
     fun onStateUpdate(state: DownloadState)
+
+    fun onProfileMetadata(metadata: ProfileMetadata)
 }
