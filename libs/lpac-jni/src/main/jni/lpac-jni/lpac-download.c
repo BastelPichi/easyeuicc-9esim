@@ -13,48 +13,35 @@ jobject download_state_finalizing;
 
 jmethodID on_state_update;
 
+#define DOWNLOAD_CALLBACK_CLASS "net/typeblog/lpac_jni/ProfileDownloadCallback"
+#define DOWNLOAD_STATE_CLASS DOWNLOAD_CALLBACK_CLASS "$DownloadState"
+
+static jobject bind_static_field(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
+    jfieldID field = (*env)->GetStaticFieldID(env, clazz, name, sig);
+    jobject bound = (*env)->GetStaticObjectField(env, clazz, field);
+    return (*env)->NewGlobalRef(env, bound);
+}
+
+#define BIND_DOWNLOAD_STATE_STATIC_FIELD(NAME, FIELD) \
+    download_state_##NAME = bind_static_field(env, download_state_class, FIELD, "L" DOWNLOAD_STATE_CLASS ";")
+
 void lpac_download_init() {
     LPAC_JNI_SETUP_ENV;
 
-    jclass download_state_class = (*env)->FindClass(env,
-                                                    "net/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState");
-    jfieldID download_state_preparing_field = (*env)->GetStaticFieldID(env, download_state_class,
-                                                                       "Preparing",
-                                                                       "Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;");
-    download_state_preparing = (*env)->GetStaticObjectField(env, download_state_class,
-                                                            download_state_preparing_field);
-    download_state_preparing = (*env)->NewGlobalRef(env, download_state_preparing);
-    jfieldID download_state_connecting_field = (*env)->GetStaticFieldID(env, download_state_class,
-                                                                        "Connecting",
-                                                                        "Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;");
-    download_state_connecting = (*env)->GetStaticObjectField(env, download_state_class,
-                                                             download_state_connecting_field);
-    download_state_connecting = (*env)->NewGlobalRef(env, download_state_connecting);
-    jfieldID download_state_authenticating_field = (*env)->GetStaticFieldID(env,
-                                                                            download_state_class,
-                                                                            "Authenticating",
-                                                                            "Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;");
-    download_state_authenticating = (*env)->GetStaticObjectField(env, download_state_class,
-                                                                 download_state_authenticating_field);
-    download_state_authenticating = (*env)->NewGlobalRef(env, download_state_authenticating);
-    jfieldID download_state_downloading_field = (*env)->GetStaticFieldID(env, download_state_class,
-                                                                         "Downloading",
-                                                                         "Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;");
-    download_state_downloading = (*env)->GetStaticObjectField(env, download_state_class,
-                                                              download_state_downloading_field);
-    download_state_downloading = (*env)->NewGlobalRef(env, download_state_downloading);
-    jfieldID download_state_finalizng_field = (*env)->GetStaticFieldID(env, download_state_class,
-                                                                       "Finalizing",
-                                                                       "Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;");
-    download_state_finalizing = (*env)->GetStaticObjectField(env, download_state_class,
-                                                             download_state_finalizng_field);
-    download_state_finalizing = (*env)->NewGlobalRef(env, download_state_finalizing);
+    jclass download_state_class = (*env)->FindClass(env, DOWNLOAD_STATE_CLASS);
 
-    jclass download_callback_class = (*env)->FindClass(env,
-                                                       "net/typeblog/lpac_jni/ProfileDownloadCallback");
-    on_state_update = (*env)->GetMethodID(env, download_callback_class, "onStateUpdate",
-                                          "(Lnet/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState;)V");
+    BIND_DOWNLOAD_STATE_STATIC_FIELD(preparing, "Preparing");
+    BIND_DOWNLOAD_STATE_STATIC_FIELD(connecting, "Connecting");
+    BIND_DOWNLOAD_STATE_STATIC_FIELD(authenticating, "Authenticating");
+    BIND_DOWNLOAD_STATE_STATIC_FIELD(downloading, "Downloading");
+    BIND_DOWNLOAD_STATE_STATIC_FIELD(finalizing, "Finalizing");
+
+    jclass download_callback_class = (*env)->FindClass(env, DOWNLOAD_CALLBACK_CLASS);
+    on_state_update = (*env)->GetMethodID(
+            env, download_callback_class, "onStateUpdate", "(L" DOWNLOAD_STATE_CLASS ";)V");
 }
+
+#undef BIND_DOWNLOAD_STATE_STATIC_FIELD
 
 JNIEXPORT jint JNICALL
 Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(JNIEnv *env, jobject thiz, jlong handle,
