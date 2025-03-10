@@ -70,9 +70,6 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
 
     char **smdp_list = NULL;
     jobjectArray addresses = NULL;
-    jclass array_list_class = NULL;
-    jmethodID array_list_constructor = NULL;
-    jmethodID add_element = NULL;
 
     int ret;
 
@@ -104,23 +101,23 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
         goto out;
     }
 
-    array_list_class = (*env)->FindClass(env, "java/util/ArrayList");
-    array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
-    add_element = (*env)->GetMethodID(env, array_list_class, "add", "(Ljava/lang/Object;)Z");
+    jclass array_list_class = (*env)->FindClass(env, "java/util/ArrayList");
+    jmethodID array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
+    jmethodID add_element = (*env)->GetMethodID(env, array_list_class, "add", "(Ljava/lang/Object;)Z");
 
+    // val addresses = new ArrayList<String>();
     addresses = (*env)->NewObject(env, array_list_class, array_list_constructor);
 
     for (jsize index = 0; smdp_list[index] != NULL; index++) {
         jstring element = toJString(env, smdp_list[index]);
+        // addresses.add(smdp_list[index]);
         (*env)->CallBooleanMethod(env, addresses, add_element, element);
     }
 
+    // callback.onDiscovered(addresses);
     (*env)->CallVoidMethod(env, callback, on_discovered, addresses);
 
     out:
-    if (array_list_class != NULL) (*env)->DeleteLocalRef(env, array_list_class);
-    if (array_list_constructor != NULL) (*env)->DeleteLocalRef(env, array_list_constructor);
-    if (add_element != NULL) (*env)->DeleteLocalRef(env, add_element);
 
     if (_imei != NULL) (*env)->ReleaseStringUTFChars(env, imei, _imei);
     (*env)->ReleaseStringUTFChars(env, address, _address);
