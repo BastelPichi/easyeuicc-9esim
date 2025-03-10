@@ -6,11 +6,9 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
-import androidx.preference.CheckBoxPreference
 import androidx.preference.Preference
 import im.angry.easyeuicc.R
 import im.angry.openeuicc.util.encodeHex
-import im.angry.openeuicc.util.preferenceRepository
 import java.security.MessageDigest
 
 class UnprivilegedSettingsFragment : SettingsFragment() {

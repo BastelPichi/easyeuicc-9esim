@@ -172,8 +172,6 @@
     <string name="pref_notifications_switch">Switching</string>
     <string name="pref_notifications_switch_desc">Send notifications for <i>switching</i> profiles\nNote that this type of notification is unreliable.</string>
     <string name="pref_advanced">Advanced</string>
-    <string name="pref_advanced_refresh_after_switch">Refresh status after switching</string>
-    <string name="pref_advanced_refresh_after_switch_desc">If crash after switch, Please trying disable the function</string>
     <string name="pref_advanced_disable_safeguard_removable_esim">Allow Disabling / Deleting Active Profile</string>
     <string name="pref_advanced_disable_safeguard_removable_esim_desc">By default, this app prevents you from disabling the active profile on a removable eSIM inserted in the device, because doing so may <i>sometimes</i> render it inaccessible.\nCheck this box to <i>remove</i> this safeguard.</string>
     <string name="pref_advanced_verbose_logging">Verbose Logging</string>
@@ -183,6 +181,8 @@
     <string name="pref_advanced_logs">Logs</string>
     <string name="pref_advanced_logs_desc">View recent debug logs of the application</string>
     <string name="pref_developer">Developer Options</string>
+    <string name="pref_developer_refresh_after_switch">Refresh status after switching</string>
+    <string name="pref_developer_refresh_after_switch_desc">If crash after switch, Please trying disable the function</string>
     <string name="pref_developer_unfiltered_profile_list">Show unfiltered profile list</string>
     <string name="pref_developer_unfiltered_profile_list_desc">Include non-production profiles in the list</string>
     <string name="pref_developer_ignore_tls_certificate">Ignore SM-DP+ TLS certificate</string>

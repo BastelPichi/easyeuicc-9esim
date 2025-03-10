@@ -26,12 +26,12 @@ internal object PreferenceKeys {
     val NOTIFICATION_SWITCH = booleanPreferencesKey("notification_switch")
 
     // ---- Advanced ----
-    val REFRESH_AFTER_SWITCH = booleanPreferencesKey("refresh_after_switch")
     val DISABLE_SAFEGUARD_REMOVABLE_ESIM = booleanPreferencesKey("disable_safeguard_removable_esim")
     val VERBOSE_LOGGING = booleanPreferencesKey("verbose_logging")
 
     // ---- Developer Options ----
     val DEVELOPER_OPTIONS_ENABLED = booleanPreferencesKey("developer_options_enabled")
+    val REFRESH_AFTER_SWITCH = booleanPreferencesKey("refresh_after_switch")
     val UNFILTERED_PROFILE_LIST = booleanPreferencesKey("unfiltered_profile_list")
     val IGNORE_TLS_CERTIFICATE = booleanPreferencesKey("ignore_tls_certificate")
     val EUICC_MEMORY_RESET = booleanPreferencesKey("euicc_memory_reset")
