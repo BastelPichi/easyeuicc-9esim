@@ -13,8 +13,7 @@ jmethodID method_http_transmit;
 jfieldID field_resp_rcode;
 jfieldID field_resp_data;
 
-void interface_wrapper_init() {
-    LPAC_JNI_SETUP_ENV;
+void interface_wrapper_init(JNIEnv *env) {
     jclass apdu_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/ApduInterface");
     method_apdu_connect = (*env)->GetMethodID(env, apdu_class, "connect", "()V");
     method_apdu_disconnect = (*env)->GetMethodID(env, apdu_class, "disconnect", "()V");

@@ -25,9 +25,7 @@ static jobject bind_static_field(JNIEnv *env, jclass clazz, const char *name, co
 #define BIND_DOWNLOAD_STATE_STATIC_FIELD(NAME, FIELD) \
     download_state_##NAME = bind_static_field(env, download_state_class, FIELD, "L" DOWNLOAD_STATE_CLASS ";")
 
-void lpac_download_init() {
-    LPAC_JNI_SETUP_ENV;
-
+void lpac_download_init(JNIEnv *env) {
     jclass download_state_class = (*env)->FindClass(env, DOWNLOAD_STATE_CLASS);
 
     BIND_DOWNLOAD_STATE_STATIC_FIELD(preparing, "Preparing");
