@@ -70,7 +70,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
 
     char **smdp_list = NULL;
     jobjectArray addresses = NULL;
-    int ret = -1;
+    jclass array_list_class = NULL;
+    jmethodID array_list_constructor = NULL;
+    jmethodID add_element = NULL;
+
+    int ret;
 
     ret = es10b_get_euicc_challenge_and_info(ctx);
     syslog(LOG_INFO, "es10b_get_euicc_challenge_and_info %d", ret);
@@ -100,12 +104,9 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
         goto out;
     }
 
-    jclass array_list_class = (*env)->FindClass(env, "java/util/ArrayList");
-    array_list_class = (*env)->NewGlobalRef(env, array_list_class);
-    jmethodID array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
-
-    jmethodID add_element = (*env)->GetMethodID(env, array_list_class, "add",
-                                                "(Ljava/lang/Object;)Z");
+    array_list_class = (*env)->FindClass(env, "java/util/ArrayList");
+    array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
+    add_element = (*env)->GetMethodID(env, array_list_class, "add", "(Ljava/lang/Object;)Z");
 
     addresses = (*env)->NewObject(env, array_list_class, array_list_constructor);
 
@@ -117,6 +118,10 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
     (*env)->CallVoidMethod(env, callback, on_discovered, addresses);
 
     out:
+    if (array_list_class != NULL) (*env)->DeleteLocalRef(env, array_list_class);
+    if (array_list_constructor != NULL) (*env)->DeleteLocalRef(env, array_list_constructor);
+    if (add_element != NULL) (*env)->DeleteLocalRef(env, add_element);
+
     if (_imei != NULL) (*env)->ReleaseStringUTFChars(env, imei, _imei);
     (*env)->ReleaseStringUTFChars(env, address, _address);
     es11_smdp_list_free_all(smdp_list);
