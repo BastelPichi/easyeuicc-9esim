@@ -107,26 +107,10 @@ class LocalProfileAssistantImpl(
     override val profiles: List<LocalProfileInfo>
         @Synchronized
         get() {
-            val head = LpacJni.es10cGetProfilesInfo(contextHandle)
-            var curr = head
-            val ret = mutableListOf<LocalProfileInfo>()
-            while (curr != 0L) {
-                val state = LocalProfileInfo.State.fromString(LpacJni.profileGetStateString(curr))
-                val clazz = LocalProfileInfo.Clazz.fromString(LpacJni.profileGetClassString(curr))
-                ret.add(LocalProfileInfo(
-                    LpacJni.profileGetIccid(curr),
-                    state,
-                    LpacJni.profileGetName(curr),
-                    LpacJni.profileGetNickname(curr),
-                    LpacJni.profileGetServiceProvider(curr),
-                    LpacJni.profileGetIsdpAid(curr),
-                    clazz
-                ))
-                curr = LpacJni.profilesNext(curr)
-            }
-
-            LpacJni.profilesFree(curr)
-            return ret
+            val profiles = mutableListOf<LocalProfileInfo>()
+            val ret = LpacJni.es10cGetProfilesInfo(contextHandle, profiles)
+            if (ret < 0) throw IllegalStateException("Failed to get profiles")
+            return profiles
         }
 
     override val notifications: List<LocalProfileNotification>

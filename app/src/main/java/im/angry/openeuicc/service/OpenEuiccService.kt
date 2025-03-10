@@ -15,6 +15,8 @@ import im.angry.openeuicc.util.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import net.typeblog.lpac_jni.ProfileClass
+import net.typeblog.lpac_jni.ProfileState
 import kotlin.IllegalStateException
 
 class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
@@ -200,15 +202,15 @@ class OpenEuiccService : EuiccService(), OpenEuiccContextMarker {
                         setServiceProviderName(it.providerName)
                         setState(
                             when (it.state) {
-                                LocalProfileInfo.State.Enabled -> EuiccProfileInfo.PROFILE_STATE_ENABLED
-                                LocalProfileInfo.State.Disabled -> EuiccProfileInfo.PROFILE_STATE_DISABLED
+                                ProfileState.Enabled -> EuiccProfileInfo.PROFILE_STATE_ENABLED
+                                ProfileState.Disabled -> EuiccProfileInfo.PROFILE_STATE_DISABLED
                             }
                         )
                         setProfileClass(
                             when (it.profileClass) {
-                                LocalProfileInfo.Clazz.Testing -> EuiccProfileInfo.PROFILE_CLASS_TESTING
-                                LocalProfileInfo.Clazz.Provisioning -> EuiccProfileInfo.PROFILE_CLASS_PROVISIONING
-                                LocalProfileInfo.Clazz.Operational -> EuiccProfileInfo.PROFILE_CLASS_OPERATIONAL
+                                ProfileClass.Testing -> EuiccProfileInfo.PROFILE_CLASS_TESTING
+                                ProfileClass.Provisioning -> EuiccProfileInfo.PROFILE_CLASS_PROVISIONING
+                                ProfileClass.Operational -> EuiccProfileInfo.PROFILE_CLASS_OPERATIONAL
                             }
                         )
                     }.build()
