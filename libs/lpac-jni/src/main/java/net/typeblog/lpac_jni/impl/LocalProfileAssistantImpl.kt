@@ -3,12 +3,14 @@ package net.typeblog.lpac_jni.impl
 import android.util.Log
 import net.typeblog.lpac_jni.LpacJni
 import net.typeblog.lpac_jni.ApduInterface
+import net.typeblog.lpac_jni.EuiccConfiguredAddresses
 import net.typeblog.lpac_jni.EuiccInfo2
 import net.typeblog.lpac_jni.HttpInterface
 import net.typeblog.lpac_jni.HttpInterface.HttpResponse
 import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
+import net.typeblog.lpac_jni.ProfileDiscoveryCallback
 import net.typeblog.lpac_jni.ProfileDownloadCallback
 import net.typeblog.lpac_jni.Version
 
@@ -61,7 +63,7 @@ class LocalProfileAssistantImpl(
          */
         var lastHttpException: Exception? = null
 
-        override fun transmit(url: String, tx: ByteArray, headers: Array<String>): HttpResponse =
+        override fun transmit(url: String, tx: ByteArray, headers: List<String>): HttpResponse =
             try {
                 httpInterface.transmit(url, tx, headers).also {
                     lastHttpException = null
@@ -106,47 +108,11 @@ class LocalProfileAssistantImpl(
 
     override val profiles: List<LocalProfileInfo>
         @Synchronized
-        get() {
-            val head = LpacJni.es10cGetProfilesInfo(contextHandle)
-            var curr = head
-            val ret = mutableListOf<LocalProfileInfo>()
-            while (curr != 0L) {
-                val state = LocalProfileInfo.State.fromString(LpacJni.profileGetStateString(curr))
-                val clazz = LocalProfileInfo.Clazz.fromString(LpacJni.profileGetClassString(curr))
-                ret.add(LocalProfileInfo(
-                    LpacJni.profileGetIccid(curr),
-                    state,
-                    LpacJni.profileGetName(curr),
-                    LpacJni.profileGetNickname(curr),
-                    LpacJni.profileGetServiceProvider(curr),
-                    LpacJni.profileGetIsdpAid(curr),
-                    clazz
-                ))
-                curr = LpacJni.profilesNext(curr)
-            }
-
-            LpacJni.profilesFree(curr)
-            return ret
-        }
+        get() = LpacJni.es10cGetProfilesInfo(contextHandle)
 
     override val notifications: List<LocalProfileNotification>
         @Synchronized
-        get() {
-            val head = LpacJni.es10bListNotification(contextHandle)
-            var curr = head
-            val ret = mutableListOf<LocalProfileNotification>()
-            while (curr != 0L) {
-                ret.add(LocalProfileNotification(
-                    LpacJni.notificationGetSeq(curr),
-                    LocalProfileNotification.Operation.fromString(LpacJni.notificationGetOperationString(curr)),
-                    LpacJni.notificationGetAddress(curr),
-                    LpacJni.notificationGetIccid(curr),
-                ))
-                curr = LpacJni.notificationsNext(curr)
-            }
-            LpacJni.notificationsFree(head)
-            return ret.sortedBy { it.seqNumber }.reversed()
-        }
+        get() = LpacJni.es10bListNotification(contextHandle).sortedBy { it.seqNumber }.reversed()
 
     override val eID: String
         @Synchronized
@@ -154,39 +120,9 @@ class LocalProfileAssistantImpl(
 
     override val euiccInfo2: EuiccInfo2?
         @Synchronized
-        get() {
-            val cInfo = LpacJni.es10cexGetEuiccInfo2(contextHandle)
-            if (cInfo == 0L) return null
-
-            val ret = EuiccInfo2(
-                Version(LpacJni.euiccInfo2GetSGP22Version(cInfo)),
-                Version(LpacJni.euiccInfo2GetProfileVersion(cInfo)),
-                Version(LpacJni.euiccInfo2GetEuiccFirmwareVersion(cInfo)),
-                Version(LpacJni.euiccInfo2GetGlobalPlatformVersion(cInfo)),
-                LpacJni.euiccInfo2GetSasAcreditationNumber(cInfo),
-                Version(LpacJni.euiccInfo2GetPpVersion(cInfo)),
-                LpacJni.euiccInfo2GetFreeNonVolatileMemory(cInfo).toInt(),
-                LpacJni.euiccInfo2GetFreeVolatileMemory(cInfo).toInt(),
-                buildSet {
-                    var cursor = LpacJni.euiccInfo2GetEuiccCiPKIdListForSigning(cInfo)
-                    while (cursor != 0L) {
-                        add(LpacJni.stringDeref(cursor))
-                        cursor = LpacJni.stringArrNext(cursor)
-                    }
-                },
-                buildSet {
-                    var cursor = LpacJni.euiccInfo2GetEuiccCiPKIdListForVerification(cInfo)
-                    while (cursor != 0L) {
-                        add(LpacJni.stringDeref(cursor))
-                        cursor = LpacJni.stringArrNext(cursor)
-                    }
-                },
-            )
-
-            LpacJni.euiccInfo2Free(cInfo)
-
-            return ret
-        }
+        get() = LpacJni.es10cexGetEuiccInfo2(contextHandle)
+    override val euiccConfiguredAddresses: EuiccConfiguredAddresses
+        get() = LpacJni.es10aGetEuiccConfiguredAddresses(contextHandle)
 
     @Synchronized
     override fun enableProfile(iccid: String, refresh: Boolean): Boolean =
@@ -212,21 +148,31 @@ class LocalProfileAssistantImpl(
             callback
         )
 
-        if (res != 0) {
-            // Construct the error now to store any error information we _can_ access
-            val err = LocalProfileAssistant.ProfileDownloadException(
-                lpaErrorReason = LpacJni.downloadErrCodeToString(-res),
-                httpInterface.lastHttpResponse,
-                httpInterface.lastHttpException,
-                apduInterface.lastApduResponse,
-                apduInterface.lastApduException,
-            )
+        if (res == 0) return
+        // Construct the error now to store any error information we _can_ access
+        val err = LocalProfileAssistant.ProfileDownloadException(
+            lpaErrorReason = LpacJni.downloadErrCodeToString(-res),
+            httpInterface.lastHttpResponse,
+            httpInterface.lastHttpException,
+            apduInterface.lastApduResponse,
+            apduInterface.lastApduException,
+        )
+        // Cancel sessions if possible. This will overwrite recorded errors from HTTP and APDU interfaces.
+        LpacJni.cancelSessions(contextHandle)
+        throw err
+    }
 
-            // Cancel sessions if possible. This will overwrite recorded errors from HTTP and APDU interfaces.
-            LpacJni.cancelSessions(contextHandle)
-
-            throw err
-        }
+    override fun discoveryProfile(smds: String, imei: String?, callback: ProfileDiscoveryCallback) {
+        val ret = LpacJni.discoveryProfile(contextHandle, smds, imei, callback)
+        if (ret == 0) return
+        // Construct the error now to store any error information we _can_ access
+        throw LocalProfileAssistant.ProfileDiscoveryException(
+            lpaErrorReason = LpacJni.downloadErrCodeToString(-ret),
+            httpInterface.lastHttpResponse,
+            httpInterface.lastHttpException,
+            apduInterface.lastApduResponse,
+            apduInterface.lastApduException,
+        )
     }
 
     @Synchronized

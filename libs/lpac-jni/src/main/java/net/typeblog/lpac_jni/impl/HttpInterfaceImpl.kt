@@ -26,7 +26,7 @@ class HttpInterfaceImpl(
     override fun transmit(
         url: String,
         tx: ByteArray,
-        headers: Array<String>
+        headers: List<String>
     ): HttpInterface.HttpResponse {
         Log.d(TAG, "transmit(url = $url)")
 

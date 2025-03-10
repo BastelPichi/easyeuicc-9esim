@@ -1,34 +1,43 @@
 #include <string.h>
 #include <malloc.h>
 #include "interface-wrapper.h"
+#include "utils.h"
 
-jmethodID method_apdu_connect;
-jmethodID method_apdu_disconnect;
-jmethodID method_apdu_logical_channel_open;
-jmethodID method_apdu_logical_channel_close;
-jmethodID method_apdu_transmit;
+static jmethodID method_apdu_connect;
+static jmethodID method_apdu_disconnect;
+static jmethodID method_apdu_logical_channel_open;
+static jmethodID method_apdu_logical_channel_close;
+static jmethodID method_apdu_transmit;
 
-jmethodID method_http_transmit;
+static jmethodID method_http_transmit;
 
-jfieldID field_resp_rcode;
-jfieldID field_resp_data;
+static jfieldID field_resp_rcode;
+static jfieldID field_resp_data;
 
-void interface_wrapper_init() {
-    LPAC_JNI_SETUP_ENV;
-    jclass apdu_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/ApduInterface");
+#define APDU_INTERFACE_CLASS PACKAGE_NAME "/ApduInterface"
+#define HTTP_INTERFACE_CLASS PACKAGE_NAME "/HttpInterface"
+#define HTTP_RESPONSE_CLASS HTTP_INTERFACE_CLASS "$HttpResponse"
+
+void interface_wrapper_init(JNIEnv *env) {
+    jclass apdu_class = (*env)->FindClass(env, APDU_INTERFACE_CLASS);
     method_apdu_connect = (*env)->GetMethodID(env, apdu_class, "connect", "()V");
     method_apdu_disconnect = (*env)->GetMethodID(env, apdu_class, "disconnect", "()V");
-    method_apdu_logical_channel_open = (*env)->GetMethodID(env, apdu_class, "logicalChannelOpen",
-                                                           "([B)I");
-    method_apdu_logical_channel_close = (*env)->GetMethodID(env, apdu_class, "logicalChannelClose",
-                                                            "(I)V");
+    method_apdu_logical_channel_open = (*env)->GetMethodID(env, apdu_class, "logicalChannelOpen", "([B)I");
+    method_apdu_logical_channel_close = (*env)->GetMethodID(env, apdu_class, "logicalChannelClose", "(I)V");
     method_apdu_transmit = (*env)->GetMethodID(env, apdu_class, "transmit", "(I[B)[B");
 
-    jclass http_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/HttpInterface");
-    method_http_transmit = (*env)->GetMethodID(env, http_class, "transmit",
-                                               "(Ljava/lang/String;[B[Ljava/lang/String;)Lnet/typeblog/lpac_jni/HttpInterface$HttpResponse;");
+    jclass http_class = (*env)->FindClass(env, HTTP_INTERFACE_CLASS);
+    method_http_transmit = (*env)->GetMethodID(
+            env, http_class, "transmit",
+            "("
+            "Ljava/lang/String;" // url
+            "[B" // byte array
+            "Ljava/util/List;" // headers
+            ")"
+            "L" HTTP_RESPONSE_CLASS ";"
+    );
 
-    jclass resp_class = (*env)->FindClass(env, "net/typeblog/lpac_jni/HttpInterface$HttpResponse");
+    jclass resp_class = (*env)->FindClass(env, HTTP_RESPONSE_CLASS);
     field_resp_rcode = (*env)->GetFieldID(env, resp_class, "rcode", "I");
     field_resp_data = (*env)->GetFieldID(env, resp_class, "data", "[B");
 }
@@ -36,7 +45,7 @@ void interface_wrapper_init() {
 static int apdu_interface_connect(struct euicc_ctx *ctx) {
     LPAC_JNI_SETUP_ENV;
     (*env)->CallVoidMethod(env, LPAC_JNI_CTX(ctx)->apdu_interface, method_apdu_connect);
-    LPAC_JNI_EXCEPTION_RETURN;
+    LPAC_JNI_EXCEPTION_RETURN
     return 0;
 }
 
@@ -52,7 +61,7 @@ apdu_interface_logical_channel_open(struct euicc_ctx *ctx, const uint8_t *aid, u
     (*env)->SetByteArrayRegion(env, jbarr, 0, aid_len, (const jbyte *) aid);
     jint ret = (*env)->CallIntMethod(env, LPAC_JNI_CTX(ctx)->apdu_interface,
                                      method_apdu_logical_channel_open, jbarr);
-    LPAC_JNI_EXCEPTION_RETURN;
+    LPAC_JNI_EXCEPTION_RETURN
     LPAC_JNI_CTX(ctx)->logical_channel_id = ret;
     return ret;
 }
@@ -71,16 +80,16 @@ apdu_interface_transmit(struct euicc_ctx *ctx, uint8_t **rx, uint32_t *rx_len, c
                         uint32_t tx_len) {
     const int logic_channel = LPAC_JNI_CTX(ctx)->logical_channel_id;
     LPAC_JNI_SETUP_ENV;
-    jbyteArray txArr = (*env)->NewByteArray(env, tx_len);
-    (*env)->SetByteArrayRegion(env, txArr, 0, tx_len, (const jbyte *) tx);
+    jbyteArray txArr = (*env)->NewByteArray(env, (jsize) tx_len);
+    (*env)->SetByteArrayRegion(env, txArr, 0, (jsize) tx_len, (const jbyte *) tx);
     jbyteArray ret = (jbyteArray) (*env)->CallObjectMethod(
             env, LPAC_JNI_CTX(ctx)->apdu_interface,
             method_apdu_transmit, logic_channel, txArr
     );
-    LPAC_JNI_EXCEPTION_RETURN;
+    LPAC_JNI_EXCEPTION_RETURN
     *rx_len = (*env)->GetArrayLength(env, ret);
     *rx = calloc(*rx_len, sizeof(uint8_t));
-    (*env)->GetByteArrayRegion(env, ret, 0, *rx_len, *rx);
+    (*env)->GetByteArrayRegion(env, ret, 0, (jsize) *rx_len, (jbyte *) *rx);
     (*env)->DeleteLocalRef(env, txArr);
     (*env)->DeleteLocalRef(env, ret);
     return 0;
@@ -92,31 +101,22 @@ http_interface_transmit(struct euicc_ctx *ctx, const char *url, uint32_t *rcode,
                         const char **headers) {
     LPAC_JNI_SETUP_ENV;
     jstring jurl = toJString(env, url);
-    jbyteArray txArr = (*env)->NewByteArray(env, tx_len);
-    (*env)->SetByteArrayRegion(env, txArr, 0, tx_len, (const jbyte *) tx);
+    jbyteArray txArr = (*env)->NewByteArray(env, (jsize) tx_len);
+    (*env)->SetByteArrayRegion(env, txArr, 0, (jsize) tx_len, (const jbyte *) tx);
 
-    int num_headers = 0;
-    while (headers[num_headers] != NULL) {
-        num_headers++;
-    }
-    jobjectArray headersArr = (*env)->NewObjectArray(env, num_headers, string_class, NULL);
-    for (int i = 0; i < num_headers; i++) {
-        jstring header = toJString(env, headers[i]);
-        (*env)->SetObjectArrayElement(env, headersArr, i, header);
-        (*env)->DeleteLocalRef(env, header);
-    }
+    jobject header_list = to_string_list(env, (char **) headers);
 
     jobject ret = (*env)->CallObjectMethod(env, LPAC_JNI_CTX(ctx)->http_interface,
-                                           method_http_transmit, jurl, txArr, headersArr);
-    LPAC_JNI_EXCEPTION_RETURN;
+                                           method_http_transmit, jurl, txArr, header_list);
+    LPAC_JNI_EXCEPTION_RETURN
     *rcode = (*env)->GetIntField(env, ret, field_resp_rcode);
     jbyteArray rxArr = (jbyteArray) (*env)->GetObjectField(env, ret, field_resp_data);
     *rx_len = (*env)->GetArrayLength(env, rxArr);
     *rx = calloc(*rx_len, sizeof(uint8_t));
-    (*env)->GetByteArrayRegion(env, rxArr, 0, *rx_len, *rx);
+    (*env)->GetByteArrayRegion(env, rxArr, 0, (jsize) *rx_len, (jbyte *) *rx);
     (*env)->DeleteLocalRef(env, txArr);
     (*env)->DeleteLocalRef(env, rxArr);
-    (*env)->DeleteLocalRef(env, headersArr);
+    (*env)->DeleteLocalRef(env, header_list);
     (*env)->DeleteLocalRef(env, ret);
     return 0;
 }
