@@ -5,7 +5,7 @@
 #include <euicc/interface.h>
 #include "lpac-jni.h"
 
-void interface_wrapper_init();
+void interface_wrapper_init(JNIEnv *env);
 
 extern struct euicc_apdu_interface lpac_jni_apdu_interface;
 extern struct euicc_http_interface lpac_jni_http_interface;

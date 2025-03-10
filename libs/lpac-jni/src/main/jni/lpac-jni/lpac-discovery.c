@@ -14,9 +14,7 @@ jmethodID on_discovered;
 #define EUICC_CONFIGURED_ADDRESSES_CLASS "net/typeblog/lpac_jni/EuiccConfiguredAddresses"
 #define DISCOVERY_CALLBACK_CLASS "net/typeblog/lpac_jni/ProfileDiscoveryCallback"
 
-void lpac_discovery_init() {
-    LPAC_JNI_SETUP_ENV;
-
+void lpac_discovery_init(JNIEnv *env) {
     jclass download_callback_class = (*env)->FindClass(env, DISCOVERY_CALLBACK_CLASS);
     on_discovered = (*env)->GetMethodID(env, download_callback_class, "onDiscovered",
                                         "(Ljava/util/ArrayList;)V");

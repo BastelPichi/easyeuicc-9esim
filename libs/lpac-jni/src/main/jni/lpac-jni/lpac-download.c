@@ -13,9 +13,7 @@ jobject download_state_finalizing;
 
 jmethodID on_state_update;
 
-void lpac_download_init() {
-    LPAC_JNI_SETUP_ENV;
-
+void lpac_download_init(JNIEnv *env) {
     jclass download_state_class = (*env)->FindClass(env,
                                                     "net/typeblog/lpac_jni/ProfileDownloadCallback$DownloadState");
     jfieldID download_state_preparing_field = (*env)->GetStaticFieldID(env, download_state_class,

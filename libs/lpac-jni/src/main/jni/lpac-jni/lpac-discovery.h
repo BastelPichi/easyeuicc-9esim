@@ -3,4 +3,4 @@
 #include <jni.h>
 #include "lpac-jni.h"
 
-void lpac_discovery_init();
+void lpac_discovery_init(JNIEnv *env);
