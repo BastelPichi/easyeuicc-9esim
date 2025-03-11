@@ -20,15 +20,6 @@ interface ProfileDownloadCallback {
         Finalizing(80), // load bpp
     }
 
-    data class ProfileMetadata(
-        val iccid: String,
-        val serviceProviderName: String,
-        val profileName: String,
-        val iconType: String,
-        val icon: String,
-        val profileClass: ProfileClass,
-    )
-
     var isCancelled: Boolean
 
     fun onStateUpdate(state: DownloadState)

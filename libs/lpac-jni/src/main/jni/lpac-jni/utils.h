@@ -7,9 +7,10 @@
 #define PACKAGE_NAME "net/typeblog/lpac_jni"
 #define PROFILE_STATE_CLASS PACKAGE_NAME "/ProfileState"
 #define PROFILE_CLASS_CLASS PACKAGE_NAME "/ProfileClass"
+#define PROFILE_METADATA_CLASS PACKAGE_NAME "/ProfileMetadata"
+#define ICON_TYPE_CLASS PACKAGE_NAME "/IconType"
 #define DOWNLOAD_CALLBACK_CLASS PACKAGE_NAME "/ProfileDownloadCallback"
 #define DOWNLOAD_STATE_CLASS DOWNLOAD_CALLBACK_CLASS "$DownloadState"
-#define PROFILE_METADATA_CLASS DOWNLOAD_CALLBACK_CLASS "$ProfileMetadata"
 #define LOCAL_PROFILE_NOTIFICATION_CLASS PACKAGE_NAME "/LocalProfileNotification"
 #define PROFILE_MANAGEMENT_OPERATION_CLASS PACKAGE_NAME "/ProfileManagementOperation"
 #define EUICC_CONFIGURED_ADDRESSES_CLASS PACKAGE_NAME "/EuiccConfiguredAddresses"
@@ -29,7 +30,7 @@ jobject to_profile_class(enum es10c_profile_class profile_class);
 
 jobject to_profile_management_operation(enum es10b_profile_management_operation operation);
 
-jstring to_icon_type(JNIEnv *env, enum es10c_icon_type icon_type);
+jstring to_icon_type(enum es10c_icon_type icon_type);
 
 jobject to_version(JNIEnv *env, const char *version);
 

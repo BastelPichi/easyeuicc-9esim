@@ -36,6 +36,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
 import net.typeblog.lpac_jni.ProfileDownloadCallback
+import net.typeblog.lpac_jni.ProfileMetadata
 
 /**
  * An Android Service wrapper for EuiccChannelManager.
@@ -388,7 +389,7 @@ class EuiccChannelManagerService : LifecycleService(), OpenEuiccContextMarker {
                     foregroundTaskState.value = ForegroundTaskState.InProgress(state.progress)
                 }
 
-                override fun onProfileMetadata(metadata: ProfileDownloadCallback.ProfileMetadata) {
+                override fun onProfileMetadata(metadata: ProfileMetadata) {
                     Log.d(TAG, "Downloaded profile metadata: $metadata")
                 }
             }

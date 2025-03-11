@@ -12,6 +12,8 @@ static jobject profile_management_operation_install;
 static jobject profile_management_operation_enable;
 static jobject profile_management_operation_disable;
 static jobject profile_management_operation_delete;
+static jobject icon_type_jpeg;
+static jobject icon_type_png;
 
 static jclass version_class;
 static jmethodID version_constructor;
@@ -34,6 +36,9 @@ jobject bind_static_field(JNIEnv *env, jclass clazz, const char *name, const cha
 
 #define BIND_NOTIFICATION_OPERATION_FIELD(NAME, FIELD) \
     profile_management_operation_##NAME = bind_static_field(env, profile_management_operation_class, FIELD, "L" PROFILE_MANAGEMENT_OPERATION_CLASS ";")
+
+#define BIND_ICON_TYPE_FIELD(NAME, FIELD) \
+    icon_type_##NAME = bind_static_field(env, icon_type_class, FIELD, "L" ICON_TYPE_CLASS ";")
 
 static void init_string_class(JNIEnv *env) {
     string_class = (*env)->FindClass(env, "java/lang/String");
@@ -69,6 +74,10 @@ void lpac_convertor_init(JNIEnv *env) {
     BIND_NOTIFICATION_OPERATION_FIELD(delete, "Delete");
     BIND_NOTIFICATION_OPERATION_FIELD(enable, "Enable");
     BIND_NOTIFICATION_OPERATION_FIELD(disable, "Disable");
+
+    jclass icon_type_class = (*env)->FindClass(env, ICON_TYPE_CLASS);
+    BIND_ICON_TYPE_FIELD(jpeg, "JPEG");
+    BIND_ICON_TYPE_FIELD(png, "PNG");
 }
 
 jstring toJString(JNIEnv *env, const char *pat) {
@@ -130,12 +139,12 @@ jobject to_profile_management_operation(enum es10b_profile_management_operation 
     }
 }
 
-jstring to_icon_type(JNIEnv *env, enum es10c_icon_type icon_type) {
+jstring to_icon_type(enum es10c_icon_type icon_type) {
     switch (icon_type) {
         case ES10C_ICON_TYPE_JPEG:
-            return toJString(env, "jpeg");
+            return icon_type_jpeg;
         case ES10C_ICON_TYPE_PNG:
-            return toJString(env, "png");
+            return icon_type_png;
         default:
             return NULL;
     }
@@ -180,11 +189,11 @@ jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata) {
             env, profile_metadata_class, "<init>",
             "("
             "Ljava/lang/String;" // iccid
-            "Ljava/lang/String;" // serviceProviderName
-            "Ljava/lang/String;" // profileName
-            "Ljava/lang/String;" // iconType
+            "Ljava/lang/String;" // name
+            "Ljava/lang/String;" // provider name
+            "L" PROFILE_CLASS_CLASS ";"
+            "L" ICON_TYPE_CLASS ";"
             "Ljava/lang/String;" // icon (base64-encoded)
-            "L" PROFILE_CLASS_CLASS ";" // profileClass
             ")"
             "V" // (returns) void
     );
@@ -192,12 +201,11 @@ jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata) {
     return (*env)->NewObject(
             env, profile_metadata_class, profile_metadata_constructor,
             toJString(env, metadata->iccid),
-            toJString(env, metadata->serviceProviderName),
             toJString(env, metadata->profileName),
-            to_icon_type(env, metadata->iconType),
-            toJString(env, metadata->icon),
-            to_profile_class(metadata->profileClass
-        )
+            toJString(env, metadata->serviceProviderName),
+            to_profile_class(metadata->profileClass),
+            to_icon_type(metadata->iconType),
+            toJString(env, metadata->icon)
     );
 }
 

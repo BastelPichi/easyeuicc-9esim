@@ -137,20 +137,21 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10cGetProfilesInfo(
     if (ret < 0) goto out;
 
     jclass profile_info_class = (*env)->FindClass(env, LOCAL_PROFILE_INFO_CLASS);
+
     jmethodID profile_info_class_constructor = (*env)->GetMethodID(
             env, profile_info_class, "<init>",
             "("
             "Ljava/lang/String;" // iccid
-            "Lnet/typeblog/lpac_jni/ProfileState;"
+            "L" PROFILE_STATE_CLASS ";"
             "Ljava/lang/String;" // name
             "Ljava/lang/String;" // nickname
             "Ljava/lang/String;" // provider name
             "Ljava/lang/String;" // ISD-P AID
-            "Lnet/typeblog/lpac_jni/ProfileClass;"
-            "Ljava/lang/String;" // icon type
-            "Ljava/lang/String;" // icon
+            "L" PROFILE_CLASS_CLASS ";"
+            "L" ICON_TYPE_CLASS ";"
+            "Ljava/lang/String;" // icon (base64-encoded)
             ")"
-            "V" // (returns) void
+            "V"
     );
 
     jclass profile_list_class = (*env)->GetObjectClass(env, profile_list);
@@ -167,7 +168,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10cGetProfilesInfo(
                 toJString(env, info->serviceProviderName),
                 toJString(env, info->isdpAid),
                 to_profile_class(info->profileClass),
-                to_icon_type(env, info->iconType),
+                to_icon_type(info->iconType),
                 toJString(env, info->icon)
         );
         (*env)->CallBooleanMethod(env, profile_list, add_profile, element);
