@@ -14,16 +14,18 @@ data class EuiccConfiguredAddresses(
     val rootDSAddress: String
 ) {
     val discoverable: Boolean
-        get() = isValidDPAddress(defaultDPAddress) ||
-                isValidDSAddress(rootDSAddress)
-}
+        get() = isValidDefaultDPAddress || isValidRootDSAddress
 
-private fun isValidDPAddress(address: String): Boolean {
-    return address.isNotBlank() && Patterns.DOMAIN_NAME.matcher(address).matches()
-}
+    val isValidDefaultDPAddress: Boolean
+        get() {
+            if (defaultDPAddress.isBlank()) return false
+            return Patterns.DOMAIN_NAME.matcher(defaultDPAddress).matches()
+        }
 
-private fun isValidDSAddress(address: String): Boolean {
-    if (address.isBlank()) return false
-    if (address in invalidDPAddresses) return false
-    return Patterns.DOMAIN_NAME.matcher(address).matches()
+    val isValidRootDSAddress: Boolean
+        get() {
+            if (rootDSAddress.isBlank()) return false
+            if (rootDSAddress in invalidDPAddresses) return false
+            return Patterns.DOMAIN_NAME.matcher(rootDSAddress).matches()
+        }
 }
