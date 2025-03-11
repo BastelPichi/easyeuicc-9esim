@@ -17,10 +17,10 @@ interface ApduInterface {
      */
     val valid: Boolean
 
-    fun <T> withLogicalChannel(aid: ByteArray, cb: ((ByteArray) -> ByteArray) -> T): T {
+    fun <T> withLogicalChannel(aid: ByteArray, callback: ((ByteArray) -> ByteArray) -> T): T {
         val handle = logicalChannelOpen(aid)
         return try {
-            cb { transmit(handle, it) }
+            callback { transmit(handle, it) }
         } finally {
             logicalChannelClose(handle)
         }

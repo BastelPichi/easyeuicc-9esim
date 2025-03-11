@@ -9,8 +9,8 @@ private val invalidDPAddresses = setOf(
     "testrootsmds.example.com",
 )
 
-class EuiccConfiguredAddresses(defaultDPAddress: String?, rootDSAddress: String?) {
-    val defaultDPAddress: String? = defaultDPAddress.takeUnless(::isInvalidDPAddress)
+class EuiccConfiguredAddresses(defaultDPAddress: String, rootDSAddress: String) {
+    val defaultDPAddress = defaultDPAddress.takeUnless(::isInvalidDPAddress)
     val rootDSAddress = rootDSAddress.takeUnless(::isInvalidDSAddress)
 
     val discoverable: Boolean
