@@ -146,10 +146,10 @@ jobject to_string_set(JNIEnv *env, char **values) {
 }
 
 jobject to_string_list(JNIEnv *env, char **values) {
-    jclass set_class = (*env)->FindClass(env, ARRAY_LIST_CLASS);
-    jmethodID set_constructor = (*env)->GetMethodID(env, set_class, "<init>", "()V");
-    jobject elements = (*env)->NewObject(env, set_class, set_constructor);
-    jmethodID add_element = (*env)->GetMethodID(env, set_class, "add", "(Ljava/lang/Object;)Z");
+    jclass list_class = (*env)->FindClass(env, ARRAY_LIST_CLASS);
+    jmethodID list_constructor = (*env)->GetMethodID(env, list_class, "<init>", "()V");
+    jobject elements = (*env)->NewObject(env, list_class, list_constructor);
+    jmethodID add_element = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
     jstring element = NULL;
     for (jsize index = 0; values[index] != NULL; index++) {
         element = toJString(env, values[index]);

@@ -33,7 +33,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10bListNotification(
     jclass notification_list_class = (*env)->GetObjectClass(env, notification_list);
     jmethodID add_notification = (*env)->GetMethodID(env, notification_list_class, "add", "(Ljava/lang/Object;)Z");
 
-    jobject element;
+    jobject element = NULL;
     while (metadata) {
         element = (*env)->NewObject(
                 env, local_profile_notification_class, local_profile_notification_constructor,
