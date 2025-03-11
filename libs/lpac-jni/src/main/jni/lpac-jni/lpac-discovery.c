@@ -64,36 +64,33 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
     ctx->http.server_address = _address;
 
     char **smdp_list = NULL;
-
     int ret;
 
+#define CHECK_INVOKE_RESULT(COND) if (COND) { ret = -ES10B_ERROR_REASON_UNDEFINED; goto out; }
+
+    // region preparing
     ret = es10b_get_euicc_challenge_and_info(ctx);
     syslog(LOG_INFO, "es10b_get_euicc_challenge_and_info %d", ret);
-    if (ret < 0) {
-        ret = -ES10B_ERROR_REASON_UNDEFINED;
-        goto out;
-    }
+    CHECK_INVOKE_RESULT(ret < 0)
+    // endregion
 
+    // region connecting
     ret = es9p_initiate_authentication(ctx);
     syslog(LOG_INFO, "es9p_initiate_authentication %d", ret);
-    if (ret < 0) {
-        ret = -ES10B_ERROR_REASON_UNDEFINED;
-        goto out;
-    }
+    CHECK_INVOKE_RESULT(ret < 0)
+    // endregion
 
+    // region authenticating
     ret = es10b_authenticate_server(ctx, NULL, _imei);
     syslog(LOG_INFO, "es10b_authenticate_server %d", ret);
-    if (ret < 0) {
-        ret = -ES10B_ERROR_REASON_UNDEFINED;
-        goto out;
-    }
+    CHECK_INVOKE_RESULT(ret < 0)
 
     ret = es11_authenticate_client(ctx, &smdp_list);
     syslog(LOG_INFO, "es11_authenticate_client %d", ret);
-    if (ret < 0) {
-        ret = -ES10B_ERROR_REASON_UNDEFINED;
-        goto out;
-    }
+    CHECK_INVOKE_RESULT(ret < 0)
+    // endregion
+
+#undef CHECK_INVOKE_RESULT
 
     (*env)->CallVoidMethod(env, callback, on_discovered, to_string_list(env, smdp_list));
 
