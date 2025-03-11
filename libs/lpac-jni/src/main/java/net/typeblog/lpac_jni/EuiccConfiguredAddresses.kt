@@ -9,21 +9,21 @@ private val invalidDPAddresses = setOf(
     "testrootsmds.example.com",
 )
 
-class EuiccConfiguredAddresses(defaultDPAddress: String, rootDSAddress: String) {
-    val defaultDPAddress = defaultDPAddress.takeUnless(::isInvalidDPAddress)
-    val rootDSAddress = rootDSAddress.takeUnless(::isInvalidDSAddress)
-
+data class EuiccConfiguredAddresses(
+    val defaultDPAddress: String,
+    val rootDSAddress: String
+) {
     val discoverable: Boolean
-        get() = !defaultDPAddress.isNullOrBlank() || !rootDSAddress.isNullOrBlank()
+        get() = isValidDPAddress(defaultDPAddress) ||
+                isValidDSAddress(rootDSAddress)
 }
 
-private fun isInvalidDPAddress(address: String?): Boolean {
-    if (address.isNullOrBlank()) return true
-    return !Patterns.DOMAIN_NAME.matcher(address).matches()
+private fun isValidDPAddress(address: String): Boolean {
+    return address.isNotBlank() && Patterns.DOMAIN_NAME.matcher(address).matches()
 }
 
-private fun isInvalidDSAddress(address: String?): Boolean {
-    if (address.isNullOrBlank()) return true
-    if (address in invalidDPAddresses) return true
-    return !Patterns.DOMAIN_NAME.matcher(address).matches()
+private fun isValidDSAddress(address: String): Boolean {
+    if (address.isBlank()) return false
+    if (address in invalidDPAddresses) return false
+    return Patterns.DOMAIN_NAME.matcher(address).matches()
 }
