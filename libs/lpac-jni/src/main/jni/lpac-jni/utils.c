@@ -156,10 +156,9 @@ jobject to_version(JNIEnv *env, const char *version) {
 }
 
 jobject to_string_set(JNIEnv *env, char **values) {
-    jclass set_class = (*env)->FindClass(env, HASH_SET_CLASS);
-    jmethodID set_constructor = (*env)->GetMethodID(env, set_class, "<init>", "()V");
-    jobject elements = (*env)->NewObject(env, set_class, set_constructor);
-    jmethodID add_element = (*env)->GetMethodID(env, set_class, "add", "(Ljava/lang/Object;)Z");
+    jobject elements = new_set_list(env);
+    jclass list_class = (*env)->GetObjectClass(env, elements);
+    jmethodID add_element = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
     jstring element = NULL;
     for (jsize index = 0; values[index] != NULL; index++) {
         element = toJString(env, values[index]);
@@ -169,9 +168,8 @@ jobject to_string_set(JNIEnv *env, char **values) {
 }
 
 jobject to_string_list(JNIEnv *env, char **values) {
-    jclass list_class = (*env)->FindClass(env, ARRAY_LIST_CLASS);
-    jmethodID list_constructor = (*env)->GetMethodID(env, list_class, "<init>", "()V");
-    jobject elements = (*env)->NewObject(env, list_class, list_constructor);
+    jobject elements = new_array_list(env);
+    jclass list_class = (*env)->GetObjectClass(env, elements);
     jmethodID add_element = (*env)->GetMethodID(env, list_class, "add", "(Ljava/lang/Object;)Z");
     jstring element = NULL;
     for (jsize index = 0; values[index] != NULL; index++) {
@@ -209,8 +207,14 @@ jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata) {
     );
 }
 
+jobject new_set_list(JNIEnv *env) {
+    jclass set_class = (*env)->FindClass(env, SET_CLASS);
+    jmethodID set_constructor = (*env)->GetMethodID(env, set_class, "<init>", "()V");
+    return (*env)->NewObject(env, set_class, set_constructor);
+}
+
 jobject new_array_list(JNIEnv *env) {
-    jclass array_list_class = (*env)->FindClass(env, ARRAY_LIST_CLASS);
-    jmethodID array_list_constructor = (*env)->GetMethodID(env, array_list_class, "<init>", "()V");
-    return (*env)->NewObject(env, array_list_class, array_list_constructor);
+    jclass list_class = (*env)->FindClass(env, LIST_CLASS);
+    jmethodID list_constructor = (*env)->GetMethodID(env, list_class, "<init>", "()V");
+    return (*env)->NewObject(env, list_class, list_constructor);
 }

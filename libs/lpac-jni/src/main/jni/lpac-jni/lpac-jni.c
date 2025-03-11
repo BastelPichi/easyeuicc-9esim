@@ -14,8 +14,6 @@
 
 JavaVM *jvm = NULL;
 
-#define LOCAL_PROFILE_INFO_CLASS "net/typeblog/lpac_jni/LocalProfileInfo"
-
 jint JNI_OnLoad(JavaVM *vm, __attribute__((unused)) void *reserved) {
     jvm = vm;
     LPAC_JNI_SETUP_ENV;

@@ -8,15 +8,16 @@
 #define PROFILE_STATE_CLASS PACKAGE_NAME "/ProfileState"
 #define PROFILE_CLASS_CLASS PACKAGE_NAME "/ProfileClass"
 #define PROFILE_METADATA_CLASS PACKAGE_NAME "/ProfileMetadata"
+#define PROFILE_MANAGEMENT_OPERATION_CLASS PACKAGE_NAME "/ProfileManagementOperation"
 #define ICON_TYPE_CLASS PACKAGE_NAME "/IconType"
 #define DOWNLOAD_CALLBACK_CLASS PACKAGE_NAME "/ProfileDownloadCallback"
 #define DOWNLOAD_STATE_CLASS DOWNLOAD_CALLBACK_CLASS "$DownloadState"
+#define LOCAL_PROFILE_INFO_CLASS PACKAGE_NAME "/LocalProfileInfo"
 #define LOCAL_PROFILE_NOTIFICATION_CLASS PACKAGE_NAME "/LocalProfileNotification"
-#define PROFILE_MANAGEMENT_OPERATION_CLASS PACKAGE_NAME "/ProfileManagementOperation"
 #define EUICC_CONFIGURED_ADDRESSES_CLASS PACKAGE_NAME "/EuiccConfiguredAddresses"
 #define VERSION_CLASS PACKAGE_NAME "/Version"
-#define HASH_SET_CLASS "java/util/HashSet"
-#define ARRAY_LIST_CLASS "java/util/ArrayList"
+#define SET_CLASS "java/util/HashSet"
+#define LIST_CLASS "java/util/ArrayList"
 
 void lpac_convertor_init(JNIEnv *env);
 
@@ -39,5 +40,7 @@ jobject to_string_set(JNIEnv *env, char **values);
 jobject to_string_list(JNIEnv *env, char **values);
 
 jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata);
+
+jobject new_set_list(JNIEnv *env);
 
 jobject new_array_list(JNIEnv *env);
