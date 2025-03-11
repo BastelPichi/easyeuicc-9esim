@@ -116,6 +116,21 @@ jobject to_profile_class(enum es10c_profile_class profile_class) {
     }
 }
 
+jobject to_profile_management_operation(enum es10b_profile_management_operation operation) {
+    switch (operation) {
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
+            return profile_management_operation_install;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
+            return profile_management_operation_delete;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
+            return profile_management_operation_enable;
+        case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
+            return profile_management_operation_disable;
+        default:
+            return NULL;
+    }
+}
+
 jstring to_icon_type(JNIEnv *env, enum es10c_icon_type icon_type) {
     switch (icon_type) {
         case ES10C_ICON_TYPE_JPEG:
@@ -182,23 +197,9 @@ jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata) {
             toJString(env, metadata->profileName),
             to_icon_type(env, metadata->iconType),
             toJString(env, metadata->icon),
-            to_profile_class(metadata->profileClass)
+            to_profile_class(metadata->profileClass
+        )
     );
-}
-
-jobject to_profile_management_operation(enum es10b_profile_management_operation operation) {
-    switch (operation) {
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_INSTALL:
-            return profile_management_operation_install;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_DELETE:
-            return profile_management_operation_delete;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_ENABLE:
-            return profile_management_operation_enable;
-        case ES10B_PROFILE_MANAGEMENT_OPERATION_DISABLE:
-            return profile_management_operation_disable;
-        default:
-            return NULL;
-    }
 }
 
 jobject new_array_list(JNIEnv *env) {

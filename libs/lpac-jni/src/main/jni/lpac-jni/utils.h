@@ -27,6 +27,10 @@ jobject to_profile_state(enum es10c_profile_state profile_state);
 
 jobject to_profile_class(enum es10c_profile_class profile_class);
 
+jobject to_profile_management_operation(enum es10b_profile_management_operation operation);
+
+jstring to_icon_type(JNIEnv *env, enum es10c_icon_type icon_type);
+
 jobject to_version(JNIEnv *env, const char *version);
 
 jobject to_string_set(JNIEnv *env, char **values);
@@ -34,7 +38,5 @@ jobject to_string_set(JNIEnv *env, char **values);
 jobject to_string_list(JNIEnv *env, char **values);
 
 jobject build_profile_metadata(JNIEnv *env, struct es8p_metadata *metadata);
-
-jobject to_profile_management_operation(enum es10b_profile_management_operation operation);
 
 jobject new_array_list(JNIEnv *env);

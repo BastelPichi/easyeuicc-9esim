@@ -147,6 +147,8 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10cGetProfilesInfo(
             "Ljava/lang/String;" // provider name
             "Ljava/lang/String;" // ISD-P AID
             "Lnet/typeblog/lpac_jni/ProfileClass;"
+            "Ljava/lang/String;" // icon type
+            "Ljava/lang/String;" // icon
             ")"
             "V" // (returns) void
     );
@@ -164,7 +166,9 @@ Java_net_typeblog_lpac_1jni_LpacJni_es10cGetProfilesInfo(
                 toJString(env, info->profileNickname),
                 toJString(env, info->serviceProviderName),
                 toJString(env, info->isdpAid),
-                to_profile_class(info->profileClass)
+                to_profile_class(info->profileClass),
+                to_icon_type(env, info->iconType),
+                toJString(env, info->icon)
         );
         (*env)->CallBooleanMethod(env, profile_list, add_profile, element);
         info = info->next;
