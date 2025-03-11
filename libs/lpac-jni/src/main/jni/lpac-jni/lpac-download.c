@@ -65,18 +65,23 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
 
     ctx->http.server_address = _smdp;
 
+    // region preparing
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     EMIT_STATE_UPDATE(preparing);
     ret = es10b_get_euicc_challenge_and_info(ctx);
     syslog(LOG_INFO, "es10b_get_euicc_challenge_and_info %d", ret);
     CHECK_INVOKE_FAILED(ret < 0)
+    // endregion
 
+    // region connecting
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     EMIT_STATE_UPDATE(connecting);
     ret = es9p_initiate_authentication(ctx);
     syslog(LOG_INFO, "es9p_initiate_authentication %d", ret);
     CHECK_INVOKE_FAILED(ret < 0)
+    // endregion
 
+    // region authenticating
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     EMIT_STATE_UPDATE(authenticating);
     ret = es10b_authenticate_server(ctx, _matching_id, _imei);
@@ -85,8 +90,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
 
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     ret = es9p_authenticate_client(ctx);
+    syslog(LOG_INFO, "es9p_authenticate_client %d", ret);
     CHECK_INVOKE_FAILED(ret < 0)
+    // endregion
 
+    // region emit profile metadata
     const char *b64_profileMetadata = ctx->http._internal.prepare_download_param->b64_profileMetadata;
     if (b64_profileMetadata != NULL) {
         ret = es8p_metadata_parse(&profile_metadata, b64_profileMetadata);
@@ -101,7 +109,9 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
             goto out;
         }
     }
+    // endregion
 
+    // region downloading
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     EMIT_STATE_UPDATE(downloading);
     ret = es10b_prepare_download(ctx, _confirmation_code);
@@ -110,9 +120,11 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
 
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     ret = es9p_get_bound_profile_package(ctx);
-    if (ret < 0)
-        goto out;
+    syslog(LOG_INFO, "es9p_get_bound_profile_package %d", ret);
+    if (ret < 0) goto out;
+    // endregion
 
+    // region finalizing
     CHECK_INVOKE_FAILED(IS_CANCELLED)
     EMIT_STATE_UPDATE(finalizing);
     ret = es10b_load_bound_profile_package(ctx, &es10b_load_bound_profile_package_result);
@@ -122,6 +134,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
         ret = -(int) es10b_load_bound_profile_package_result.errorReason;
         goto out;
     }
+    // endregion
 
     euicc_http_cleanup(ctx);
 
