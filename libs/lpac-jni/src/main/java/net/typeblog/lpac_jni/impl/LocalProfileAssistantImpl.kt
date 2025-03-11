@@ -1,7 +1,6 @@
 package net.typeblog.lpac_jni.impl
 
 import android.util.Log
-import net.typeblog.lpac_jni.LpacJni
 import net.typeblog.lpac_jni.ApduInterface
 import net.typeblog.lpac_jni.EuiccConfiguredAddresses
 import net.typeblog.lpac_jni.EuiccInfo2
@@ -10,9 +9,9 @@ import net.typeblog.lpac_jni.HttpInterface.HttpResponse
 import net.typeblog.lpac_jni.LocalProfileAssistant
 import net.typeblog.lpac_jni.LocalProfileInfo
 import net.typeblog.lpac_jni.LocalProfileNotification
+import net.typeblog.lpac_jni.LpacJni
 import net.typeblog.lpac_jni.ProfileDiscoveryCallback
 import net.typeblog.lpac_jni.ProfileDownloadCallback
-import net.typeblog.lpac_jni.Version
 
 class LocalProfileAssistantImpl(
     isdrAid: ByteArray,

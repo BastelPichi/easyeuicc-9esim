@@ -85,7 +85,7 @@ class HttpInterfaceImpl(
             if (runBlocking { ignoreTLSCertificateFlow.first() }) {
                 arrayOf(AllowAllTrustManager())
             } else {
-                this.trustManagers
+                trustManagers
             }
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(null, trustManagers, SecureRandom())
