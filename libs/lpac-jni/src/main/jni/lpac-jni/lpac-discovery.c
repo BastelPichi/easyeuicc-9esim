@@ -63,6 +63,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
 
     ctx->http.server_address = _address;
 
+    jobject servers = NULL;
     char **smdp_list = NULL;
     int ret;
 
@@ -90,12 +91,15 @@ Java_net_typeblog_lpac_1jni_LpacJni_discoveryProfile(
     CHECK_INVOKE_RESULT(ret < 0)
     // endregion
 
+    servers = to_string_list(env, smdp_list);
+
+    (*env)->CallVoidMethod(env, callback, on_discovered, servers);
+    CHECK_INVOKE_RESULT((*env)->ExceptionCheck(env) == JNI_TRUE)
+
 #undef CHECK_INVOKE_RESULT
 
-    (*env)->CallVoidMethod(env, callback, on_discovered, to_string_list(env, smdp_list));
-
     out:
-
+    if (servers != NULL) (*env)->DeleteLocalRef(env, servers);
     if (_imei != NULL) (*env)->ReleaseStringUTFChars(env, imei, _imei);
     (*env)->ReleaseStringUTFChars(env, address, _address);
     es11_smdp_list_free_all(smdp_list);

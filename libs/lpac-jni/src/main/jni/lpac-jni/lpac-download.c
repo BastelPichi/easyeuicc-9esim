@@ -43,6 +43,7 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
     const char *_matching_id = NULL;
     const char *_smdp = NULL;
     const char *_imei = NULL;
+    jobject bound_profile_metadata = NULL;
     int ret;
 
     jclass callback_class = (*env)->GetObjectClass(env, callback);
@@ -102,8 +103,8 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
             ret = -ES10B_ERROR_REASON_UNDEFINED;
             goto out;
         }
-        (*env)->CallVoidMethod(env, callback, on_profile_metadata,
-                               build_profile_metadata(env, profile_metadata));
+        bound_profile_metadata = build_profile_metadata(env, profile_metadata);
+        (*env)->CallVoidMethod(env, callback, on_profile_metadata, bound_profile_metadata);
         CHECK_INVOKE_RESULT((*env)->ExceptionCheck(env) == JNI_TRUE)
     }
     // endregion
@@ -145,7 +146,8 @@ Java_net_typeblog_lpac_1jni_LpacJni_downloadProfile(
 #undef IS_CANCELLED
 #undef CHECK_INVOKE_RESULT
 #undef EMIT_STATE_UPDATE
-
+    if (bound_profile_metadata != NULL)
+        (*env)->DeleteLocalRef(env, bound_profile_metadata);
     // We expect Java side to call cancelSessions after any error -- thus, `euicc_http_cleanup` is done there
     // This is so that Java side can access the last HTTP and/or APDU errors when we return.
     if (_confirmation_code != NULL)
