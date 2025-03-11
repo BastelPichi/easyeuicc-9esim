@@ -391,6 +391,7 @@ open class EuiccManagementFragment : Fragment(), EuiccProfilesChangedListener,
                     ProfileClass.Testing -> R.string.profile_class_testing
                     ProfileClass.Provisioning -> R.string.profile_class_provisioning
                     ProfileClass.Operational -> R.string.profile_class_operational
+                    else -> throw IllegalStateException("profile class should not be null")
                 }
             )
             iccid.text = profile.iccid
