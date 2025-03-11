@@ -164,14 +164,14 @@ class NotificationsActivity: BaseEuiccAccessActivity(), OpenEuiccContextMarker {
         }
 
 
-        private fun operationToLocalizedText(operation: ProfileManagementOperation) =
-            root.context.getText(
-                when (operation) {
-                    ProfileManagementOperation.Install -> R.string.profile_notification_operation_download
-                    ProfileManagementOperation.Delete -> R.string.profile_notification_operation_delete
-                    ProfileManagementOperation.Enable -> R.string.profile_notification_operation_enable
-                    ProfileManagementOperation.Disable -> R.string.profile_notification_operation_disable
-                })
+        private fun operationToLocalizedText(operation: ProfileManagementOperation?) =
+            root.context.getString(when (operation) {
+                ProfileManagementOperation.Install -> R.string.profile_notification_operation_download
+                ProfileManagementOperation.Delete -> R.string.profile_notification_operation_delete
+                ProfileManagementOperation.Enable -> R.string.profile_notification_operation_enable
+                ProfileManagementOperation.Disable -> R.string.profile_notification_operation_disable
+                else -> throw IllegalStateException("Unknown operation: $operation")
+            })
 
         fun updateNotification(value: LocalProfileNotificationWrapper) {
             notification = value
