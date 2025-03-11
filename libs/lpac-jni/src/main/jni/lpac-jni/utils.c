@@ -45,27 +45,26 @@ static void init_string_class(JNIEnv *env) {
     empty_string = (*env)->NewGlobalRef(env, empty_string);
 }
 
-void lpac_convertor_init(JNIEnv *env) {
-    init_string_class(env);
-
+static void init_version_class(JNIEnv *env) {
     version_class = (*env)->FindClass(env, VERSION_CLASS);
     version_class = (*env)->NewGlobalRef(env, version_class);
-    version_constructor = (*env)->GetMethodID(
-            env, version_class, "<init>", "(Ljava/lang/String;)V");
+    version_constructor = (*env)->GetMethodID(env, version_class, "<init>", "(Ljava/lang/String;)V");
+}
 
-    jclass profile_state_class = (*env)->FindClass(
-            env, PROFILE_STATE_CLASS);
+void lpac_convertor_init(JNIEnv *env) {
+    init_string_class(env);
+    init_version_class(env);
+
+    jclass profile_state_class = (*env)->FindClass(env, PROFILE_STATE_CLASS);
     BIND_PROFILE_STATE_STATIC_FIELD(enabled, "Enabled");
     BIND_PROFILE_STATE_STATIC_FIELD(disabled, "Disabled");
 
-    jclass profile_class_class = (*env)->FindClass(
-            env, PROFILE_CLASS_CLASS);
+    jclass profile_class_class = (*env)->FindClass(env, PROFILE_CLASS_CLASS);
     BIND_PROFILE_CLASS_STATIC_FIELD(operational, "Operational");
     BIND_PROFILE_CLASS_STATIC_FIELD(provisioning, "Provisioning");
     BIND_PROFILE_CLASS_STATIC_FIELD(testing, "Testing");
 
-    jclass profile_management_operation_class = (*env)->FindClass(
-            env, PROFILE_MANAGEMENT_OPERATION_CLASS);
+    jclass profile_management_operation_class = (*env)->FindClass(env, PROFILE_MANAGEMENT_OPERATION_CLASS);
     BIND_NOTIFICATION_OPERATION_FIELD(install, "Install");
     BIND_NOTIFICATION_OPERATION_FIELD(delete, "Delete");
     BIND_NOTIFICATION_OPERATION_FIELD(enable, "Enable");
