@@ -148,7 +148,12 @@
 
     <string name="euicc_memory_reset">Erase eUICC</string>
     <string name="euicc_memory_reset_title">Erase eUICC</string>
-    <string name="euicc_memory_reset_message">Please confirm to delete all profiles on this chip and understand that this operation is irreversible.\n\nEID: %1$s\n\n%2$s</string>
+    <string-array name="euicc_memory_reset_message">
+        <item>Please confirm to delete all profiles on this chip and understand that this operation is irreversible.</item>
+        <item>This action won\'t cancel any mobile plans you may have purchased from a carrier.</item>
+        <item>EID: %1$s</item>
+        <item>%2$s</item>
+    </string-array>
     <string name="euicc_memory_reset_hint_text">Type \'%s\' here to confirm</string>
     <string name="euicc_memory_reset_confirm_text">I CONFIRM TO ERASE THE CHIP WHOSE EID ENDS WITH %s AND UNDERSTAND THAT THIS IS IRREVERSIBLE</string>
     <string name="euicc_memory_reset_invoke_button">Erase</string>

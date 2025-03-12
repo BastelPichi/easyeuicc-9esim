@@ -68,7 +68,11 @@ class EuiccMemoryResetFragment : DialogFragment(), EuiccChannelFragmentMarker {
     override fun onCreateDialog(savedInstanceState: Bundle?) =
         AlertDialog.Builder(requireContext(), R.style.AlertDialogTheme)
             .setTitle(R.string.euicc_memory_reset_title)
-            .setMessage(getString(R.string.euicc_memory_reset_message, eid, confirmText))
+            .setMessage(
+                resources.getStringArray(R.array.euicc_memory_reset_message)
+                    .joinToString("\n\n")
+                    .format(eid, confirmText)
+            )
             .setView(editText)
             // Set listener to null to prevent auto closing
             .setNegativeButton(android.R.string.cancel, null)
