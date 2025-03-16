@@ -126,7 +126,7 @@ class DownloadWizardMethodSelectFragment : DownloadWizardActivity.DownloadWizard
             state.matchingId = parsed.matchingId
             state.confirmationCodeRequired = parsed.confirmationCodeRequired
             gotoNextFragment(DownloadWizardDetailsFragment())
-        } catch (e: IllegalArgumentException) {
+        } catch (e: IllegalStateException) {
             AlertDialog.Builder(requireContext()).apply {
                 setTitle(R.string.profile_download_incorrect_lpa_string)
                 setMessage(R.string.profile_download_incorrect_lpa_string_message)
