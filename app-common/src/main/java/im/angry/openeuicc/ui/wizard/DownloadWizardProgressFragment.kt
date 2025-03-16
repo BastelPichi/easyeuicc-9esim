@@ -96,6 +96,7 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
 
     override fun onStart() {
         super.onStart()
+        setKeepScreenOn(true)
 
         lifecycleScope.launch {
             showProgressBar(-1) // set indeterminate first
@@ -138,6 +139,11 @@ class DownloadWizardProgressFragment : DownloadWizardActivity.DownloadWizardStep
                 }
             }.collect()
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        setKeepScreenOn(false)
     }
 
     private suspend fun startDownloadOrSubscribe(): EuiccChannelManagerService.ForegroundTaskSubscriberFlow? =

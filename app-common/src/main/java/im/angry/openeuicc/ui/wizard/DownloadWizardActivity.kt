@@ -3,6 +3,7 @@ package im.angry.openeuicc.ui.wizard
 import android.app.assist.AssistContent
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.ProgressBar
@@ -315,5 +316,11 @@ class DownloadWizardActivity: BaseEuiccAccessActivity() {
         }
 
         open fun beforeNext() {}
+
+        protected fun setKeepScreenOn(enabled: Boolean) {
+            val flags = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            val window = (requireActivity() as DownloadWizardActivity).window
+            if (enabled) window.addFlags(flags) else window.clearFlags(flags)
+        }
     }
 }
