@@ -23,8 +23,7 @@ import net.typeblog.lpac_jni.LocalProfileInfo
 
 class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardStepFragment() {
     companion object {
-        const val LOW_NVRAM_THRESHOLD =
-            30 * 1024 // < 30 KiB, alert about potential download failure
+        const val TYPICAL_PROFILE_SIZE = 40 * 1024 // 40 KiB
     }
 
     private data class SlotInfo(
@@ -36,6 +35,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
         val freeSpace: Int,
         val imei: String,
         val enabledProfileName: String?,
+        val profileCount: Int,
         val intrinsicChannelName: String?,
     )
 
@@ -60,7 +60,13 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
     override fun beforeNext() {
         super.beforeNext()
 
-        if (adapter.selected.freeSpace < LOW_NVRAM_THRESHOLD) {
+        val lowThreshold = adapter.selected
+            // freeSpace + (profileCount * TYPICAL_PROFILE_SIZE)
+            .let { it.freeSpace + (it.profileCount * TYPICAL_PROFILE_SIZE) }
+            .times(0.25) // 25% overhead
+            .toInt()
+
+        if (adapter.selected.freeSpace < lowThreshold) {
             val activity = requireActivity()
 
             AlertDialog.Builder(requireContext()).apply {
@@ -116,6 +122,7 @@ class DownloadWizardSlotSelectFragment : DownloadWizardActivity.DownloadWizardSt
                         ""
                     },
                     channel.lpa.profiles.enabled?.displayName,
+                    channel.lpa.profiles.size,
                     channel.intrinsicChannelName,
                 )
             }
