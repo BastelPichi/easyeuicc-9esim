@@ -11,9 +11,9 @@ data class LPAString(
             var token = input
             if (token.startsWith("LPA:", ignoreCase = true)) token = token.drop(4)
             val components = token.split('$').map { it.trim().ifBlank { null } }
-            check(components.getOrNull(0) == "1") { "Invalid AC_Format" }
+            require(components.getOrNull(0) == "1") { "Invalid AC_Format" }
             return LPAString(
-                checkNotNull(components.getOrNull(1)) { "SM-DP+ is required" },
+                requireNotNull(components.getOrNull(1)) { "SM-DP+ is required" },
                 components.getOrNull(2),
                 components.getOrNull(3),
                 components.getOrNull(4) == "1"
