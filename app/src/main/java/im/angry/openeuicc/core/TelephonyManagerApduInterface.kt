@@ -1,6 +1,7 @@
 package im.angry.openeuicc.core
 
-import android.telephony.IccOpenLogicalChannelResponse
+import android.telephony.IccOpenLogicalChannelResponse.STATUS_NO_ERROR
+import android.telephony.IccOpenLogicalChannelResponse.INVALID_CHANNEL
 import android.telephony.TelephonyManager
 import android.util.Log
 import im.angry.openeuicc.util.*
@@ -13,7 +14,7 @@ class TelephonyManagerApduInterface(
     private val port: UiccPortInfoCompat,
     private val tm: TelephonyManager,
     private val verboseLoggingFlow: Flow<Boolean>
-): ApduInterface {
+) : ApduInterface, ApduInterfaceAtrProvider {
     companion object {
         const val TAG = "TelephonyManagerApduInterface"
     }
@@ -31,11 +32,17 @@ class TelephonyManagerApduInterface(
         // Do nothing
     }
 
+    private val slotIndex: Int
+        get() = port.card.physicalSlotIndex
+
+    private val portIndex: Int
+        get() = port.portIndex
+
     override fun logicalChannelOpen(aid: ByteArray): Int {
         val hex = aid.encodeHex()
-        val channel = tm.iccOpenLogicalChannelByPortCompat(port.card.physicalSlotIndex, port.portIndex, hex, 0)
-        if (channel.status != IccOpenLogicalChannelResponse.STATUS_NO_ERROR || channel.channel == IccOpenLogicalChannelResponse.INVALID_CHANNEL) {
-            throw IllegalArgumentException("Cannot open logical channel $hex via TelephonyManager on slot ${port.card.physicalSlotIndex} port ${port.portIndex}")
+        val channel = tm.iccOpenLogicalChannelByPortCompat(slotIndex, portIndex, hex, 0)
+        require(channel.status == STATUS_NO_ERROR && channel.channel != INVALID_CHANNEL) {
+            "Cannot open logical channel $hex via TelephonyManager on slot $slotIndex port $portIndex"
         }
         channels.add(channel.channel)
         return channel.channel
@@ -45,7 +52,7 @@ class TelephonyManagerApduInterface(
         check(channels.contains(handle)) {
             "Invalid logical channel handle $handle"
         }
-        tm.iccCloseLogicalChannelByPortCompat(port.card.physicalSlotIndex, port.portIndex, handle)
+        tm.iccCloseLogicalChannelByPortCompat(slotIndex, portIndex, handle)
         channels.remove(handle)
     }
 
@@ -53,15 +60,21 @@ class TelephonyManagerApduInterface(
         check(channels.contains(handle)) {
             "Invalid logical channel handle $handle"
         }
-        if (runBlocking { verboseLoggingFlow.first() }) {
-            Log.d(TAG, "TelephonyManager APDU: ${tx.encodeHex()}")
-        }
-        val result = tm.iccTransmitApduLogicalChannelByPortCompat(
-            port.card.physicalSlotIndex, port.portIndex, handle,
-            tx,
-        )
-        if (runBlocking { verboseLoggingFlow.first() })
-            Log.d(TAG, "TelephonyManager APDU response: $result")
+        val verbose = runBlocking { verboseLoggingFlow.first() }
+        if (verbose) Log.d(TAG, "TelephonyManager APDU: ${tx.encodeHex()}")
+        val result = tm.iccTransmitApduLogicalChannelByPortCompat(slotIndex, portIndex, handle, tx)
+        if (verbose) Log.d(TAG, "TelephonyManager APDU response: $result")
         return result?.decodeHex() ?: byteArrayOf()
     }
+
+    override val atr: ByteArray?
+        get() = try {
+            tm.iccGetAtr(slotIndex)?.decodeHex()
+        } catch (e: NoSuchMethodException) {
+            try {
+                tm.getAtrUsingSlotId(slotIndex)
+            } catch (e: Exception) {
+                null
+            }
+        }
 }

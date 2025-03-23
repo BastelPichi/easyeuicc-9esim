@@ -58,6 +58,23 @@ private val setSimSlotMapping: Method by lazy {
         Collection::class.java
     )
 }
+private val getITelephony: Method by lazy {
+    TelephonyManager::class.java.getMethod("getITelephony").apply {
+        isAccessible = true
+    }
+}
+
+fun TelephonyManager.getAtrUsingSlotId(slotId: Int): ByteArray? {
+    val telephony = getITelephony.invoke(this)
+    val getAtrUsingSlotId = telephony.javaClass.getMethod("getAtrUsingSlotId", Int::class.java)
+    return getAtrUsingSlotId.invoke(telephony, slotId) as ByteArray?
+}
+
+fun TelephonyManager.iccGetAtr(slotId: Int): String? {
+    val telephony = getITelephony.invoke(this)
+    val iccGetAtr = telephony.javaClass.getMethod("iccGetAtr", Int::class.java)
+    return iccGetAtr.invoke(telephony, slotId) as String?
+}
 
 fun TelephonyManager.iccOpenLogicalChannelBySlot(
     slotId: Int, appletId: String?, p2: Int
@@ -67,7 +84,8 @@ fun TelephonyManager.iccOpenLogicalChannelBySlot(
 fun TelephonyManager.iccOpenLogicalChannelByPort(
     slotId: Int, portId: Int, appletId: String?, p2: Int
 ): IccOpenLogicalChannelResponse =
-    iccOpenLogicalChannelByPort.invoke(this, slotId, portId, appletId, p2) as IccOpenLogicalChannelResponse
+    iccOpenLogicalChannelByPort.invoke(this, slotId, portId, appletId, p2)
+            as IccOpenLogicalChannelResponse
 
 fun TelephonyManager.iccCloseLogicalChannelBySlot(slotId: Int, channel: Int) {
     iccCloseLogicalChannelBySlot.invoke(this, slotId, channel)
@@ -95,12 +113,17 @@ fun TelephonyManager.iccTransmitApduLogicalChannelByPort(
 
 var TelephonyManager.simSlotMapping: Collection<UiccSlotMapping>
     get() = getSimSlotMapping.invoke(this) as Collection<UiccSlotMapping>
-    set(new) { setSimSlotMapping.invoke(this, new) }
+    set(new) {
+        setSimSlotMapping.invoke(this, new)
+    }
 
 private val requestEmbeddedSubscriptionInfoListRefresh: Method by lazy {
-    SubscriptionManager::class.java.getMethod("requestEmbeddedSubscriptionInfoListRefresh", Int::class.java)
+    SubscriptionManager::class.java.getMethod(
+        "requestEmbeddedSubscriptionInfoListRefresh",
+        Int::class.java
+    )
 }
 
-fun SubscriptionManager.requestEmbeddedSubscriptionInfoListRefresh(cardId: Int): Unit {
+fun SubscriptionManager.requestEmbeddedSubscriptionInfoListRefresh(cardId: Int) {
     requestEmbeddedSubscriptionInfoListRefresh.invoke(this, cardId)
 }
