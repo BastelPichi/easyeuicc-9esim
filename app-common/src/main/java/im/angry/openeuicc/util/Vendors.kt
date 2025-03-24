@@ -12,23 +12,16 @@ data class EuiccVendorInfo(
     val firmwareVersion: String?,
 )
 
-private val EUICC_VENDORS: Array<EuiccVendor> = arrayOf(EstkMe(), SimLink())
+private val EUICC_VENDORS: Array<EuiccVendor> = arrayOf(ESTKme(), SIMLink9(), Eastcompeace())
 
-fun EuiccChannel.tryParseEuiccVendorInfo(): EuiccVendorInfo? {
-    EUICC_VENDORS.forEach { vendor ->
-        vendor.tryParseEuiccVendorInfo(this@tryParseEuiccVendorInfo)?.let {
-            return it
-        }
-    }
-
-    return null
-}
+fun EuiccChannel.tryParseEuiccVendorInfo(): EuiccVendorInfo? =
+    EUICC_VENDORS.firstNotNullOfOrNull { it.tryParseEuiccVendorInfo(this) }
 
 interface EuiccVendor {
     fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo?
 }
 
-private class EstkMe : EuiccVendor {
+private class ESTKme : EuiccVendor {
     companion object {
         private val PRODUCT_AID = "A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()
         private val PRODUCT_ATR_FPR = "estk.me".encodeToByteArray()
@@ -75,7 +68,7 @@ private class EstkMe : EuiccVendor {
     }
 }
 
-private class SimLink : EuiccVendor {
+private class SIMLink9 : EuiccVendor {
     companion object {
         private val EID_PATTERN = Regex("^89044045(84|21)67274948")
     }
@@ -107,6 +100,49 @@ private class SimLink : EuiccVendor {
             serialNumber = null,
             bootloaderVersion = null,
             firmwareVersion = null
+        )
+    }
+}
+
+@Suppress("SpellCheckingInspection")
+private class Eastcompeace : EuiccVendor {
+    companion object {
+        private val TAG = Eastcompeace::class.java.simpleName
+        private const val EID_PREFIX = "89086030"
+        private val PRODUCT_AID = "A000000533C000FF860000000427".decodeHex()
+        private val COMMAND = "80CA000050".decodeHex()
+    }
+
+    class SCID(val scid: ByteArray) {
+        val bootloaderVersion: ByteArray
+            get() = scid.sliceArray(12..14)
+        val cosVersion: ByteArray
+            get() = scid.sliceArray(14..16)
+        val uniquelyIdentify: ByteArray
+            get() = scid.sliceArray(32..56)
+
+        override fun toString() = scid.encodeHex()
+    }
+
+    private fun decodeResponse(b: ByteArray): ByteArray? {
+        if (b.size < 2) return null
+        if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
+        return b.sliceArray(0 until b.size - 2)
+    }
+
+    override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
+        if (!channel.lpa.eID.startsWith(EID_PREFIX)) return null
+        return channel.apduInterface.withLogicalChannel(PRODUCT_AID, ::parseSCID)
+    }
+
+    fun parseSCID(transmit: (ByteArray) -> ByteArray): EuiccVendorInfo? {
+        val scid = decodeResponse(transmit(COMMAND))?.let(::SCID) ?: return null
+        Log.i(TAG, "Eastcompeace SCID: $scid")
+        return EuiccVendorInfo(
+            skuName = "Eastcompeace",
+            serialNumber = scid.uniquelyIdentify.encodeHex(),
+            bootloaderVersion = scid.bootloaderVersion.encodeHex(),
+            firmwareVersion = scid.cosVersion.encodeHex(),
         )
     }
 }
