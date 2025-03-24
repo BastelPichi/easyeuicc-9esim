@@ -41,12 +41,6 @@ private class ESTKme : EuiccVendor {
         return false
     }
 
-    private fun decodeAsn1String(b: ByteArray): String? {
-        if (b.size < 2) return null
-        if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
-        return b.sliceArray(0 until b.size - 2).decodeToString()
-    }
-
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         if (!checkAtr(channel)) return null
 
@@ -54,7 +48,8 @@ private class ESTKme : EuiccVendor {
         return try {
             iface.withLogicalChannel(PRODUCT_AID) { transmit ->
                 fun invoke(p1: Byte) =
-                    decodeAsn1String(transmit(byteArrayOf(0x00, 0x00, p1, 0x00, 0x00)))
+                    decodeResponse(transmit(byteArrayOf(0x00, 0x00, p1, 0x00, 0x00)))
+                        ?.decodeToString()
                 EuiccVendorInfo(
                     skuName = invoke(0x03),
                     serialNumber = invoke(0x00),
@@ -114,12 +109,6 @@ private class Eastcompeace : EuiccVendor {
         private val COMMAND = "80CA000050".decodeHex()
     }
 
-    private fun decodeResponse(b: ByteArray): ByteArray? {
-        if (b.size < 2) return null
-        if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
-        return b.sliceArray(0 until b.size - 2)
-    }
-
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         if (!channel.lpa.eID.startsWith(EID_PREFIX)) return null
         return try {
@@ -141,4 +130,10 @@ private class Eastcompeace : EuiccVendor {
             firmwareVersion = null,
         )
     }
+}
+
+private fun decodeResponse(b: ByteArray): ByteArray? {
+    if (b.size < 2) return null
+    if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
+    return b.sliceArray(0 until b.size - 2)
 }
