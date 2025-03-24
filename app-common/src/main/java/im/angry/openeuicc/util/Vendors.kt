@@ -110,15 +110,16 @@ private class Eastcompeace : EuiccVendor {
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         if (!channel.lpa.eID.startsWith(EID_PREFIX)) return null
         return try {
-            channel.apduInterface.withLogicalChannel(PRODUCT_AID, ::parseSCID)
+            channel.apduInterface.withLogicalChannel(PRODUCT_AID) { transmit ->
+                decodeResponse(transmit(COMMAND))?.let(::parseSCID)
+            }
         } catch (e: Exception) {
             Log.d(TAG, "Failed to get EastcompeaceInfo", e)
             null
         }
     }
 
-    fun parseSCID(transmit: (ByteArray) -> ByteArray): EuiccVendorInfo? {
-        val scid = decodeResponse(transmit(COMMAND)) ?: return null
+    fun parseSCID(scid: ByteArray): EuiccVendorInfo {
         // TODO: Some data needs to be accumulated to distinguish SKUs
         Log.i(TAG, "Eastcompeace SCID: ${scid.encodeHex()}")
         return EuiccVendorInfo(
