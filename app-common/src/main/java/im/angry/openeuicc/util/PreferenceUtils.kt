@@ -58,6 +58,9 @@ internal object PreferenceConstants {
 
         # 5ber.eSIM
         A0000005591010FFFFFFFF8900050500
+
+        # Xesim
+        A0000005591010FFFFFFFF8900000177
     """.trimIndent()
 }
 
