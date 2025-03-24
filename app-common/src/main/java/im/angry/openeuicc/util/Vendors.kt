@@ -104,14 +104,14 @@ private class Eastcompeace : EuiccVendor {
     companion object {
         private const val EID_PREFIX = "89086030"
         private val PRODUCT_AID = "A000000533C000FF860000000427".decodeHex()
-        private val COMMAND = "80CA000050".decodeHex()
+        private val GET_SCID_COMMAND = "80CA000050".decodeHex()
     }
 
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         if (!channel.lpa.eID.startsWith(EID_PREFIX)) return null
         return try {
             channel.apduInterface.withLogicalChannel(PRODUCT_AID) { transmit ->
-                decodeResponse(transmit(COMMAND))?.let(::parseSCID)
+                decodeResponse(transmit(GET_SCID_COMMAND))?.let(::parseSCID)
             }
         } catch (e: Exception) {
             Log.d(TAG, "Failed to get EastcompeaceInfo", e)
