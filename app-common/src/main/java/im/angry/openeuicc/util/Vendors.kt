@@ -25,6 +25,7 @@ interface EuiccVendor {
 
 private class ESTKme : EuiccVendor {
     companion object {
+        private val TAG = ESTKme::class.java.simpleName
         private val PRODUCT_AID = "A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()
         private val PRODUCT_ATR_FPR = "estk.me".encodeToByteArray()
     }
@@ -134,7 +135,12 @@ private class Eastcompeace : EuiccVendor {
 
     override fun tryParseEuiccVendorInfo(channel: EuiccChannel): EuiccVendorInfo? {
         if (!channel.lpa.eID.startsWith(EID_PREFIX)) return null
-        return channel.apduInterface.withLogicalChannel(PRODUCT_AID, ::parseSCID)
+        return try {
+            channel.apduInterface.withLogicalChannel(PRODUCT_AID, ::parseSCID)
+        } catch (e: Exception) {
+            Log.d(TAG, "Failed to get EastcompeaceInfo", e)
+            null
+        }
     }
 
     fun parseSCID(transmit: (ByteArray) -> ByteArray): EuiccVendorInfo? {
