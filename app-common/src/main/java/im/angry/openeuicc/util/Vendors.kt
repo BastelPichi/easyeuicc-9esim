@@ -114,17 +114,6 @@ private class Eastcompeace : EuiccVendor {
         private val COMMAND = "80CA000050".decodeHex()
     }
 
-    class SCID(val scid: ByteArray) {
-        val bootloaderVersion: ByteArray
-            get() = scid.sliceArray(12 until 14)
-        val cosVersion: ByteArray
-            get() = scid.sliceArray(14 until 16)
-        val uniquelyIdentify: ByteArray
-            get() = scid.sliceArray(32 until 56)
-
-        override fun toString() = scid.encodeHex()
-    }
-
     private fun decodeResponse(b: ByteArray): ByteArray? {
         if (b.size < 2) return null
         if (b[b.size - 2] != 0x90.toByte() || b[b.size - 1] != 0x00.toByte()) return null
@@ -142,13 +131,14 @@ private class Eastcompeace : EuiccVendor {
     }
 
     fun parseSCID(transmit: (ByteArray) -> ByteArray): EuiccVendorInfo? {
-        val scid = decodeResponse(transmit(COMMAND))?.let(::SCID) ?: return null
-        Log.i(TAG, "Eastcompeace SCID: $scid")
+        val scid = decodeResponse(transmit(COMMAND)) ?: return null
+        // TODO: Some data needs to be accumulated to distinguish SKUs
+        Log.i(TAG, "Eastcompeace SCID: ${scid.encodeHex()}")
         return EuiccVendorInfo(
             skuName = "Eastcompeace",
-            serialNumber = scid.uniquelyIdentify.encodeHex(),
-            bootloaderVersion = scid.bootloaderVersion.encodeHex(),
-            firmwareVersion = scid.cosVersion.encodeHex(),
+            serialNumber = null,
+            bootloaderVersion = null,
+            firmwareVersion = null,
         )
     }
 }
