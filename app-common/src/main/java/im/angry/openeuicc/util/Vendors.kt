@@ -4,8 +4,6 @@ import android.util.Log
 import im.angry.openeuicc.core.ApduInterfaceAtrProvider
 import im.angry.openeuicc.core.EuiccChannel
 import net.typeblog.lpac_jni.Version
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 data class EuiccVendorInfo(
     val skuName: String?,
@@ -118,11 +116,11 @@ private class Eastcompeace : EuiccVendor {
 
     class SCID(val scid: ByteArray) {
         val bootloaderVersion: ByteArray
-            get() = scid.sliceArray(12..<14)
+            get() = scid.sliceArray(12 until 14)
         val cosVersion: ByteArray
-            get() = scid.sliceArray(14..<16)
+            get() = scid.sliceArray(14 until 16)
         val uniquelyIdentify: ByteArray
-            get() = scid.sliceArray(32..<56)
+            get() = scid.sliceArray(32 until 56)
 
         override fun toString() = scid.encodeHex()
     }
