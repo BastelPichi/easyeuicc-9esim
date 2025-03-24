@@ -23,7 +23,6 @@ interface EuiccVendor {
 
 private class ESTKme : EuiccVendor {
     companion object {
-        private val TAG = ESTKme::class.java.simpleName
         private val PRODUCT_AID = "A06573746B6D65FFFFFFFFFFFF6D6774".decodeHex()
         private val PRODUCT_ATR_FPR = "estk.me".encodeToByteArray()
     }
@@ -103,7 +102,6 @@ private class SIMLink9 : EuiccVendor {
 @Suppress("SpellCheckingInspection")
 private class Eastcompeace : EuiccVendor {
     companion object {
-        private val TAG = Eastcompeace::class.java.simpleName
         private const val EID_PREFIX = "89086030"
         private val PRODUCT_AID = "A000000533C000FF860000000427".decodeHex()
         private val COMMAND = "80CA000050".decodeHex()
