@@ -3,7 +3,6 @@
 
 # Configuration files
 
-/keystore.properties
 /local.properties
 
 # macOS

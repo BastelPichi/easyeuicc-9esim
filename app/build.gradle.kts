@@ -15,7 +15,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "im.angry.openeuicc"
+        applicationId = "com.esim.openeuicc"
         minSdk = 30
         targetSdk = 35
 

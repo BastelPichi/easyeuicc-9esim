@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Download keystore
+        run: wget -O app-unpriv/keystore.jks https://github.com/9esim/9eSIMCommunityKey/raw/refs/heads/main/9eSIMCommunityKey.jks
+
+      - name: Build Release APK (Unprivileged / EasyEUICC only)
+        run: ./gradlew --no-daemon :app-unpriv:assembleRelease
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-unpriv-release
+          path: app-unpriv/build/outputs/apk/release/*.apk
